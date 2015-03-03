@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<div id="header" class="row">
+	
+        <div id="logo" class="medium-2 columns">
+          <img src="/static/img/cap_logo_even_smaller.png"/>
+        </div>
+       
+        <div id="title" class="medium-6 large-5 columns">
+          <div id="page-title">COMPARATIVE AGENDAS PROJECT</div>
+          <div id="page-subtitle">comparing policies worldwide</div>
+        </div>
+        
+        <div id="email" class="medium-2 large-3 columns">
+        	<div class="row">
+
+				<div id="updates-container" class="medium-12 columns">
+					<input class="inline" id="updates" type="text" placeholder="email@host.com" value="Get Updates">
+				</div>
+			
+				<div id="go-container" class="columns">
+					<a id="go" href="#" class="button round tiny inline">GO</a>
+				</div>
+        	
+        	</div>
+        </div>
+    
+        <div id="social" class="medium-2 columns">
+		  <i class="fi-social-twitter size-24 right"></i>
+		  <i class="fi-social-google-plus size-24 right"></i>
+		  <i class="fi-social-facebook size-24 right"></i>
+        </div>
+         
+         
+     </div>
+      
+     <hr/>
+     
+     
+     
+     <div class="row">
+     	<div id="slogan" class="medium-12 columns">
+     	The Comparative Agendas Project collects and organizes data from archived sources to track policy outcomes across countries. <a class="orange-link" href="#">more</a>
+     	</div>
+     </div>
+      
+     <div id="bluestripe">
+     
+     <div class="row">
+     
+        <div class="medium-12 columns">
+        	<ul class="slider" data-orbit>
+			  <li>
+				<img class="orbit-img" src="/static/img/chart.png" alt="slide 1" />
+				<div class="orbit-caption">
+				  <h4>Caption One.</h4>
+				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</h6>
+				</div>
+			  </li>
+			  <li>
+				<img class="orbit-img" src="/static/img/chart2.png" alt="slide 2" />
+				<div class="orbit-caption">
+				  <h4>Caption Two.</h4>
+				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</h6>
+				</div>
+			  </li>
+			  <li>
+				<img class="orbit-img" src="/static/img/chart3.png" alt="slide 3" />
+				<div class="orbit-caption">
+				  <h4>Caption Three.</h4>
+				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</h6>
+				</div>
+			  </li>
+			</ul>
+        </div>
+        
+      </div>
+      
+      
+     </div>
+     
+    
+     
+<div id="under-graph" class="row">
+
+        <div class="medium-8 columns">
+          
+          <h3>News</h3>
+          
+			{% for item in news %}
+
+			<div class="row news-item">
+
+				<div class="medium-3 columns">
+				<img class="news-image" src="http://placehold.it/150x100&text=[img]"/>
+				</div>
+
+				<div class="medium-9 columns">
+				<h5>{{ item.title }}</h5>
+				{{ smart_truncate(item.content,200) }}
+				<a class="orange-link" href="#">read more</a>
+				</div>
+
+			</div>
+
+			{% endfor %}          
+        
+        </div>
+        
+        <div class="medium-4 columns">
+        	<p class="panel">Explore Trends Tool</p>
+        	
+      		<a href="#" data-options="align:top; is_hover:true;" data-dropdown="drop">
+      			<p class="panel">Explore Country Projects</p>
+      		</a>
+      		
+			<ul id="drop" class="f-dropdown" data-dropdown-content>
+			  <li><a href="#">Belgium</a></li>
+			  <li><a href="#">Denmark</a></li>
+			  <li><a href="#">France</a></li>
+			  <li><a href="#">Germany</a></li>
+			  <li><a href="#">Israel</a></li>
+			  <li><a href="#">Italy</a></li>
+			  <li><a href="#">Netherlands</a></li>
+			  <li><a href="#">Pennsylvania</a></li>
+			  <li><a href="#">Portugal</a></li>
+			  <li><a href="#">Spain</a></li>
+			  <li><a href="#">US</a></li>
+			  <li><a href="#">UK</a></li>  
+			</ul>
+				
+      		<p class="panel">Datasets / Codebooks</p>
+      		<p class="panel">About</p>
+        </div>
+        
+     
+   <!-- <div class="row">
+        <div class="medium-12 columns">
+        	
+          <div class="panel">
+            <h4>Get in touch!</h4>
+                
+            <div class="row">
+              <div class="large-9 columns">
+                <p>We'd love to hear from you, you attractive person you.</p>
+              </div>
+              <div class="large-3 columns">
+                <a href="#" class="radius button right">Contact Us</a>
+              </div>
+            </div>
+          </div> 
+          
+        </div>
+      </div> -->
+     
+       <hr/>
+      
+      <footer class="row">
+      
+	
+        <div id="logo-footer" class="medium-12 columns">
+          <img src="/static/img/cap_logo_gray.png"/>
+        </div>
+       
+        
+          <div id="page-title-footer">COMPARATIVE AGENDAS PROJECT</div>
+          <div id="page-subtitle-footer">comparing policies worldwide</div>
+        
+        
+        <!--<div id="email" class="medium-2 large-3 columns">
+        	<div class="row">
+
+				<div id="updates-container" class="medium-12 columns">
+					<input class="inline" id="updates" type="text" placeholder="email@host.com" value="Get Updates">
+				</div>
+			
+				<div id="go-container" class="columns">
+					<a id="go" href="#" class="button round tiny inline">GO</a>
+				</div>
+        	
+        	</div>
+        </div>
+    
+        <div id="social" class="medium-2 columns">
+		  <i class="fi-social-twitter size-24 right"></i>
+		  <i class="fi-social-google-plus size-24 right"></i>
+		  <i class="fi-social-facebook size-24 right"></i>
+        </div>-->
+         
+         
+
+      </footer>
+    
+           
+{% endblock %}
