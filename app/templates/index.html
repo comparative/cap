@@ -116,18 +116,9 @@
       		</a>
       		
 			<ul id="drop" class="f-dropdown" data-dropdown-content>
-			  <li><a href="#">Belgium</a></li>
-			  <li><a href="#">Denmark</a></li>
-			  <li><a href="#">France</a></li>
-			  <li><a href="#">Germany</a></li>
-			  <li><a href="#">Israel</a></li>
-			  <li><a href="#">Italy</a></li>
-			  <li><a href="#">Netherlands</a></li>
-			  <li><a href="#">Pennsylvania</a></li>
-			  <li><a href="#">Portugal</a></li>
-			  <li><a href="#">Spain</a></li>
-			  <li><a href="#">US</a></li>
-			  <li><a href="#">UK</a></li>  
+			{% for item in countries %}
+			  <li><a href="#">{{ item.name }}</a></li>
+			{% endfor %} 
 			</ul>
 				
       		<p class="panel">Datasets / Codebooks</p>
@@ -135,24 +126,6 @@
         </div>
         
      
-   <!-- <div class="row">
-        <div class="medium-12 columns">
-        	
-          <div class="panel">
-            <h4>Get in touch!</h4>
-                
-            <div class="row">
-              <div class="large-9 columns">
-                <p>We'd love to hear from you, you attractive person you.</p>
-              </div>
-              <div class="large-3 columns">
-                <a href="#" class="radius button right">Contact Us</a>
-              </div>
-            </div>
-          </div> 
-          
-        </div>
-      </div> -->
      
        <hr/>
       
@@ -167,27 +140,6 @@
           <div id="page-title-footer">COMPARATIVE AGENDAS PROJECT</div>
           <div id="page-subtitle-footer">comparing policies worldwide</div>
         
-        
-        <!--<div id="email" class="medium-2 large-3 columns">
-        	<div class="row">
-
-				<div id="updates-container" class="medium-12 columns">
-					<input class="inline" id="updates" type="text" placeholder="email@host.com" value="Get Updates">
-				</div>
-			
-				<div id="go-container" class="columns">
-					<a id="go" href="#" class="button round tiny inline">GO</a>
-				</div>
-        	
-        	</div>
-        </div>
-    
-        <div id="social" class="medium-2 columns">
-		  <i class="fi-social-twitter size-24 right"></i>
-		  <i class="fi-social-google-plus size-24 right"></i>
-		  <i class="fi-social-facebook size-24 right"></i>
-        </div>-->
-         
          
 
       </footer>
