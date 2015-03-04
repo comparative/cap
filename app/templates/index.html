@@ -1,43 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-	<div id="header" class="row">
-	
-        <div id="logo" class="medium-2 columns">
-          <img src="/static/img/cap_logo_even_smaller.png"/>
-        </div>
-       
-        <div id="title" class="medium-6 large-5 columns">
-          <div id="page-title">COMPARATIVE AGENDAS PROJECT</div>
-          <div id="page-subtitle">comparing policies worldwide</div>
-        </div>
-        
-        <div id="email" class="medium-2 large-3 columns">
-        	<div class="row">
 
-				<div id="updates-container" class="medium-12 columns">
-					<input class="inline" id="updates" type="text" placeholder="email@host.com" value="Get Updates">
-				</div>
-			
-				<div id="go-container" class="columns">
-					<a id="go" href="#" class="button round tiny inline">GO</a>
-				</div>
-        	
-        	</div>
-        </div>
-    
-        <div id="social" class="medium-2 columns">
-		  <i class="fi-social-twitter size-24 right"></i>
-		  <i class="fi-social-google-plus size-24 right"></i>
-		  <i class="fi-social-facebook size-24 right"></i>
-        </div>
-         
-         
-     </div>
-      
      <hr/>
-     
-     
      
      <div class="row">
      	<div id="slogan" class="medium-12 columns">
@@ -55,21 +20,24 @@
 				<img class="orbit-img" src="/static/img/chart.png" alt="slide 1" />
 				<div class="orbit-caption">
 				  <h4>Caption One.</h4>
-				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</h6>
+				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</br>
+				  <a class="orange-link bold-link" href="#">open in trends tool</a></h6>
 				</div>
 			  </li>
 			  <li>
 				<img class="orbit-img" src="/static/img/chart2.png" alt="slide 2" />
 				<div class="orbit-caption">
 				  <h4>Caption Two.</h4>
-				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</h6>
+				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</br>
+				  <a class="orange-link bold-link" href="#">open in trends tool</a></h6>
 				</div>
 			  </li>
 			  <li>
 				<img class="orbit-img" src="/static/img/chart3.png" alt="slide 3" />
 				<div class="orbit-caption">
 				  <h4>Caption Three.</h4>
-				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</h6>
+				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</br>
+				  <a class="orange-link bold-link" href="#">open in trends tool</a></h6>
 				</div>
 			  </li>
 			</ul>
@@ -79,8 +47,7 @@
       
       
      </div>
-     
-    
+         
      
 <div id="under-graph" class="row">
 
@@ -117,7 +84,7 @@
       		
 			<ul id="drop" class="f-dropdown" data-dropdown-content>
 			{% for item in countries %}
-			  <li><a href="#">{{ item.name }}</a></li>
+			  <li><a href="/countries/{{ item.slug }}">{{ item.name }}</a></li>
 			{% endfor %} 
 			</ul>
 				
@@ -125,24 +92,30 @@
       		<p class="panel">About</p>
         </div>
         
-     
-     
-       <hr/>
-      
-      <footer class="row">
-      
-	
-        <div id="logo-footer" class="medium-12 columns">
-          <img src="/static/img/cap_logo_gray.png"/>
-        </div>
-       
-        
-          <div id="page-title-footer">COMPARATIVE AGENDAS PROJECT</div>
-          <div id="page-subtitle-footer">comparing policies worldwide</div>
-        
-         
 
-      </footer>
-    
+{% endblock %}    
+
+{% block scripts %}
+ 
+      <script>
+      
+      $(document).foundation({
+          orbit: {
+            animation: 'slide',
+            timer_speed: 8000,
+            pause_on_hover: true,
+            resume_on_mouseout: true,
+            animation_speed: 1000,
+            navigation_arrows: false,
+            bullets: true,
+            slide_number: false,
+            next_on_click: false
+          }
+        });
+        
+        </script>
            
 {% endblock %}
+
+
+

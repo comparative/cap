@@ -38,6 +38,14 @@ textarea {
 }
 
 
+a#go {
+	margin-top: 2px;
+	margin-left: 5px;
+	margin-bottom: 0px;
+	background-color: #3b4e6f;
+}
+
+
 #updates-container {
 	padding-right:0px;
 	padding-top:0px;
@@ -52,7 +60,7 @@ textarea {
 
 div#social {
 	padding-left:0px;
-	padding-right:30px;
+	/*padding-right:30px;*/
 }
 
 
@@ -66,11 +74,7 @@ input#updates {
 	margin-top: 2px;
 }
 
-a#go {
-	margin-top: 2px;
-	margin-left: 5px;
-	margin-bottom: 0px;
-}
+
 
 .size-12 { font-size: 12px; }
 .size-14 { font-size: 14px; }
@@ -116,13 +120,13 @@ h1,h2,h3,h4,h5,h6,p.panel,p.panel a, #page-title, #page-subtitle, #slogan {
 
 #page-title {
 	font-weight:bold;
-	font-size:15pt;
+	font-size:13pt;
 	margin-top:4px;
 	line-height:1;
 }
 
 #page-subtitle {
-	font-size:15pt;
+	font-size:13pt;
 	line-height:1;
 }
 
@@ -164,8 +168,21 @@ div#under-graph {
 
 .orbit-container {
 	width: 99%;
+	
 }
 
+.slideborder-off {
+    border: 5px solid #b2bcc8;
+}
+
+.slideborder {
+    border: 5px solid #3b4e6f;
+}
+
+.bold-link {
+    font-weight:bold;
+    font-size:1.5rem;
+}
 
 .orbit-container .orbit-slides-container li .orbit-caption{
 	top:0;
@@ -175,67 +192,24 @@ div#under-graph {
 	background-color: rgba(255,255,255,0.8);
 }
 
-
-/*
-.orbit-container {
-	padding-left:50px;
-	padding-right:50px;
-}
-*/
-
-/*
-
-div#slider-container {
-	width:960px;
+.orbit-caption a {
+    display: none;
 }
 
-.slider {
-	
-
-overflow: hidden;
-width: 960px;
-position: relative;
-background: none;
-
-	
+div#countrystripe {
+  /* background-color: #f9fafc; */
+   background-color: #3b4e6f;
+   width: 100%;
+   margin-left: auto;
+   margin-right: auto;
+   margin-top: .5rem;
+   margin-bottom: .5rem;
+   max-width: initial;
+   min-width:790px;
+   padding-top:30px;
+   padding-bottom:5px;
 }
 
-
-
-
-.slider img {
-	width:960px;
-    display:block;
-    margin: 0 auto;
+div#countrystripe * {
+    color:#ffffff;
 }
-
-
-.orbit-container .orbit-slides-container li .orbit-caption{
-bottom:0;
-right:0;
-width:30%;
-
-}
-
-
-.orbit-container {
-overflow: hidden;
-width: 100%;
-position: relative;
-background: none;
-}
-
-.orbit-container .orbit-slides-container>li .orbit-caption {
-width: 54%;
-padding: 0.625rem 0.875rem;
-}
-
-.orbit-container .orbit-slides-container>* .orbit-caption {
-position: absolute;
-bottom: 0;
-background-color: rgba(255,255,255,0.8);
-color: #4d4d4d;
-font-size: 0.875rem;
-}
-
-*/

@@ -19,30 +19,62 @@
   </head>
 
   <body>
+    
+    <div id="header" class="row">
+	
+        <div id="logo" class="medium-2 columns">
+          <a href="/"><img src="/static/img/cap_logo_even_smaller.png"/></a>
+        </div>
+       
+        <div id="title" class="medium-4 columns">
+          <div id="page-title">COMPARATIVE AGENDAS PROJECT</div>
+          <div id="page-subtitle">comparing policies worldwide</div>
+        </div>
+        
+        <div id="email" class="medium-3 columns">
+        	<div class="row">
 
+				<div id="updates-container" class="medium-8 columns">
+					<input class="inline" id="updates" type="text" placeholder="email@host.com" value="Get Updates">
+				</div>
+			
+				<div id="go-container" class="medium-4 columns">
+					<a id="go" href="#" class="button round tiny inline">GO</a>
+				</div>
+        	
+        	</div>
+        </div>
+    
+        <div id="social" class="medium-2 columns left">
+		  <i class="fi-social-twitter size-24 right"></i>
+		  <i class="fi-social-google-plus size-24 right"></i>
+		  <i class="fi-social-facebook size-24 right"></i>
+        </div>
+         
+         
+     </div>
+      
+    
     {% block content %}{% endblock %}
+    
+      <hr/>
+  
+      <footer class="row">
+  
+        <div id="logo-footer" class="medium-12 columns">
+          <img src="/static/img/cap_logo_gray.png"/>
+        </div>
+   
+        <div id="page-title-footer">COMPARATIVE AGENDAS PROJECT</div>
+        <div id="page-subtitle-footer">comparing policies worldwide</div>
+    
+      </footer>
 
-	  <script src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>	  
+      <script src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>	  
       <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.0/js/foundation.min.js"></script>
       <script src="/static/js/main.js"></script>
-      
-     <script>
-      $(document).foundation({
-          orbit: {
-            animation: 'slide',
-            timer_speed: 8000,
-            pause_on_hover: true,
-            resume_on_mouseout: true,
-            animation_speed: 1000,
-            navigation_arrows: false,
-            bullets: true,
-            slide_number: false,
-            next_on_click: false
-          }
-        });
-        
-        </script>
-
+ 
+    {% block scripts %}{% endblock %}
 
   </body>
 </html>
