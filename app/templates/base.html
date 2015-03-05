@@ -13,8 +13,17 @@
 	<link href="//cdn.jsdelivr.net/foundation/5.5.0/css/normalize.css" rel="stylesheet">
     <link href="//cdn.jsdelivr.net/foundation/5.5.0/css/foundation.min.css" rel="stylesheet">	
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.min.css" rel="stylesheet">
-	<link href="/static/css/main.css" rel="stylesheet">
 	<script src="//cdn.jsdelivr.net/modernizr/2.8.3/modernizr.js"></script>
+    <link href="/static/css/base.css" rel="stylesheet">
+    
+    {% block head %}{% endblock %}
+    
+   <!-- <link href="//cdn.jsdelivr.net/foundation/5.5.0/css/normalize.css" rel="stylesheet">
+    <link href="//cdn.jsdelivr.net/foundation/5.5.0/css/foundation.min.css" rel="stylesheet">
+    <link href="/static/css/tool.css" rel="stylesheet">
+    <link href="/static/img/foundation-icons/foundation-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="foundation-icons/foundation-icons.css" />
+    <script src="//cdn.jsdelivr.net/modernizr/2.8.3/modernizr.js"></script>-->
     
   </head>
 
@@ -71,10 +80,13 @@
       </footer>
 
       <script src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>	  
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.0/js/foundation.min.js"></script>
-      <script src="/static/js/main.js"></script>
- 
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.0/js/foundation.min.js"></script>  
+     
+     
     {% block scripts %}{% endblock %}
+    
+    
+        <script src="/static/js/main.js"></script>
 
   </body>
 </html>

@@ -250,19 +250,19 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
 	$scope.selected = [];
 
     
-    $http.get('http://li873-8.members.linode.com:5000/api/countries').success(function(data){
+    $http.get('http://www.coolbest.net:5000/api/countries').success(function(data){
         $scope.countries = data;
     });
     
-    $http.get('http://li873-8.members.linode.com:5000/api/categories').success(function(data){
+    $http.get('http://www.coolbest.net:5000/api/categories').success(function(data){
         $scope.categories = data;
     });
     
-    $http.get('http://li873-8.members.linode.com:5000/api/topics').success(function(data){
+    $http.get('http://www.coolbest.net:5000/api/topics').success(function(data){
         $scope.topics = data;
     });
     
-    $http.get('http://li873-8.members.linode.com:5000/api/datasets').success(function(data){
+    $http.get('http://www.coolbest.net:5000/api/datasets').success(function(data){
         $scope.datasets = data;
     });
     
@@ -294,7 +294,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     $scope.addToChart = function(series) {
     	
-    	var url = 'http://li873-8.members.linode.com:5000/api/subtopic/' + series.topic.toString();
+    	var url = 'http://www.coolbest.net:5000/api/subtopic/' + series.topic.toString();
 		$.getJSON(url, function (retval) {
 			
 			console.log(url);

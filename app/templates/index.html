@@ -1,5 +1,11 @@
 {% extends "base.html" %}
 
+{% block head %}
+
+<link href="/static/css/index.css" rel="stylesheet">
+
+{% endblock %}
+
 {% block content %}
 
      <hr/>
@@ -17,27 +23,27 @@
         <div class="medium-12 columns">
         	<ul class="slider" data-orbit>
 			  <li>
-				<img class="orbit-img" src="/static/img/chart.png" alt="slide 1" />
+				<a target="_blank" href="/tool"><img class="orbit-img" src="/static/img/chart.png" alt="slide 1" /></a>
 				<div class="orbit-caption">
 				  <h4>Caption One.</h4>
 				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</br>
-				  <a class="orange-link bold-link" href="#">open in trends tool</a></h6>
+				  <a class="orange-link bold-link" target="_blank" href="/tool">open in trends tool</a></h6>
 				</div>
 			  </li>
 			  <li>
-				<img class="orbit-img" src="/static/img/chart2.png" alt="slide 2" />
+				<a target="_blank" href="/tool"><img class="orbit-img" src="/static/img/chart2.png" alt="slide 2" /></a>
 				<div class="orbit-caption">
 				  <h4>Caption Two.</h4>
 				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</br>
-				  <a class="orange-link bold-link" href="#">open in trends tool</a></h6>
+				  <a class="orange-link bold-link" target="_blank" href="/tool">open in trends tool</a></h6>
 				</div>
 			  </li>
 			  <li>
-				<img class="orbit-img" src="/static/img/chart3.png" alt="slide 3" />
+				<a target="_blank" href="/tool"><img class="orbit-img" src="/static/img/chart3.png" alt="slide 3" /></a>
 				<div class="orbit-caption">
 				  <h4>Caption Three.</h4>
 				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</br>
-				  <a class="orange-link bold-link" href="#">open in trends tool</a></h6>
+				  <a class="orange-link bold-link" target="_blank" href="/tool">open in trends tool</a></h6>
 				</div>
 			  </li>
 			</ul>
