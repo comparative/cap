@@ -12,7 +12,7 @@
      
      <div class="row">
      	<div id="slogan" class="medium-12 columns">
-     	The Comparative Agendas Project collects and organizes data from archived sources to track policy outcomes across countries. <a class="orange-link" href="#">more</a>
+     	The Comparative Agendas Project collects and organizes data from archived sources to track policy outcomes across countries. <a class="orange-link" href="/about">more</a>
      	</div>
      </div>
       
@@ -23,27 +23,27 @@
         <div class="medium-12 columns">
         	<ul class="slider" data-orbit>
 			  <li>
-				<a target="_blank" href="/tool"><img class="orbit-img" src="/static/img/chart.png" alt="slide 1" /></a>
+				<a target="_tool" href="/tool"><img class="orbit-img" src="/static/img/chart.png" alt="slide 1" /></a>
 				<div class="orbit-caption">
 				  <h4>Caption One.</h4>
 				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</br>
-				  <a class="orange-link bold-link" target="_blank" href="/tool">open in trends tool</a></h6>
+				  <a class="orange-link bold-link" target="_tool" href="/tool">open in trends tool</a></h6>
 				</div>
 			  </li>
 			  <li>
-				<a target="_blank" href="/tool"><img class="orbit-img" src="/static/img/chart2.png" alt="slide 2" /></a>
+				<a target="_tool" href="/tool"><img class="orbit-img" src="/static/img/chart2.png" alt="slide 2" /></a>
 				<div class="orbit-caption">
 				  <h4>Caption Two.</h4>
 				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</br>
-				  <a class="orange-link bold-link" target="_blank" href="/tool">open in trends tool</a></h6>
+				  <a class="orange-link bold-link" target="_tool" href="/tool">open in trends tool</a></h6>
 				</div>
 			  </li>
 			  <li>
-				<a target="_blank" href="/tool"><img class="orbit-img" src="/static/img/chart3.png" alt="slide 3" /></a>
+				<a target="_tool" href="/tool"><img class="orbit-img" src="/static/img/chart3.png" alt="slide 3" /></a>
 				<div class="orbit-caption">
 				  <h4>Caption Three.</h4>
 				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</br>
-				  <a class="orange-link bold-link" target="_blank" href="/tool">open in trends tool</a></h6>
+				  <a class="orange-link bold-link" target="_tool" href="/tool">open in trends tool</a></h6>
 				</div>
 			  </li>
 			</ul>
@@ -72,17 +72,24 @@
 				<div class="medium-9 columns">
 				<h5>{{ item.title }}</h5>
 				{{ smart_truncate(item.content,200) }}
-				<a class="orange-link" href="#">read more</a>
+				<a class="orange-link" href="/news/{{ item.id }}">read more</a>
 				</div>
 
 			</div>
 
-			{% endfor %}          
+			{% endfor %} 
+			
+			<div class="row text-center">
+			    <a class="orange-link" href="/news">more news</a>
+			</div>        
         
         </div>
         
         <div class="medium-4 columns">
-        	<p class="panel">Explore Trends Tool</p>
+        
+            <a target="_tool" href="/tool">
+        	    <p class="panel">Explore Trends Tool</p>
+        	</a>
         	
       		<a href="#" data-options="align:top; is_hover:true;" data-dropdown="drop">
       			<p class="panel">Explore Country Projects</p>
@@ -94,8 +101,14 @@
 			{% endfor %} 
 			</ul>
 				
-      		<p class="panel">Datasets / Codebooks</p>
-      		<p class="panel">About</p>
+			<a href="/datasets_codebooks">
+      		    <p class="panel">Datasets / Codebooks</p>
+      		</a>
+      		
+      		<a href="/about">
+      		    <p class="panel">About</p>
+      		</a>
+      		
         </div>
         
 

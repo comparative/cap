@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block head %}{% endblock %}
+
+{% block content %}
+
+<div class="row">
+<div class="medium-12 columns">
+        
+ <h3>News</h3>
+          
+			{% for item in news %}
+
+			<div class="row news-item">
+
+				<div class="medium-3 columns">
+				<img class="news-image" src="http://placehold.it/150x100&text=[img]"/>
+				</div>
+
+				<div class="medium-9 columns">
+				<h5>{{ item.title }}</h5>
+				{{ smart_truncate(item.content,300) }}
+				<a class="orange-link" href="/news/{{ item.id }}">read more</a>
+				</div>
+
+			</div>
+
+			{% endfor %}                      
+            
+</div>
+</div>
+
+
+{% endblock %}    
+
+{% block scripts %}{% endblock %}
+
+
+

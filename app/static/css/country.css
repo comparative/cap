@@ -10,11 +10,32 @@ margin: 0;
 padding: 7px 0;
 overflow-x: hidden;
 overflow-y: auto;
-border: 2px solid #dadada;
+border: 1px solid #e8e8e8;
+border-bottom-right-radius: 5px;
+border-bottom-left-radius: 5px;
 }
 
 div.scrollable p {
     line-height:1;
     padding:.3rem;
     margin:0;
+    color: #555;
 }
+
+div.scrollable-header {
+    border: 1px solid #e8e8e8;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+    padding: 8px;
+    position: relative;
+    z-index: 100;
+    font-size:14px;
+    font-weight:bold;
+    border-bottom:0px;
+}
+
+.country-hover {
+    background-color:#f2f2f2;
+}
+
+
