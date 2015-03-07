@@ -4,8 +4,8 @@ from wtforms.validators import DataRequired
 from wtforms.widgets import TextArea
 
 class LoginForm(Form):
-    openid = StringField('openid', validators=[DataRequired()])
-    remember_me = BooleanField('remember_me', default=False)
+    username = StringField('username', validators=[DataRequired()])
+    password = StringField('password', validators=[DataRequired()])
 
 class NewsForm(Form):
     title = StringField('title', validators=[DataRequired()])

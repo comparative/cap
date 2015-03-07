@@ -1,8 +1,18 @@
 from flask import Flask
+from flask.ext.login import LoginManager
+from .models import User
 
 app = Flask(__name__)
 app.config.from_object('config')
 app.debug = True
+
+lm = LoginManager()
+lm.init_app(app)
+
+@lm.user_loader
+def load_user(userid):
+    user = User()
+    return user
 
 from app import views
 
