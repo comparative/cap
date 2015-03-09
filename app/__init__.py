@@ -1,20 +1,16 @@
 from flask import Flask
 from flask.ext.login import LoginManager
-from .models import User
+from flask.ext.sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config.from_object('config')
 app.debug = True
+db = SQLAlchemy(app)
 
 lm = LoginManager()
 lm.init_app(app)
 
-@lm.user_loader
-def load_user(userid):
-    user = User()
-    return user
-
-from app import views
+from app import views, models
 
 def smart_truncate(content, length=100, suffix='...'):
     if len(content) <= length:

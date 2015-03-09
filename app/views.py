@@ -4,9 +4,13 @@ from flask import render_template, flash, redirect, url_for, request
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from json import dumps
 from slugify import slugify
-from app import app
+from app import app, db, lm
 from .forms import NewsForm, LoginForm
 from .models import User
+
+@lm.user_loader
+def load_user(id):
+    return User.query.get(int(id))
 
 ######### PUBLIC ROUTES
 
@@ -90,7 +94,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         # login and validate the user...
-        login_user(User())
+        login_user(User.query.get(1))
         flash("Logged in successfully.")
         return redirect(request.args.get("next") or url_for("admin_news"))
     return render_template("admin/login.html", form=form) 
