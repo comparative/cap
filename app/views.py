@@ -6,7 +6,7 @@ from json import dumps
 from slugify import slugify
 from app import app, db, lm
 from .forms import NewsForm, LoginForm
-from .models import User
+from .models import User, News
 
 @lm.user_loader
 def load_user(id):
@@ -93,10 +93,14 @@ def datasets_codebooks():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        # login and validate the user...
-        login_user(User.query.get(1))
-        flash("Logged in successfully.")
-        return redirect(request.args.get("next") or url_for("admin_news"))
+        user = User.query.filter_by(email=form.email.data).filter_by(password=form.password.data).first()
+        if user is not None:
+            login_user(user)
+            flash("Logged in successfully.")
+            return redirect(request.args.get("next") or url_for("admin_news"))
+        else:
+            flash("Login credentials incorrect!")
+            return redirect(url_for("login"))
     return render_template("admin/login.html", form=form) 
 
                     
@@ -105,17 +109,40 @@ def login():
 def admin_news():
     form = NewsForm()
     if form.validate_on_submit():
+        news = News(form.title.data,form.content.data)
+        db.session.add(news)
+        db.session.commit()
     	flash('News item "%s" created' %
               (form.title.data))
-        conn = psycopg2.connect(app.config['CONN_STRING'])
-        cur = conn.cursor()
-        cur.execute("INSERT INTO news (title, content, slug) VALUES (%s, %s, %s)",(form.title.data,form.content.data,slugify(form.title.data)))
-        conn.commit()
-        cur.close()
-        return redirect('/news')
-    return render_template('admin/news-item.html', 
+        return redirect('admin/news')
+    return render_template('admin/news_item.html', 
                            title='News',
                            form=form)
+
+
+@app.route('/admin/news/<slug>', methods=['GET', 'POST'])
+@login_required
+def admin_news_slug(slug):
+    news = News.query.filter_by(slug=slug).first()
+    form = NewsForm()
+    form.title.data = news.title
+    form.content.data = news.content
+    return render_template('admin/news_item.html', 
+                           title='News',
+                           form=form)
+
+
+@app.route('/admin/news_list')
+@login_required
+def admin_news_list():
+    news = News.query.all()
+    return render_template('admin/news_list.html', 
+                           title='News',
+                           news=news)
+
+
+
+
 
 @app.route("/admin/logout")
 def logout():

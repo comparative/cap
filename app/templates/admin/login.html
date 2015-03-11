@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "admin/base.html" %}
 
 {% block content %}
 
@@ -8,13 +8,13 @@
 
 <div class="row">
 	<div class="small-1 columns">
-	  <label for="title" class="right inline">Username</label>
+	  <label for="title" class="right inline">Email</label>
 	</div>
 	<div class="small-11 columns">
 	  <label class="error">
-	  {{ form.username(size=40) }}
+	  {{ form.email(size=40) }}
 	  </label>
-	  {% for error in form.username.errors %}
+	  {% for error in form.email.errors %}
 	  <small class="error">{{ error }}</small>
       {% endfor %}
 	</div>

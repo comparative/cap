@@ -1,0 +1,13 @@
+<!-- extend from base layout -->
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4>News List</h4>
+<table>
+{% for item in news %}
+<tr><td><a href="/admin/news/{{ item.slug }}">edit</a></td><td>{{ item.title }}</td></tr>
+{% endfor %}
+</table>
+
+{% endblock %}

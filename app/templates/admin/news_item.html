@@ -3,10 +3,6 @@
 
 {% block content %}
 
-{% if current_user.is_authenticated() %}
-  Hi {{ current_user.name }}!
-{% endif %}
-
 <h4>News Item</h4>
 <form action="" method="post" name="login">
 {{ form.hidden_tag() }}
