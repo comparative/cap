@@ -13,12 +13,19 @@
 	<link href="//cdn.jsdelivr.net/foundation/5.5.0/css/normalize.css" rel="stylesheet">
     <link href="//cdn.jsdelivr.net/foundation/5.5.0/css/foundation.min.css" rel="stylesheet">	
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.min.css" rel="stylesheet">
-	<link href="/static/css/main.css" rel="stylesheet">
 	<script src="//cdn.jsdelivr.net/modernizr/2.8.3/modernizr.js"></script>
     
   </head>
 
   <body>
+
+    <div class="row">
+    <div class="medium-8 columns right">
+    {% if current_user.is_authenticated() %}
+    Hi {{ current_user.name }}! <a href="/admin/logout">Logout</a>
+    {% endif %}
+    </div>
+    </div>
 
 	<div class="row">
 	

@@ -1,0 +1,59 @@
+<!-- extend from base layout -->
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4>Country</h4>
+<form action="" method="post" name="login">
+{{ form.hidden_tag() }}
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Name</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.name(size=40) }}
+	  </label>
+	  {% for error in form.name.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Heading</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.heading(size=40) }}
+	  </label>
+	  {% for error in form.heading.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">About</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.about(size=40) }}
+	  </label>
+	  {% for error in form.about.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+<br>
+
+<p><input class="button small" type="submit" value="Save"></p>
+
+
+</form>
+
+{% endblock %}

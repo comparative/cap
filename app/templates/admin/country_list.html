@@ -1,0 +1,13 @@
+<!-- extend from base layout -->
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4>Country List</h4>
+<table>
+{% for item in countries %}
+<tr><td><a href="/admin/countries/{{ item.slug }}">edit</a></td><td>{{ item.name }}</td></tr>
+{% endfor %}
+</table>
+
+{% endblock %}

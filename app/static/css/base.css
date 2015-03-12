@@ -2,7 +2,7 @@ textarea {
     height: 10em;
 }
 
-.footer {
+footer {
 	margin-left:10px;
 }
 
@@ -138,14 +138,16 @@ h1,h2,h3,h4,h5,h6,p.panel,p.panel a, #page-title, #page-subtitle, #slogan {
 	font-weight:bold;
 	font-size:12pt;
 	margin-top:4px;
-	margin-left:15px;
 	line-height:1;
 }
 
 #page-subtitle-footer {
 	font-size:12pt;
 	line-height:1;
-	margin-left:15px;
+}
+
+#links-footer div {
+    font-size:.8rem;
 }
 
 

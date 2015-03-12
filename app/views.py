@@ -5,8 +5,8 @@ from flask.ext.login import login_user, logout_user, current_user, login_require
 from json import dumps
 from slugify import slugify
 from app import app, db, lm
-from .forms import NewsForm, LoginForm
-from .models import User, News
+from .forms import NewsForm, LoginForm, CountryForm
+from .models import User, News, Countries
 
 @lm.user_loader
 def load_user(id):
@@ -88,7 +88,10 @@ def datasets_codebooks():
 
 
 ######### ADMIN ROUTES
- 
+
+
+## LOGIN / LOGOUT / LANDING
+
 @app.route("/admin/login", methods=["GET", "POST"])
 def login():
     form = LoginForm()
@@ -103,8 +106,28 @@ def login():
             return redirect(url_for("login"))
     return render_template("admin/login.html", form=form) 
 
+@app.route("/admin/logout")
+def logout():
+    logout_user()
+    return redirect(url_for("login"))
+ 
+ 
+@app.route("/admin")
+@login_required
+def landing():
+    return render_template("admin/index.html")
+ 
+## NEWS
+
+@app.route('/admin/news')
+@login_required
+def admin_news_list():
+    news = News.query.all()
+    return render_template('admin/news_list.html', 
+                           title='News',
+                           news=news)
                     
-@app.route('/admin/news', methods=['GET', 'POST'])
+@app.route('/admin/news/', methods=['GET', 'POST'])
 @login_required
 def admin_news():
     form = NewsForm()
@@ -125,30 +148,72 @@ def admin_news():
 def admin_news_slug(slug):
     news = News.query.filter_by(slug=slug).first()
     form = NewsForm()
-    form.title.data = news.title
-    form.content.data = news.content
+    if form.validate_on_submit():
+        news.title = form.title.data
+        news.content = form.content.data
+        db.session.commit()
+    	flash('News item "%s" saved' %
+              (form.title.data))
+        return redirect('admin/news')
+    else:
+        form.title.data = news.title
+        form.content.data = news.content
+    
     return render_template('admin/news_item.html', 
                            title='News',
                            form=form)
 
 
-@app.route('/admin/news_list')
+## COUNTRIES
+
+@app.route('/admin/countries')
 @login_required
-def admin_news_list():
-    news = News.query.all()
-    return render_template('admin/news_list.html', 
-                           title='News',
-                           news=news)
+def admin_countries():
+    countries = Countries.query.all()
+    return render_template('admin/country_list.html', 
+                           title='Countries',
+                           countries=countries)
+                    
+@app.route('/admin/countries/', methods=['GET', 'POST'])
+@login_required
+def admin_country_new():
+    form = CountryForm()
+    if form.validate_on_submit():
+        country = Countries(form.name.data)
+        db.session.add(country)
+        db.session.commit()
+    	flash('Country "%s" created' %
+              (form.name.data))
+        return redirect('admin/countries')
+    return render_template('admin/country.html', 
+                           title='Country',
+                           form=form)
 
 
+@app.route('/admin/countries/<slug>', methods=['GET', 'POST'])
+@login_required
+def admin_country(slug):
+    country = Countries.query.filter_by(slug=slug).first()
+    form = CountryForm()
+    if form.validate_on_submit():
+        country.name = form.name.data
+        country.heading = form.heading.data
+        country.about = form.about.data
+        db.session.commit()
+    	flash('Country "%s" saved' %
+              (form.name.data))
+        return redirect('admin/countries')
+    else:
+        form.name.data = country.name
+        form.heading.data = country.heading
+        form.about.data = country.about
+    
+    return render_template('admin/country.html', 
+                           title='Country',
+                           form=form)
 
 
-
-@app.route("/admin/logout")
-def logout():
-    logout_user()
-    return redirect(url_for("index"))
-                           
+                          
 
 ######### API ROUTES
 

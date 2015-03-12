@@ -12,6 +12,18 @@ class News(db.Model):
         self.title = title
         self.content = content
         self.slug = slugify(title)
+
+class Countries(db.Model):
+
+    country_id = db.Column(db.Integer, primary_key=True)    
+    name = db.Column(db.String(80))
+    heading = db.Column(db.String(80))
+    about = db.Column(db.String(500))
+    slug = db.Column(db.String(80))
+
+    def __init__(self, name):
+        self.name = name
+        self.slug = slugify(name)
     
 
 class User(db.Model):
