@@ -20,6 +20,9 @@
   <body>
 
     <div class="row">
+    <div class="medium-4 columns">
+    <h4><a href="/admin">Admin</a></h4>
+    </div>
     <div class="medium-8 columns right">
     {% if current_user.is_authenticated() %}
     Hi {{ current_user.name }}! <a href="/admin/logout">Logout</a>

@@ -5,8 +5,8 @@ class News(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)    
     title = db.Column(db.String(80))
-    content = db.Column(db.String(500))
-    slug = db.Column(db.String(500))
+    content = db.Column(db.String(1000))
+    slug = db.Column(db.String(80))
 
     def __init__(self, title, content):
         self.title = title
@@ -18,7 +18,7 @@ class Countries(db.Model):
     country_id = db.Column(db.Integer, primary_key=True)    
     name = db.Column(db.String(80))
     heading = db.Column(db.String(80))
-    about = db.Column(db.String(500))
+    about = db.Column(db.String(1000))
     slug = db.Column(db.String(80))
 
     def __init__(self, name):

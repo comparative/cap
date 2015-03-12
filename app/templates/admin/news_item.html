@@ -27,7 +27,7 @@
 	</div>
 	<div class="small-11 columns">
 	  <label class="error">
-	  {{ form.content(size=40) }}
+	  {{ form.content(cols="35", rows="15") }}
 	  </label>
 	  {% for error in form.content.errors %}
 	  <small class="error">{{ error }}</small>

@@ -100,7 +100,7 @@ def login():
         if user is not None:
             login_user(user)
             flash("Logged in successfully.")
-            return redirect(request.args.get("next") or url_for("admin_news"))
+            return redirect(request.args.get("next") or url_for("landing"))
         else:
             flash("Login credentials incorrect!")
             return redirect(url_for("login"))
