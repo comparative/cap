@@ -38,4 +38,25 @@ div.scrollable-header {
     background-color:#f2f2f2;
 }
 
+.tabs dd.active a, .tabs .tab-title.active a {
+  background-color: transparent;
+  color: #fff;
+}
+.tabs dd>a, .tabs .tab-title>a {
+  outline: none;
+  display: block;
+  background-color: transparent;
+  color: #fff;
+  padding: .5rem 1rem;
+  font-family: "Helvetica Neue",Helvetica,Roboto,Arial,sans-serif;
+  font-size: 1rem;
+}
+
+.tabs dd>a:hover, .tabs .tab-title>a:hover {
+  background-color: transparent;
+}
+
+#links-footer div {
+    font-size:.8rem;
+}
 

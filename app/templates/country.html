@@ -17,20 +17,20 @@
         
             <div class="row">
                 
-                <div class="medium-4 columns">
+                <div class="medium-9 columns">
                 
         	        <h1> {{ country.name }} </h1>
         	        
         	        <div id="menu" class="row">
         	                
-                        <!--<dl class="tabs" data-tab>
-                          <dd class="active"><a href="#graph-view"><strong>Datasets</strong></a></dd>
-                          <dd><a href="#data-view"><strong>Research</strong></a></dd>
-                          <dd class="active"><a href="#graph-view"><strong>Staff</strong></a></dd>
-                          <dd><a href="#data-view"><strong>About</strong></a></dd>
-                        </dl>-->
+                        <dl class="tabs" data-tab>
+                          <dd><a href="#datasets-pane"><strong>Datasets</strong></a></dd>
+                          <dd><a href="#research-pane"><strong>Research</strong></a></dd>
+                          <dd><a href="#staff-pane"><strong>Staff</strong></a></dd>
+                          <dd><a href="#about-pane"><strong>About</strong></a></dd>
+                        </dl>
         	            
-        	            <div class="medium-3 columns">
+        	            <!--<div class="medium-3 columns">
         	            Datasets
         	            </div>
         	            
@@ -44,13 +44,13 @@
         	            
         	            <div class="medium-3 columns">
         	            About
-        	            </div>
+        	            </div>-->
         	            
         	        </div>
         	    
         	    </div>
         	    
-        	    <div class="medium-4 columns">&nbsp;</div>
+        	    <!--<div class="medium-4 columns">&nbsp;</div>-->
         	    
                 <div class="medium-3 columns left">
                     
@@ -67,38 +67,88 @@
      </div>
 
 
+
+
+
+<!-- ABOUT PANE -->
 <div class="row">
 <div class="medium-12 columns">
         
             <div class="row">
                 
-                <div class="medium-4 columns">
+                <div class="medium-9 columns">
+                    
+                <div class="row">
                 
-                    <strong>Founded:</strong>&nbsp;1993<br/>
-                    <strong>Founders:</strong>&nbsp;Bryan Jones and Frank Baumgartner<br/>
-                    <strong>Principal Investigator:</strong>&nbsp;Bryan Jones<br/>
-                    <strong>Location:</strong>&nbsp;University of Texas at Austin, Department of Government<br/>
-                    <strong>Faculty & Graduate Students:</strong>&nbsp;15<br/>
-                    <strong>Downloadable Data Series:</strong>&nbsp;13<br/>
-                    <strong>Time Span:</strong>&nbsp;1945-2012<br/>
-                    <strong>Total Observations:</strong>&nbsp;500,371<br/>
-                    <strong>Supporting Institutions:</strong><br/>
+                    <div class="tabs-content">
+                    
+                        <div class="content" id="datasets-pane">
+                            
+                            <div class="medium-12 columns">
+                            
+                                <h4>Datasets</h4>
+                            
+                            </div>
+                    
+                        </div>
+                
+                        <div class="content" id="research-pane">
+                            
+                            <div class="medium-12 columns">
+                            
+                                <h4>Research</h4>
+                            
+                            </div>
+                    
+                        </div>
+                
+                        <div class="content" id="staff-pane">
+                            
+                            <div class="medium-12 columns">
+                            
+                                <h4>Staff</h4>
+                            
+                            </div>
+                    
+                        </div>
+                
+                        <div class="content active" id="about-pane">
+                
+                            <div class="medium-6 columns">
+                
+                                <strong>Founded:</strong>&nbsp;1993<br/>
+                                <strong>Founders:</strong>&nbsp;Bryan Jones and Frank Baumgartner<br/>
+                                <strong>Principal Investigator:</strong>&nbsp;Bryan Jones<br/>
+                                <strong>Location:</strong>&nbsp;University of Texas at Austin, Department of Government<br/>
+                                <strong>Faculty & Graduate Students:</strong>&nbsp;15<br/>
+                                <strong>Downloadable Data Series:</strong>&nbsp;13<br/>
+                                <strong>Time Span:</strong>&nbsp;1945-2012<br/>
+                                <strong>Total Observations:</strong>&nbsp;500,371<br/>
+                                <strong>Supporting Institutions:</strong><br/>
+                    
+                                <img class="supporting-institutions" src="http://baconmockup.com/300/75"/>
+                                <img class="supporting-institutions" src="http://baconmockup.com/300/75"/> 
+                                <img class="supporting-institutions" src="http://baconmockup.com/300/75"/> 
+                                <img class="supporting-institutions" src="http://baconmockup.com/300/75"/> 
+                                <img class="supporting-institutions" src="http://baconmockup.com/300/75"/>     
+                            
+                            </div>
+                
+                            <div class="medium-6 columns">
+                
+                            <h4>{{ country.name }} Agendas Project</h4>
+                
+                            <img src="http://baconmockup.com/300/200"/>
+                
+                            Kielbasa ham ribeye chuck, strip steak spare ribs ham hock pork jowl. Brisket hamburger turkey biltong andouille, pig sausage ham hock corned beef pastrami swine pork belly. Strip steak flank chicken short loin pork loin sausage hamburger beef meatball venison sirloin pork chop turducken leberkas. T-bone turkey pancetta tail, boudin short ribs pork chop filet mignon jowl tongue fatback strip steak tenderloin. Rump biltong turducken pastrami, hamburger andouille shoulder turkey ball tip. Shankle ball tip tri-tip cow. Pig prosciutto boudin alcatra turducken tail porchetta tenderloin flank cupim.</div>
+                    
+        	            </div>
         	        
-        	        <img class="supporting-institutions" src="http://baconmockup.com/300/75"/>
-        	        <img class="supporting-institutions" src="http://baconmockup.com/300/75"/> 
-        	        <img class="supporting-institutions" src="http://baconmockup.com/300/75"/> 
-        	        <img class="supporting-institutions" src="http://baconmockup.com/300/75"/> 
-        	        <img class="supporting-institutions" src="http://baconmockup.com/300/75"/>     
-        	        	    
+        	        </div>
+        	    
         	    </div>
         	    
-        	    <div class="medium-4 columns">
-        	    
-        	    <h4>{{ country.name }} Agendas Project</h4>
-        	    
-        	    <img src="http://baconmockup.com/300/200"/>
-        	    
-        	    Kielbasa ham ribeye chuck, strip steak spare ribs ham hock pork jowl. Brisket hamburger turkey biltong andouille, pig sausage ham hock corned beef pastrami swine pork belly. Strip steak flank chicken short loin pork loin sausage hamburger beef meatball venison sirloin pork chop turducken leberkas. T-bone turkey pancetta tail, boudin short ribs pork chop filet mignon jowl tongue fatback strip steak tenderloin. Rump biltong turducken pastrami, hamburger andouille shoulder turkey ball tip. Shankle ball tip tri-tip cow. Pig prosciutto boudin alcatra turducken tail porchetta tenderloin flank cupim.</div>
+        	    </div>
         	    
                 <div class="medium-3 columns left">
                     
@@ -113,9 +163,8 @@
                     <p></p>
                     
                     
-                    <a class="twitter-timeline" href="https://twitter.com/reasonstodothis" data-widget-id="573818680829566976">Tweets by @reasonstodothis</a>
-<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-                                         
+                <a class="twitter-timeline" href="https://twitter.com/policyagendasUS" data-widget-id="575883914687877122">Tweets by @policyagendasUS</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>                     
                    
                 </div>
         
@@ -123,7 +172,7 @@
             
 </div>
 </div>
-
+</div>
 
 {% endblock %}    
 
@@ -131,6 +180,16 @@
 
 
       <script>
+        
+     
+  $(document).foundation({
+    tab: {
+      callback : function (tab) {
+        console.log(tab);
+      }
+    }
+  });
+
       
         $(document).ready(function() {
 
