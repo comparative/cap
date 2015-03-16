@@ -13,9 +13,9 @@ class News(db.Model):
         self.content = content
         self.slug = slugify(title)
 
-class Countries(db.Model):
+class Country(db.Model):
 
-    country_id = db.Column(db.Integer, primary_key=True)    
+    id = db.Column(db.Integer, primary_key=True)    
     name = db.Column(db.String(80))
     heading = db.Column(db.String(80))
     about = db.Column(db.String(1000))

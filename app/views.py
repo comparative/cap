@@ -6,7 +6,7 @@ from json import dumps
 from slugify import slugify
 from app import app, db, lm
 from .forms import NewsForm, LoginForm, CountryForm
-from .models import User, News, Countries
+from .models import User, News, Country
 
 @lm.user_loader
 def load_user(id):
@@ -17,18 +17,8 @@ def load_user(id):
 @app.route('/')
 @app.route('/index')
 def index():
-    conn = psycopg2.connect(app.config['CONN_STRING'])
-    
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""SELECT * FROM news LIMIT 2""")
-    news = cur.fetchall()
-    cur.close()
-    
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""SELECT * FROM countries ORDER BY name""")
-    countries = cur.fetchall()
-    cur.close()
-    
+    news = News.query.paginate(1, 2, False).items
+    countries = Country.query.order_by(Country.name);
     return render_template("index.html",
                            title='Home',
                            countries=countries,
@@ -36,18 +26,8 @@ def index():
 
 @app.route('/countries/<country_slug>')
 def country(country_slug):
-    conn = psycopg2.connect(app.config['CONN_STRING'])
-    
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""SELECT * FROM countries ORDER BY name""")
-    countries = cur.fetchall()
-    cur.close()
-    
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM countries WHERE slug=%s",[country_slug])
-    country = cur.fetchone()
-    cur.close()
-    
+    countries = Country.query.order_by(Country.name);
+    country = Country.query.filter_by(slug=country_slug).first()
     return render_template("country.html",
                            title='Country',
                            countries=countries,
@@ -58,25 +38,14 @@ def tool():
     return render_template('tool.html')
 
 @app.route('/news')
-def news():
-    conn = psycopg2.connect(app.config['CONN_STRING'])
-    
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""SELECT * FROM news""")
-    news = cur.fetchall()
-    cur.close()
+def news():    
+    news = News.query.all()
     return render_template('news.html',news=news)
 
-@app.route('/news/<item_id>')
-def news_item(item_id):
-    conn = psycopg2.connect(app.config['CONN_STRING'])
-    
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM news WHERE id=%s",[item_id])
-    item = cur.fetchone()
-    cur.close()
+@app.route('/news/<news_slug>')
+def news_item(news_slug):    
+    item = News.query.filter_by(slug=news_slug).first()
     return render_template('news_item.html',item=item)
-
 
 @app.route('/about')
 def about():
@@ -169,9 +138,9 @@ def admin_news_slug(slug):
 @app.route('/admin/countries')
 @login_required
 def admin_countries():
-    countries = Countries.query.all()
+    countries = Country.query.all()
     return render_template('admin/country_list.html', 
-                           title='Countries',
+                           title='Country',
                            countries=countries)
                     
 @app.route('/admin/countries/', methods=['GET', 'POST'])
@@ -179,7 +148,7 @@ def admin_countries():
 def admin_country_new():
     form = CountryForm()
     if form.validate_on_submit():
-        country = Countries(form.name.data)
+        country = Country(form.name.data)
         db.session.add(country)
         db.session.commit()
     	flash('Country "%s" created' %
@@ -193,7 +162,7 @@ def admin_country_new():
 @app.route('/admin/countries/<slug>', methods=['GET', 'POST'])
 @login_required
 def admin_country(slug):
-    country = Countries.query.filter_by(slug=slug).first()
+    country = Country.query.filter_by(slug=slug).first()
     form = CountryForm()
     if form.validate_on_submit():
         country.name = form.name.data
@@ -249,7 +218,7 @@ def api_datasets():
 def api(subtopic):
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT year::integer, count(keyid) AS CNT FROM congressional_hearings WHERE capsubtopic =%s GROUP BY year ORDER by year",[subtopic])
+    cur.execute("""SELECT year::integer, count(keyid) AS CNT FROM congressional_hearings WHERE capsubtopic =%s GROUP BY year ORDER by year""",[subtopic])
     d = cur.fetchall()
     data = []
     for i in range(2001,2011):
