@@ -19,7 +19,7 @@
 
 				<div class="medium-9 columns">
 				<h5>{{ item.title }}</h5>
-				{{ smart_truncate(item.content,300) }}
+				{{ smart_truncate(item.content,300)|safe }}
 				<a class="orange-link" href="/news/{{ item.slug }}">read more</a>
 				</div>
 

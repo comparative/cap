@@ -18,7 +18,7 @@ def load_user(id):
 @app.route('/index')
 def index():
     news = News.query.paginate(1, 2, False).items
-    countries = Country.query.order_by(Country.name);
+    countries = Country.query.order_by(Country.name)
     return render_template("index.html",
                            title='Home',
                            countries=countries,
@@ -26,7 +26,7 @@ def index():
 
 @app.route('/countries/<country_slug>')
 def country(country_slug):
-    countries = Country.query.order_by(Country.name);
+    countries = Country.query.order_by(Country.name)
     country = Country.query.filter_by(slug=country_slug).first()
     return render_template("country.html",
                            title='Country',
@@ -138,7 +138,7 @@ def admin_news_slug(slug):
 @app.route('/admin/countries')
 @login_required
 def admin_countries():
-    countries = Country.query.all()
+    countries = Country.query.order_by(Country.name)
     return render_template('admin/country_list.html', 
                            title='Country',
                            countries=countries)
