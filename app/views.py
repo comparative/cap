@@ -1,7 +1,9 @@
+import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from flask import render_template, flash, redirect, url_for, request
 from flask.ext.login import login_user, logout_user, current_user, login_required
+from werkzeug import secure_filename
 from json import dumps
 from slugify import slugify
 from app import app, db, lm
@@ -118,6 +120,11 @@ def admin_news_slug(slug):
     news = News.query.filter_by(slug=slug).first()
     form = NewsForm()
     if form.validate_on_submit():
+        if 'image' in request.files:
+            filename = secure_filename(form.image.data.filename)
+            form.image.data.save('/var/www/cap/app/static/img/news/' + filename)
+            #filename = newsimages.save(request.files['image'])
+            news.filename = filename
         news.title = form.title.data
         news.content = form.content.data
         db.session.commit()
@@ -125,13 +132,28 @@ def admin_news_slug(slug):
               (form.title.data))
         return redirect('admin/news')
     else:
+        #filename = news.filename
         form.title.data = news.title
         form.content.data = news.content
     
     return render_template('admin/news_item.html', 
                            title='News',
+                           id=news.id,
+                           filename=news.filename,
                            form=form)
 
+@app.route('/admin/news/removeimage/<id>')
+@login_required
+def admin_news_removeimage(id):
+    news = News.query.filter_by(id=id).first()
+    if news is not None:
+        if os.path.isfile('/var/www/cap/app/static/img/news/' + news.filename):
+            os.remove('/var/www/cap/app/static/img/news/' + news.filename)
+        news.filename = None
+        db.session.commit()
+        return redirect('admin/news/' + news.slug)
+    return redirect('index')
+       
 
 ## COUNTRIES
 

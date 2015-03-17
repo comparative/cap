@@ -6,14 +6,14 @@ Flask-Login<0.2.7
 wtforms<2.0
 awesome-slugify
 
+Flask-WTF?
 Flask-Mail
 passlib
 Flask-Cache
 Flask-Principal
-
+Flask-Assets (instead of static)
 
 blinker
-Flask-Assets
 Flask-Babel
 Flask-Bcrypt
 Flask-Gravatar

@@ -4,7 +4,7 @@
 {% block content %}
 
 <h4>News Item</h4>
-<form action="" method="post" name="login">
+<form action="" method="post" name="login" enctype="multipart/form-data">
 {{ form.hidden_tag() }}
 
 <div class="row">
@@ -20,6 +20,32 @@
       {% endfor %}
 	</div>
 </div>
+
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Image</label>
+	</div>
+	<div class="small-11 columns">
+	  {% if filename %}
+	      <p>
+	      <img src="/static/img/news/{{ filename }}">
+	      <br>
+	      <a href="{{ url_for('admin_news_removeimage',id=id) }}">remove image</a>
+	      </p>
+      {% else %}
+          <label class="error">
+          {{ form.image(size=40) }}
+          </label>
+          {% for error in form.title.errors %}
+          <small class="error">{{ error }}</small>
+          {% endfor %}
+      {% endif %}
+	</div>
+</div>
+
+
+
 
 <div class="row">
 	<div class="small-1 columns">

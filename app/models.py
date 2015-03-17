@@ -5,6 +5,7 @@ class News(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)    
     title = db.Column(db.String(80))
+    filename = db.Column(db.String(200))
     content = db.Column(db.String(1000))
     slug = db.Column(db.String(80))
 
