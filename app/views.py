@@ -109,45 +109,26 @@ def admin_news_list():
                            title='News',
                            news=news)
                     
-@app.route('/admin/news/', methods=['GET', 'POST'])
-@login_required
-def admin_news():
-    form = NewsForm()
-    if form.validate_on_submit():
-        news = News(form.title.data,form.content.data)
-        db.session.add(news)
-        db.session.commit()
-    	flash('News item "%s" created' %
-              (form.title.data))
-        return redirect('admin/news')
-    return render_template('admin/news_item.html', 
-                           title='News',
-                           form=form)
-
-
 @app.route('/admin/news/<slug>', methods=['GET', 'POST'])
 @login_required
 def admin_news_slug(slug):
-    news = News.query.filter_by(slug=slug).first()
+    news = News() if slug == 'add' else News.query.filter_by(slug=slug).first()
     form = NewsForm()
     if form.validate_on_submit():
         if 'image' in request.files:
-            #filename = secure_filename(form.image.data.filename)
-            #form.image.data.save('/var/www/cap/app/static/img/news/' + filename)
             filename = newsimages.save(request.files['image'])
             news.filename = filename
         news.title = form.title.data
         news.content = form.content.data
+        news.slug = slugify(news.title)
+        if slug == 'add':
+            db.session.add(news)
         db.session.commit()
     	flash('News item "%s" saved' %
               (form.title.data))
         return redirect('admin/news')
     else:
-        if news.filename:
-            url = newsimages.url(news.filename)
-        else:
-            url = None
-        #filename = news.filename
+        url = newsimages.url(news.filename) if news.filename else None
         form.title.data = news.title
         form.content.data = news.content
     

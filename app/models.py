@@ -1,5 +1,4 @@
 from app import db
-from slugify import slugify
 
 class News(db.Model):
 
@@ -9,11 +8,6 @@ class News(db.Model):
     content = db.Column(db.String(1000))
     slug = db.Column(db.String(80))
 
-    def __init__(self, title, content):
-        self.title = title
-        self.content = content
-        self.slug = slugify(title)
-
 class Country(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)    
@@ -21,10 +15,6 @@ class Country(db.Model):
     heading = db.Column(db.String(80))
     about = db.Column(db.String(1000))
     slug = db.Column(db.String(80))
-
-    def __init__(self, name):
-        self.name = name
-        self.slug = slugify(name)
     
 
 class User(db.Model):
