@@ -44,9 +44,10 @@ def tool():
     return render_template('tool.html')
 
 @app.route('/news')
-def news():
-    news = News.query.all()
-    for item in news:
+@app.route('/news/<int:page>')
+def news(page=1):
+    news = News.query.paginate(page, 3, False)
+    for item in news.items:
         if item.filename:
             url = newsimages.url(item.filename)
             item.url = url
