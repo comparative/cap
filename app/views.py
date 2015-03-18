@@ -6,7 +6,7 @@ from flask.ext.login import login_user, logout_user, current_user, login_require
 from werkzeug import secure_filename
 from json import dumps
 from slugify import slugify
-from app import app, db, lm
+from app import app, db, lm, newsimages
 from .forms import NewsForm, LoginForm, CountryForm
 from .models import User, News, Country
 
@@ -20,6 +20,10 @@ def load_user(id):
 @app.route('/index')
 def index():
     news = News.query.paginate(1, 2, False).items
+    for item in news:
+        if item.filename:
+            url = newsimages.url(item.filename)
+            item.url = url
     countries = Country.query.order_by(Country.name)
     return render_template("index.html",
                            title='Home',
@@ -40,13 +44,20 @@ def tool():
     return render_template('tool.html')
 
 @app.route('/news')
-def news():    
+def news():
     news = News.query.all()
+    for item in news:
+        if item.filename:
+            url = newsimages.url(item.filename)
+            item.url = url
     return render_template('news.html',news=news)
 
 @app.route('/news/<news_slug>')
 def news_item(news_slug):    
     item = News.query.filter_by(slug=news_slug).first()
+    if item.filename:
+            url = newsimages.url(item.filename)
+            item.url = url
     return render_template('news_item.html',item=item)
 
 @app.route('/about')
@@ -121,9 +132,9 @@ def admin_news_slug(slug):
     form = NewsForm()
     if form.validate_on_submit():
         if 'image' in request.files:
-            filename = secure_filename(form.image.data.filename)
-            form.image.data.save('/var/www/cap/app/static/img/news/' + filename)
-            #filename = newsimages.save(request.files['image'])
+            #filename = secure_filename(form.image.data.filename)
+            #form.image.data.save('/var/www/cap/app/static/img/news/' + filename)
+            filename = newsimages.save(request.files['image'])
             news.filename = filename
         news.title = form.title.data
         news.content = form.content.data
@@ -132,6 +143,10 @@ def admin_news_slug(slug):
               (form.title.data))
         return redirect('admin/news')
     else:
+        if news.filename:
+            url = newsimages.url(news.filename)
+        else:
+            url = None
         #filename = news.filename
         form.title.data = news.title
         form.content.data = news.content
@@ -139,7 +154,7 @@ def admin_news_slug(slug):
     return render_template('admin/news_item.html', 
                            title='News',
                            id=news.id,
-                           filename=news.filename,
+                           url=url,
                            form=form)
 
 @app.route('/admin/news/removeimage/<id>')
@@ -147,8 +162,8 @@ def admin_news_slug(slug):
 def admin_news_removeimage(id):
     news = News.query.filter_by(id=id).first()
     if news is not None:
-        if os.path.isfile('/var/www/cap/app/static/img/news/' + news.filename):
-            os.remove('/var/www/cap/app/static/img/news/' + news.filename)
+        #if os.path.isfile('/var/www/cap/app/static/img/news/' + news.filename):
+        #    os.remove('/var/www/cap/app/static/img/news/' + news.filename)
         news.filename = None
         db.session.commit()
         return redirect('admin/news/' + news.slug)
@@ -212,7 +227,7 @@ def admin_country(slug):
 def api_countries():
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""SELECT * FROM countries ORDER BY name""")
+    cur.execute("""SELECT * FROM country ORDER BY name""")
     return dumps(cur.fetchall())
 
 @app.route('/api/categories')

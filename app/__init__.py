@@ -1,7 +1,7 @@
 from flask import Flask
 from flask.ext.login import LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.uploads import UploadSet, IMAGES
+from flask.ext.uploads import UploadSet, configure_uploads, IMAGES
 
 app = Flask(__name__)
 app.config.from_object('config')
@@ -13,6 +13,7 @@ lm.login_view = "login"
 lm.init_app(app)
 
 newsimages = UploadSet('newsimages', IMAGES)
+configure_uploads(app, (newsimages,))
 
 from app import views, models
 

@@ -27,9 +27,9 @@
 	  <label for="title" class="right inline">Image</label>
 	</div>
 	<div class="small-11 columns">
-	  {% if filename %}
+	  {% if url %}
 	      <p>
-	      <img src="/static/img/news/{{ filename }}">
+	      <img src="{{ url }}">
 	      <br>
 	      <a href="{{ url_for('admin_news_removeimage',id=id) }}">remove image</a>
 	      </p>
