@@ -116,7 +116,7 @@ def admin_news_slug(slug):
     news = News() if slug == 'add' else News.query.filter_by(slug=slug).first()
     form = NewsForm()
     if form.validate_on_submit():
-        if 'image' in request.files:
+        if request.files['image'].filename != '':
             filename = newsimages.save(request.files['image'])
             news.filename = filename
         news.title = form.title.data
