@@ -4,7 +4,7 @@
 {% block content %}
 
 <h4>Country</h4>
-<form action="" method="post" name="login">
+<form action="" method="post" name="country" enctype="multipart/form-data">
 {{ form.hidden_tag() }}
 
 <div class="row">
@@ -18,6 +18,28 @@
 	  {% for error in form.name.errors %}
 	  <small class="error">{{ error }}</small>
       {% endfor %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Image</label>
+	</div>
+	<div class="small-11 columns">
+	  {% if url %}
+	      <p>
+	      <img src="{{ url }}">
+	      <br>
+	      <a href="{{ url_for('admin_countries_removeimage',id=id) }}">remove image</a>
+	      </p>
+      {% else %}
+          <label class="error">
+          {{ form.image(size=40) }}
+          </label>
+          {% for error in form.image.errors %}
+          <small class="error">{{ error }}</small>
+          {% endfor %}
+      {% endif %}
 	</div>
 </div>
 
@@ -51,8 +73,11 @@
 
 <br>
 
-<p><input class="button small" type="submit" value="Save"></p>
-
+<div class="row">
+<div class="small-1 columns">&nbsp;</div>
+<div class="small-11 columns">
+<input class="button small" type="submit" value="Save">&nbsp;&nbsp;<a href="{{ url_for('admin_countries_delete',id=id) }}"><input class="button alert small" type="button" value="Delete"></a>
+</div>
 
 </form>
 

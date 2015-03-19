@@ -14,7 +14,8 @@ lm.login_view = "login"
 lm.init_app(app)
 
 newsimages = UploadSet('newsimages', IMAGES)
-configure_uploads(app, (newsimages,))
+countryimages = UploadSet('countryimages', IMAGES)
+configure_uploads(app, (newsimages,countryimages,))
 
 from app import views, models
 

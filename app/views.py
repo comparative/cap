@@ -6,7 +6,7 @@ from flask.ext.login import login_user, logout_user, current_user, login_require
 from werkzeug import secure_filename
 from json import dumps
 from slugify import slugify
-from app import app, db, lm, newsimages
+from app import app, db, lm, newsimages, countryimages
 from .forms import NewsForm, LoginForm, CountryForm
 from .models import User, News, Country
 
@@ -116,7 +116,7 @@ def admin_news_slug(slug):
     news = News() if slug == 'add' else News.query.filter_by(slug=slug).first()
     form = NewsForm()
     if form.validate_on_submit():
-        if 'image' in request.args and request.files['image'].filename != '':
+        if 'image' in request.files and request.files['image'].filename != '':
             filename = newsimages.save(request.files['image'])
             news.filename = filename
         news.title = form.title.data
@@ -134,7 +134,6 @@ def admin_news_slug(slug):
         form.content.data = news.content
     
     return render_template('admin/news_item.html', 
-                           title='News',
                            id=news.id,
                            url=url,
                            form=form)
@@ -174,47 +173,58 @@ def admin_countries():
     return render_template('admin/country_list.html', 
                            title='Country',
                            countries=countries)
-                    
-@app.route('/admin/countries/', methods=['GET', 'POST'])
-@login_required
-def admin_country_new():
-    form = CountryForm()
-    if form.validate_on_submit():
-        country = Country(form.name.data)
-        db.session.add(country)
-        db.session.commit()
-    	flash('Country "%s" created' %
-              (form.name.data))
-        return redirect('admin/countries')
-    return render_template('admin/country.html', 
-                           title='Country',
-                           form=form)
-
-
+                                               
 @app.route('/admin/countries/<slug>', methods=['GET', 'POST'])
 @login_required
-def admin_country(slug):
-    country = Country.query.filter_by(slug=slug).first()
+def admin_countries_slug(slug):
+    country = Country() if slug == 'add' else Country.query.filter_by(slug=slug).first()
     form = CountryForm()
     if form.validate_on_submit():
+        if 'image' in request.files and request.files['image'].filename != '':
+            filename = countryimages.save(request.files['image'])
+            country.filename = filename
         country.name = form.name.data
         country.heading = form.heading.data
         country.about = form.about.data
+        if slug == 'add':
+            db.session.add(country)
         db.session.commit()
     	flash('Country "%s" saved' %
               (form.name.data))
         return redirect('admin/countries')
     else:
+        url = countryimages.url(country.filename) if country.filename else None
         form.name.data = country.name
         form.heading.data = country.heading
         form.about.data = country.about
     
     return render_template('admin/country.html', 
-                           title='Country',
+                           id=country.id,
+                           url=url,
                            form=form)
+                           
+@app.route('/admin/countries/delete/<id>')
+@login_required
+def admin_countries_delete(id):
+    country = Country.query.filter_by(id=id).first()
+    if country is not None:
+        title = country.title
+        db.session.delete(country)
+        db.session.commit()
+        flash('Country "%s" deleted' %
+              (title))
+        return redirect('admin/countries')
+    return redirect('index')
 
-
-                          
+@app.route('/admin/countries/removeimage/<id>')
+@login_required
+def admin_countries_removeimage(id):
+    country = Country.query.filter_by(id=id).first()
+    if country is not None:
+        country.filename = None
+        db.session.commit()
+        return redirect('admin/countries/' + news.slug)
+    return redirect('index')                         
 
 ######### API ROUTES
 

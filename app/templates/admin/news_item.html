@@ -37,7 +37,7 @@
           <label class="error">
           {{ form.image(size=40) }}
           </label>
-          {% for error in form.title.errors %}
+          {% for error in form.image.errors %}
           <small class="error">{{ error }}</small>
           {% endfor %}
       {% endif %}
