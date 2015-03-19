@@ -139,6 +139,19 @@ def admin_news_slug(slug):
                            url=url,
                            form=form)
 
+@app.route('/admin/news/delete/<id>')
+@login_required
+def admin_news_delete(id):
+    news = News.query.filter_by(id=id).first()
+    if news is not None:
+        title = news.title
+        db.session.delete(news)
+        db.session.commit()
+        flash('News item "%s" deleted' %
+              (title))
+        return redirect('admin/news')
+    return redirect('index')
+
 @app.route('/admin/news/removeimage/<id>')
 @login_required
 def admin_news_removeimage(id):
