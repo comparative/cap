@@ -184,6 +184,8 @@ def admin_countries_slug(slug):
             filename = countryimages.save(request.files['image'])
             country.filename = filename
         country.name = form.name.data
+        country.principal = form.principal.data
+        country.location = form.location.data
         country.heading = form.heading.data
         country.about = form.about.data
         country.slug = slugify(country.name)
@@ -196,6 +198,8 @@ def admin_countries_slug(slug):
     else:
         url = countryimages.url(country.filename) if country.filename else None
         form.name.data = country.name
+        form.principal.data = country.principal
+        form.location.data = country.location
         form.heading.data = country.heading
         form.about.data = country.about
     

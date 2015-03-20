@@ -115,11 +115,9 @@
                         <div class="content active" id="about-pane">
                 
                             <div class="medium-6 columns">
-                
-                                <strong>Founded:</strong>&nbsp;1993<br/>
-                                <strong>Founders:</strong>&nbsp;Bryan Jones and Frank Baumgartner<br/>
-                                <strong>Principal Investigator:</strong>&nbsp;Bryan Jones<br/>
-                                <strong>Location:</strong>&nbsp;University of Texas at Austin, Department of Government<br/>
+                                
+                                {% if country.principal %}<strong>Principal Investigator:</strong>&nbsp;{{ country.principal }}<br/>{% endif %}
+                                {% if country.location %}<strong>Location:</strong>&nbsp;{{ country.location }}<br/>{% endif %}
                                 <strong>Faculty & Graduate Students:</strong>&nbsp;15<br/>
                                 <strong>Downloadable Data Series:</strong>&nbsp;13<br/>
                                 <strong>Time Span:</strong>&nbsp;1945-2012<br/>

@@ -23,6 +23,34 @@
 
 <div class="row">
 	<div class="small-1 columns">
+	  <label for="title" class="right inline">Principal</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.principal(size=40) }}
+	  </label>
+	  {% for error in form.principal.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Location</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.location(size=40) }}
+	  </label>
+	  {% for error in form.location.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-1 columns">
 	  <label for="title" class="right inline">Image</label>
 	</div>
 	<div class="small-11 columns">
