@@ -186,6 +186,7 @@ def admin_countries_slug(slug):
         country.name = form.name.data
         country.heading = form.heading.data
         country.about = form.about.data
+        country.slug = slugify(country.name)
         if slug == 'add':
             db.session.add(country)
         db.session.commit()
@@ -208,7 +209,7 @@ def admin_countries_slug(slug):
 def admin_countries_delete(id):
     country = Country.query.filter_by(id=id).first()
     if country is not None:
-        title = country.title
+        title = country.name
         db.session.delete(country)
         db.session.commit()
         flash('Country "%s" deleted' %
@@ -223,7 +224,7 @@ def admin_countries_removeimage(id):
     if country is not None:
         country.filename = None
         db.session.commit()
-        return redirect('admin/countries/' + news.slug)
+        return redirect('admin/countries/' + country.slug)
     return redirect('index')                         
 
 ######### API ROUTES
