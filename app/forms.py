@@ -20,3 +20,10 @@ class CountryForm(Form):
     image = FileField('image')
     heading = StringField('heading', validators=[DataRequired()])
     about = StringField('content', validators=[DataRequired()],widget=TextArea())
+
+class UserForm(Form):
+    name = StringField('name', validators=[DataRequired()])
+    email = StringField('email', validators=[DataRequired()])
+    password = StringField('password', validators=[DataRequired()])
+   
+    
