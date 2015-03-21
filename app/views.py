@@ -7,7 +7,7 @@ from werkzeug import secure_filename
 from json import dumps
 from slugify import slugify
 from app import app, db, lm, newsimages, countryimages
-from .forms import NewsForm, LoginForm, CountryForm
+from .forms import NewsForm, LoginForm, CountryForm, UserForm
 from .models import User, News, Country
 
 @lm.user_loader
@@ -230,6 +230,52 @@ def admin_countries_removeimage(id):
         db.session.commit()
         return redirect('admin/countries/' + country.slug)
     return redirect('index')                         
+
+## USERS
+
+@app.route('/admin/users')
+@login_required
+def admin_users():
+    users = User.query.all()
+    return render_template('admin/user_list.html',
+                           users=users)
+                                               
+@app.route('/admin/users/<id>', methods=['GET', 'POST'])
+@login_required
+def admin_users_id(id):
+    user = User() if id == 'add' else User.query.filter_by(id=id).first()
+    form = UserForm()
+    if form.validate_on_submit():
+        user.name = form.name.data
+        user.email = form.email.data
+        user.password = form.password.data
+        if id == 'add':
+            db.session.add(user)
+        db.session.commit()
+    	flash('User "%s" saved' %
+              (form.name.data))
+        return redirect('admin/users')
+    else:
+        form.name.data = user.name
+        form.email.data = user.email
+        form.password.data = user.password
+    
+    return render_template('admin/user.html', 
+                           id=user.id,
+                           form=form)
+                           
+@app.route('/admin/users/delete/<id>')
+@login_required
+def admin_users_delete(id):
+    user = User.query.filter_by(id=id).first()
+    if user is not None:
+        name = user.name
+        db.session.delete(user)
+        db.session.commit()
+        flash('User "%s" deleted' %
+              (user.name))
+        return redirect('admin/users')
+    return redirect('index')
 
 ######### API ROUTES
 

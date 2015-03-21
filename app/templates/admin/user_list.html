@@ -1,0 +1,14 @@
+<!-- extend from base layout -->
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4>User List</h4>
+<table>
+{% for item in users %}
+<tr><td><a href="/admin/users/{{ item.id }}">edit</a></td><td>{{ item.name }}</td></tr>
+{% endfor %}
+</table>
+<a href="/admin/users/add">Add user</a>
+
+{% endblock %}
