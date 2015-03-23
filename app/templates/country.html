@@ -24,10 +24,10 @@
         	        <div id="menu" class="row">
         	                
                         <dl class="tabs" data-tab>
+                          <dd><a href="#about-pane"><strong>About</strong></a></dd>
                           <dd><a href="#datasets-pane"><strong>Datasets</strong></a></dd>
                           <dd><a href="#research-pane"><strong>Research</strong></a></dd>
                           <dd><a href="#staff-pane"><strong>Staff</strong></a></dd>
-                          <dd><a href="#about-pane"><strong>About</strong></a></dd>
                         </dl>
         	            
         	            <!--<div class="medium-3 columns">
@@ -116,29 +116,53 @@
                 
                             <div class="medium-6 columns">
                                 
+                                {% if url %}
+                                
+                                <h4>Explore Trends in {{ country.name }} Policy</h4>
+                                
+                                <img style="height:200px;" src="{{ url }}" width="100%"/>    
+                                
+                                <p><strong>
+                                Click to explore policy trends with {{ country.name }} pre-selected.
+                                The Trends tool allows for policy comparisons across governing institutions and countries.
+                                </strong></p>
+                                
+                                {% else %}
+                                
+                                <h4>{{ country.heading }}</h4>
+                                
+                                {% endif %}
+                                
+                                <p>{{ country.about|safe }}</p>
+                                
+                               <!-- <img class="supporting-institutions" src="http://baconmockup.com/300/75"/>
+                                <img class="supporting-institutions" src="http://baconmockup.com/300/75"/> 
+                                <img class="supporting-institutions" src="http://baconmockup.com/300/75"/> 
+                                <img class="supporting-institutions" src="http://baconmockup.com/300/75"/> 
+                                <img class="supporting-institutions" src="http://baconmockup.com/300/75"/>    --> 
+                            
+                            </div>
+                
+                            <div class="medium-6 columns">
+                            
+                            {% if url %}
+                            
+                            <h4>{{ country.heading }}</h4>
+                            
+                            {% endif %}
+                            
+                                <p>
                                 {% if country.principal %}<strong>Principal Investigator:</strong>&nbsp;{{ country.principal }}<br/>{% endif %}
                                 {% if country.location %}<strong>Location:</strong>&nbsp;{{ country.location }}<br/>{% endif %}
                                 <strong>Faculty & Graduate Students:</strong>&nbsp;15<br/>
                                 <strong>Downloadable Data Series:</strong>&nbsp;13<br/>
                                 <strong>Time Span:</strong>&nbsp;1945-2012<br/>
                                 <strong>Total Observations:</strong>&nbsp;500,371<br/>
-                                <strong>Supporting Institutions:</strong><br/>
-                    
-                                <img class="supporting-institutions" src="http://baconmockup.com/300/75"/>
-                                <img class="supporting-institutions" src="http://baconmockup.com/300/75"/> 
-                                <img class="supporting-institutions" src="http://baconmockup.com/300/75"/> 
-                                <img class="supporting-institutions" src="http://baconmockup.com/300/75"/> 
-                                <img class="supporting-institutions" src="http://baconmockup.com/300/75"/>     
+                                </p>
                             
-                            </div>
-                
-                            <div class="medium-6 columns">
-                
-                            <h4>{{ country.heading }}</h4>
-                
-                            <img src="http://baconmockup.com/300/200"/>
+                                <img src="http://baconmockup.com/300/200"/>
                             
-                            <p>{{ country.about|safe }}</p>
+                            
                             
                             </div>
                             

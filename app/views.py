@@ -34,9 +34,11 @@ def index():
 def country(country_slug):
     countries = Country.query.order_by(Country.name)
     country = Country.query.filter_by(slug=country_slug).first()
+    url = countryimages.url(country.filename) if country.filename else None
     return render_template("country.html",
                            title='Country',
                            countries=countries,
+                           url = url,
                            country=country)
 
 @app.route('/tool')
