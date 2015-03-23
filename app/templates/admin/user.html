@@ -49,6 +49,20 @@
 	</div>
 </div>
 
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Country</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.country }}
+	  </label>
+	  {% for error in form.country.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
 <br>
 
 <div class="row">

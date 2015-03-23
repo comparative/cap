@@ -3,6 +3,12 @@ from flask.ext.wtf.file import FileField
 from wtforms import StringField, BooleanField, PasswordField
 from wtforms.validators import DataRequired
 from wtforms.widgets import TextArea
+from wtforms.ext.sqlalchemy.orm import model_form
+from wtforms.ext.sqlalchemy.fields import QuerySelectField
+from models import Country
+
+def countries_factory():
+    return Country.query.all()
 
 class LoginForm(Form):
     email = StringField('username', validators=[DataRequired()])
@@ -25,5 +31,6 @@ class UserForm(Form):
     name = StringField('name', validators=[DataRequired()])
     email = StringField('email', validators=[DataRequired()])
     password = StringField('password', validators=[DataRequired()])
+    country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
    
     

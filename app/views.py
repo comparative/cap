@@ -7,8 +7,8 @@ from werkzeug import secure_filename
 from json import dumps
 from slugify import slugify
 from app import app, db, lm, newsimages, countryimages
-from .forms import NewsForm, LoginForm, CountryForm, UserForm
 from .models import User, News, Country
+from .forms import NewsForm, LoginForm, CountryForm, UserForm
 
 @lm.user_loader
 def load_user(id):
@@ -249,6 +249,7 @@ def admin_users_id(id):
         user.name = form.name.data
         user.email = form.email.data
         user.password = form.password.data
+        user.country = form.country.data
         if id == 'add':
             db.session.add(user)
         db.session.commit()
@@ -259,6 +260,7 @@ def admin_users_id(id):
         form.name.data = user.name
         form.email.data = user.email
         form.password.data = user.password
+        form.country.data = user.country
     
     return render_template('admin/user.html', 
                            id=user.id,
