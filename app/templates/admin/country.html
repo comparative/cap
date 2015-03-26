@@ -23,6 +23,22 @@
 
 <div class="row">
 	<div class="small-1 columns">
+	  <label for="title" class="right inline">Latest</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.latest(cols="35", rows="15") }}
+	  </label>
+	  {% for error in form.latest.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>	
+</div>
+
+<br/>
+
+<div class="row">
+	<div class="small-1 columns">
 	  <label for="title" class="right inline">Principal</label>
 	</div>
 	<div class="small-11 columns">
@@ -51,7 +67,7 @@
 
 <div class="row">
 	<div class="small-1 columns">
-	  <label for="title" class="right inline">Image</label>
+	  <label for="title" class="right inline">Chart</label>
 	</div>
 	<div class="small-11 columns">
 	  {% if url %}

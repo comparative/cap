@@ -6,10 +6,24 @@
 
 <div class="row">
 
-<div class="medium-12 columns">
+<div class="medium-8 columns">
 <h3>{{ item.title }}</h3>   
 <img class="news-image" src="{{ item.url }}"/>
 <p>{{ item.content|safe }}</p>
+</div>
+
+<div class="medium-4 columns">
+<h3>&nbsp;</h3>
+			{% for n in news %}
+
+
+				<h6>{{ n.title }}</h6>
+				{{ smart_truncate(n.content,100)|safe }}
+				<a class="orange-link" href="/news/{{ n.slug }}">read more</a>
+
+
+
+			{% endfor %} 
 </div>
 
 </div>

@@ -1,4 +1,7 @@
-
+p.caption {
+    font-size:12px;
+    font-weight:bold;
+}
 
 .supporting-institutions {
     padding-top:.5rem;

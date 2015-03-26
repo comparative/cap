@@ -124,10 +124,10 @@
                                 <img style="height:200px;" src="{{ url }}" width="100%"/>    
                                 </a>
                                 
-                                <p><strong>
+                                <p class="caption">
                                 Click to explore policy trends with {{ country.name }} pre-selected.
                                 The Trends tool allows for policy comparisons across governing institutions and countries.
-                                </strong></p>
+                                </p>
                                 
                                 {% else %}
                                 
@@ -154,9 +154,10 @@
                             {% endif %}
                             
                                 <p>
+                                {% if country.latest %}
                                 <strong>Latest Research:</strong>
-                                It makes practical applications possible. Scientific research is funded by public authorities, by charitable organizations and by private groups, including many companies. Scientific research can be subdivided into different classifications according to their academic and application disciplines.
-                                <br/>
+                                {{ country.latest|safe }}
+                                {% endif %}
                                 {% if country.principal %}<strong>Principal Investigator:</strong>&nbsp;{{ country.principal }}<br/>{% endif %}
                                 {% if country.location %}<strong>Location:</strong>&nbsp;{{ country.location }}<br/>{% endif %}
                                 <strong>Faculty & Graduate Students:</strong>&nbsp;15<br/>

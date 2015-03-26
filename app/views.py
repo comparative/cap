@@ -61,7 +61,8 @@ def news_item(news_slug):
     if item.filename:
             url = newsimages.url(item.filename)
             item.url = url
-    return render_template('news_item.html',item=item)
+    news = News.query.filter(News.slug!=news_slug).limit(2).all()
+    return render_template('news_item.html',item=item,news=news)
 
 @app.route('/about')
 def about():
@@ -186,6 +187,7 @@ def admin_countries_slug(slug):
             filename = countryimages.save(request.files['image'])
             country.filename = filename
         country.name = form.name.data
+        country.latest = form.latest.data
         country.principal = form.principal.data
         country.location = form.location.data
         country.heading = form.heading.data
@@ -200,6 +202,7 @@ def admin_countries_slug(slug):
     else:
         url = countryimages.url(country.filename) if country.filename else None
         form.name.data = country.name
+        form.latest.data = country.latest
         form.principal.data = country.principal
         form.location.data = country.location
         form.heading.data = country.heading
