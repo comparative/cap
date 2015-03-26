@@ -24,10 +24,10 @@
         	        <div id="menu" class="row">
         	                
                         <dl class="tabs" data-tab>
-                          <dd><a href="#about-pane"><strong>About</strong></a></dd>
-                          <dd><a href="#datasets-pane"><strong>Datasets</strong></a></dd>
-                          <dd><a href="#research-pane"><strong>Research</strong></a></dd>
-                          <dd><a href="#staff-pane"><strong>Staff</strong></a></dd>
+                          <dd class="active"><a href="#about-pane">About</a></dd>
+                          <dd><a href="#datasets-pane">Datasets</a></dd>
+                          <dd><a href="#research-pane">Research</a></dd>
+                          <dd><a href="#staff-pane">Staff</a></dd>
                         </dl>
         	            
         	            <!--<div class="medium-3 columns">
@@ -120,7 +120,9 @@
                                 
                                 <h4>Explore Trends in {{ country.name }} Policy</h4>
                                 
+                                <a href="/tool" target="_tool">
                                 <img style="height:200px;" src="{{ url }}" width="100%"/>    
+                                </a>
                                 
                                 <p><strong>
                                 Click to explore policy trends with {{ country.name }} pre-selected.
@@ -152,6 +154,9 @@
                             {% endif %}
                             
                                 <p>
+                                <strong>Latest Research:</strong>
+                                It makes practical applications possible. Scientific research is funded by public authorities, by charitable organizations and by private groups, including many companies. Scientific research can be subdivided into different classifications according to their academic and application disciplines.
+                                <br/>
                                 {% if country.principal %}<strong>Principal Investigator:</strong>&nbsp;{{ country.principal }}<br/>{% endif %}
                                 {% if country.location %}<strong>Location:</strong>&nbsp;{{ country.location }}<br/>{% endif %}
                                 <strong>Faculty & Graduate Students:</strong>&nbsp;15<br/>
@@ -160,7 +165,7 @@
                                 <strong>Total Observations:</strong>&nbsp;500,371<br/>
                                 </p>
                             
-                                <img src="http://baconmockup.com/300/200"/>
+                                <img src="http://place-hoff.com/300/200"/>
                             
                             
                             

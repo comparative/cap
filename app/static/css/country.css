@@ -1,3 +1,5 @@
+
+
 .supporting-institutions {
     padding-top:.5rem;
     padding-bottom:.5rem;
@@ -38,15 +40,14 @@ div.scrollable-header {
     background-color:#f2f2f2;
 }
 
-.tabs dd.active a, .tabs .tab-title.active a {
-  background-color: transparent;
-  color: #fff;
-}
+
+
 .tabs dd>a, .tabs .tab-title>a {
   outline: none;
   display: block;
   background-color: transparent;
   color: #fff;
+  font-weight:bold;
   padding: .5rem 1rem;
   font-family: "Helvetica Neue",Helvetica,Roboto,Arial,sans-serif;
   font-size: 1rem;
@@ -54,5 +55,10 @@ div.scrollable-header {
 
 .tabs dd>a:hover, .tabs .tab-title>a:hover {
   background-color: transparent;
+  color:#b2bcc8;
 }
 
+.tabs dd.active a, .tabs .tab-title.active a {
+  background-color: transparent;
+  color:#b2bcc8;
+}
