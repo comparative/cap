@@ -13,7 +13,6 @@ class Country(db.Model):
     id = db.Column(db.Integer, primary_key=True)    
     name = db.Column(db.String(80))
     filename = db.Column(db.String(200))
-    latest = db.Column(db.String(1000))
     principal = db.Column(db.String(200))
     location = db.Column(db.String(200))
     heading = db.Column(db.String(80))
@@ -22,7 +21,33 @@ class Country(db.Model):
     
     def __repr__(self):
         return self.name
+
+class Research(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)    
+    title = db.Column(db.String(80))
+    filename = db.Column(db.String(200))
+    body = db.Column(db.String(1000))
+    country_id = db.Column(db.Integer,db.ForeignKey('country.id'))
+    country = db.relationship('Country',backref=db.backref('research', lazy='dynamic'))
     
+    def __repr__(self):
+        return self.title    
+
+class Staff(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80))  
+    title = db.Column(db.String(80))
+    institution = db.Column(db.String(80))
+    filename = db.Column(db.String(200))
+    body = db.Column(db.String(1000))
+    country_id = db.Column(db.Integer,db.ForeignKey('country.id'))
+    country = db.relationship('Country',backref=db.backref('staff', lazy='dynamic'))
+    
+    def __repr__(self):
+        return self.title 
+  
 
 class User(db.Model):
     

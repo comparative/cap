@@ -116,12 +116,12 @@
                 
                             <div class="medium-6 columns">
                                 
-                                {% if url %}
+                                
                                 
                                 <h4>Explore Trends in {{ country.name }} Policy</h4>
                                 
                                 <a href="/tool" target="_tool">
-                                <img style="height:200px;" src="{{ url }}" width="100%"/>    
+                                <img style="height:200px;" src="/static/img/chart-us.png" width="100%"/>    
                                 </a>
                                 
                                 <p class="caption">
@@ -129,11 +129,6 @@
                                 The Trends tool allows for policy comparisons across governing institutions and countries.
                                 </p>
                                 
-                                {% else %}
-                                
-                                <h4>{{ country.heading }}</h4>
-                                
-                                {% endif %}
                                 
                                 <p>{{ country.about|safe }}</p>
                                 
@@ -146,18 +141,17 @@
                             </div>
                 
                             <div class="medium-6 columns">
-                            
-                            {% if url %}
+                          
                             
                             <h4>{{ country.heading }}</h4>
                             
-                            {% endif %}
+                        
                             
                                 <p>
-                                {% if country.latest %}
+                                
                                 <strong>Latest Research:</strong>
-                                {{ country.latest|safe }}
-                                {% endif %}
+                                
+                                
                                 {% if country.principal %}<strong>Principal Investigator:</strong>&nbsp;{{ country.principal }}<br/>{% endif %}
                                 {% if country.location %}<strong>Location:</strong>&nbsp;{{ country.location }}<br/>{% endif %}
                                 <strong>Faculty & Graduate Students:</strong>&nbsp;15<br/>
@@ -165,10 +159,12 @@
                                 <strong>Time Span:</strong>&nbsp;1945-2012<br/>
                                 <strong>Total Observations:</strong>&nbsp;500,371<br/>
                                 </p>
+                                
+                                {% if url %}
+                        
+                                <img src="{{ url }}"/>
                             
-                                <img src="http://place-hoff.com/300/200"/>
-                            
-                            
+                                {% endif %}
                             
                             </div>
                             

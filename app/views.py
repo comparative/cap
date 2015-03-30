@@ -6,9 +6,9 @@ from flask.ext.login import login_user, logout_user, current_user, login_require
 from werkzeug import secure_filename
 from json import dumps
 from slugify import slugify
-from app import app, db, lm, newsimages, countryimages
-from .models import User, News, Country
-from .forms import NewsForm, LoginForm, CountryForm, UserForm
+from app import app, db, lm, newsimages, countryimages, researchimages
+from .models import User, News, Country, Research, Staff
+from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm
 
 @lm.user_loader
 def load_user(id):
@@ -187,7 +187,6 @@ def admin_countries_slug(slug):
             filename = countryimages.save(request.files['image'])
             country.filename = filename
         country.name = form.name.data
-        country.latest = form.latest.data
         country.principal = form.principal.data
         country.location = form.location.data
         country.heading = form.heading.data
@@ -202,7 +201,6 @@ def admin_countries_slug(slug):
     else:
         url = countryimages.url(country.filename) if country.filename else None
         form.name.data = country.name
-        form.latest.data = country.latest
         form.principal.data = country.principal
         form.location.data = country.location
         form.heading.data = country.heading
@@ -210,9 +208,11 @@ def admin_countries_slug(slug):
     
     return render_template('admin/country.html', 
                            id=country.id,
+                           slug=country.slug,
                            url=url,
                            form=form)
-                           
+ 
+
 @app.route('/admin/countries/delete/<id>')
 @login_required
 def admin_countries_delete(id):
@@ -283,6 +283,74 @@ def admin_users_delete(id):
               (user.name))
         return redirect('admin/users')
     return redirect('index')
+
+
+## RESEARCH
+
+@app.route('/admin/countries/<slug>/research', methods=['GET', 'POST'])
+@login_required
+def admin_countries_research(slug):
+    country = Country.query.filter_by(slug=slug).first()
+    research = Research.query.filter_by(country_id=country.id).all()
+    return render_template('admin/country_research.html', 
+                           country=country,
+                           research=research)
+
+@app.route('/admin/countries/<slug>/research/<id>', methods=['GET', 'POST'])
+@login_required
+def admin_countries_research_id(slug,id):
+    country = Country.query.filter_by(slug=slug).first()
+    research = Research() if id == 'add' else Research.query.filter_by(id=id).first()
+    form = ResearchForm()
+    if form.validate_on_submit():
+        if 'image' in request.files and request.files['image'].filename != '':
+            filename = researchimages.save(request.files['image'])
+            research.filename = filename
+        research.title = form.title.data
+        research.body = form.body.data
+        if id == 'add':
+            research.country_id = country.id
+            db.session.add(research)
+        db.session.commit()
+    	flash('Research item "%s" saved' %
+              (form.title.data))
+        return redirect('admin/countries/' + slug + '/research')
+    else:
+        url = researchimages.url(research.filename) if research.filename else None
+        form.title.data = research.title
+        form.body.data = research.body
+    
+    return render_template('admin/research_item.html',
+                           slug=slug,
+                           id=research.id,
+                           url=url,
+                           form=form)
+
+@app.route('/admin/countries/<slug>/research/delete/<id>')
+@login_required
+def admin_research_delete(slug,id):
+    research = Research.query.filter_by(id=id).first()
+    if research is not None:
+        title = research.title
+        db.session.delete(research)
+        db.session.commit()
+        flash('News item "%s" deleted' %
+              (title))
+        return redirect('admin/countries/' + slug + '/research')
+    return redirect('index')
+
+@app.route('/admin/countries/<slug>/research/removeimage/<id>')
+@login_required
+def admin_research_removeimage(slug,id):
+    research = Research.query.filter_by(id=id).first()
+    if research is not None:
+        #if os.path.isfile('/var/www/cap/app/static/img/news/' + news.filename):
+        #    os.remove('/var/www/cap/app/static/img/news/' + news.filename)
+        research.filename = None
+        db.session.commit()
+        return redirect('admin/countries/' + slug + '/research/' + id)
+    return redirect('index')
+
 
 ######### API ROUTES
 

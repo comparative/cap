@@ -18,10 +18,14 @@ class NewsForm(Form):
     title = StringField('title', validators=[DataRequired()])
     image = FileField('image')
     content = StringField('content', validators=[DataRequired()],widget=TextArea())
-    
+
+class ResearchForm(Form):
+    title = StringField('title', validators=[DataRequired()])
+    image = FileField('image')
+    body = StringField('content', validators=[DataRequired()],widget=TextArea())    
+
 class CountryForm(Form):
     name = StringField('name', validators=[DataRequired()])
-    latest = StringField('latest', validators=[DataRequired()],widget=TextArea())
     principal = StringField('principal', validators=[DataRequired()])
     location = StringField('location', validators=[DataRequired()])
     image = FileField('image')

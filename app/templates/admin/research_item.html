@@ -1,0 +1,82 @@
+<!-- extend from base layout -->
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4>Research Item</h4>
+<form action="" method="post" name="login" enctype="multipart/form-data">
+{{ form.hidden_tag() }}
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Title</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.title(size=40) }}
+	  </label>
+	  {% for error in form.title.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Image</label>
+	</div>
+	<div class="small-11 columns">
+	  {% if url %}
+	      <p>
+	      <img src="{{ url }}">
+	      <br>
+	      <a href="{{ url_for('admin_research_removeimage',slug=slug,id=id) }}">remove image</a>
+	      </p>
+      {% else %}
+          <label class="error">
+          {{ form.image(size=40) }}
+          </label>
+          {% for error in form.image.errors %}
+          <small class="error">{{ error }}</small>
+          {% endfor %}
+      {% endif %}
+	</div>
+</div>
+
+
+
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Body</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.body(cols="35", rows="15") }}
+	  </label>
+	  {% for error in form.body.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+<br>
+
+<div class="row">
+<div class="small-1 columns">&nbsp;</div>
+<div class="small-11 columns">
+<input class="button small" type="submit" value="Save">
+{% if id %}
+&nbsp;&nbsp;
+<a href="{{ url_for('admin_research_delete',slug=slug,id=id) }}">
+<input class="button alert small" type="button" value="Delete">
+</a>
+{% endif %}
+</div>
+
+</div>
+
+
+</form>
+
+{% endblock %}
