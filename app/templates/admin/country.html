@@ -3,9 +3,21 @@
 
 {% block content %}
 
-<!--<h4>Country</h4>-->
+{% if current_user.country %}
+<h4>{{ form.name.data }}</h4>
+{% else %}
+<h4>Countries</h4>
+{% endif %}
+
 <form action="" method="post" name="country" enctype="multipart/form-data">
 {{ form.hidden_tag() }}
+
+
+{% if current_user.country %}
+
+<input type=hidden name="{{ form.name.name }}" value="{{ form.name.data }}">
+
+{% else %}
 
 <div class="row">
 	<div class="small-1 columns">
@@ -20,6 +32,7 @@
       {% endfor %}
 	</div>
 </div>
+{% endif %}
 
 <div class="row">
 	<div class="small-1 columns">

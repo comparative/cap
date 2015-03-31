@@ -320,7 +320,7 @@ def admin_countries_research_id(slug,id):
         form.title.data = research.title
         form.body.data = research.body
     
-    return render_template('admin/research_item.html',
+    return render_template('admin/country_research_item.html',
                            slug=slug,
                            id=research.id,
                            url=url,
