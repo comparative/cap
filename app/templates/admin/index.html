@@ -5,19 +5,17 @@
 
 
 <ul>
-<li><a href="/admin/news">News</a></li>
 
+<li>
 {% if current_user.country %}
-
-<li><a href="/admin/countries/{{ current_user.country.slug }}">Project Info</a></li>
-<li>Datasets</li>
-
+<a href="/admin/countries/{{ current_user.country.slug }}">{{ current_user.country.name }}</a>
 {% else %}
+<a href="/admin/countries">Countries</a>
+{% endif %}
+</li>
 
-<li><a href="/admin/countries">Countries</a></li>
-<li>Datasets</li>
+{% if not current_user.country %}
 <li><a href="/admin/users">Users</a></li>
-
 {% endif %}
 
 </ul>

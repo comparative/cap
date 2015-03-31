@@ -5,8 +5,6 @@
 
 {% if current_user.country %}
 <h4>{{ form.name.data }}</h4>
-{% else %}
-<h4>Countries</h4>
 {% endif %}
 
 <form action="" method="post" name="country" enctype="multipart/form-data">
@@ -116,7 +114,7 @@
 
 <div class="row">
 <div class="small-1 columns">&nbsp;</div>
-<div class="small-7 columns">
+<div class="small-5 columns">
 <input class="button small" type="submit" value="Save">
 {% if id %}
 &nbsp;&nbsp;
@@ -127,11 +125,15 @@
 </div>
 
 <div class="small-2 columns">
-<a href="{{ url_for('admin_countries_research',slug=slug) }}">Edit Research</a>
+<a href="{{ url_for('admin_countries_research',slug=slug) }}">Research</a>
 </div>
 
 <div class="small-2 columns">
-<a href="#">Edit Staff</a>
+<a href="{{ url_for('admin_countries_research',slug=slug) }}">News</a>
+</div>
+
+<div class="small-2 columns">
+<a href="#">Staff</a>
 </div>
 
 

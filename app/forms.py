@@ -22,7 +22,8 @@ class NewsForm(Form):
 class ResearchForm(Form):
     title = StringField('title', validators=[DataRequired()])
     image = FileField('image')
-    body = StringField('content', validators=[DataRequired()],widget=TextArea())    
+    body = StringField('content', validators=[DataRequired()],widget=TextArea()) 
+    country = QuerySelectField(query_factory=countries_factory,allow_blank=True)   
 
 class CountryForm(Form):
     name = StringField('name', validators=[DataRequired()])

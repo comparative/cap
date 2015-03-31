@@ -8,13 +8,14 @@
     <meta name="description" content="">
     <meta name="keywords" content="">
 
-    <title>Comparative Agendas</title>
+    <title>Admin - Comparative Agendas</title>
 	
 	<link href="//cdn.jsdelivr.net/foundation/5.5.0/css/normalize.css" rel="stylesheet">
     <link href="//cdn.jsdelivr.net/foundation/5.5.0/css/foundation.min.css" rel="stylesheet">	
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.min.css" rel="stylesheet">
 	<script src="//cdn.jsdelivr.net/modernizr/2.8.3/modernizr.js"></script>
 	<script src="//tinymce.cachefly.net/4.0/tinymce.min.js"></script>
+	<link href="/static/css/admin.css" rel="stylesheet">
     
   </head>
 
@@ -22,7 +23,9 @@
 
     <div class="row">
     <div class="medium-4 columns">
-    <h4><a href="/admin">Admin</a></h4>
+    {% if not current_user.country %}
+    <h3><a href="/admin">Admin</a></h3>
+    {% endif %}
     </div>
     <div class="medium-8 columns text-right">
     {% if current_user.is_authenticated() %}
@@ -37,11 +40,13 @@
 	
 	{% with messages = get_flashed_messages() %}
       {% if messages %}
-        <ul>
+        
         {% for message in messages %}
-            <li>{{ message }} </li>
+            <div data-alert class="alert-box success radius">
+                {{ message }}
+            </div>
         {% endfor %}
-        </ul>
+        
       {% endif %}
     {% endwith %}
 	

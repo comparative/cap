@@ -86,7 +86,7 @@ def login():
         if user is not None:
             login_user(user)
             flash("Logged in successfully.")
-            return redirect(request.args.get("next") or url_for("landing"))
+            return redirect(url_for('admin_countries_slug',slug=user.country.slug) if user.country else request.args.get("next"))
         else:
             flash("Login credentials incorrect!")
             return redirect(url_for("login"))
@@ -197,7 +197,7 @@ def admin_countries_slug(slug):
         db.session.commit()
     	flash('Country "%s" saved' %
               (form.name.data))
-        return redirect('admin/countries')
+        return redirect( url_for('admin_countries_slug',slug=current_user.country.slug) if current_user.country else 'admin/countries' )
     else:
         url = countryimages.url(country.filename) if country.filename else None
         form.name.data = country.name
@@ -300,6 +300,8 @@ def admin_countries_research(slug):
 @login_required
 def admin_countries_research_id(slug,id):
     country = Country.query.filter_by(slug=slug).first()
+    app.logger.debug('woah')
+    app.logger.debug(country)
     research = Research() if id == 'add' else Research.query.filter_by(id=id).first()
     form = ResearchForm()
     if form.validate_on_submit():
@@ -322,6 +324,7 @@ def admin_countries_research_id(slug,id):
     
     return render_template('admin/country_research_item.html',
                            slug=slug,
+                           country=country,
                            id=research.id,
                            url=url,
                            form=form)
