@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<h4><a href="{{ url_for('admin_countries_slug',slug=country.slug) }}">{{ country.name }}</a> >> Research</h4>
+<h4><a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> Research</h4>
 <form action="" method="post" name="login" enctype="multipart/form-data">
 {{ form.hidden_tag() }}
 
@@ -24,20 +24,20 @@
 
 <div class="row">
 	<div class="small-1 columns">
-	  <label for="title" class="right inline">Image</label>
+	  <label for="title" class="right inline">File</label>
 	</div>
 	<div class="small-11 columns">
 	  {% if url %}
 	      <p>
-	      <img src="{{ url }}">
+	      <a href="{{ url }}" target="_new">{{ filename }}</a>
 	      <br>
-	      <a href="{{ url_for('admin_research_removeimage',slug=slug,id=id) }}">remove image</a>
+	      <a href="{{ url_for('admin_research_removefile',slug=slug,id=id) }}">remove file</a>
 	      </p>
       {% else %}
           <label class="error">
-          {{ form.image(size=40) }}
+          {{ form.paper(size=40) }}
           </label>
-          {% for error in form.image.errors %}
+          {% for error in form.paper.errors %}
           <small class="error">{{ error }}</small>
           {% endfor %}
       {% endif %}

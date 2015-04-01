@@ -6,7 +6,7 @@ from flask.ext.login import login_user, logout_user, current_user, login_require
 from werkzeug import secure_filename
 from json import dumps
 from slugify import slugify
-from app import app, db, lm, newsimages, countryimages, researchimages
+from app import app, db, lm, newsimages, countryimages, researchfiles
 from .models import User, News, Country, Research, Staff
 from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm
 
@@ -101,77 +101,14 @@ def logout():
 @app.route("/admin")
 @login_required
 def landing():
-    return render_template("admin/index.html")
+    return redirect(url_for('admin_countries_slug',slug=current_user.country.slug)) if current_user.country else render_template("admin/index.html")
  
-## NEWS
-
-@app.route('/admin/news')
-@login_required
-def admin_news_list():
-    news = News.query.all()
-    return render_template('admin/news_list.html', 
-                           title='News',
-                           news=news)
-                    
-@app.route('/admin/news/<slug>', methods=['GET', 'POST'])
-@login_required
-def admin_news_slug(slug):
-    news = News() if slug == 'add' else News.query.filter_by(slug=slug).first()
-    form = NewsForm()
-    if form.validate_on_submit():
-        if 'image' in request.files and request.files['image'].filename != '':
-            filename = newsimages.save(request.files['image'])
-            news.filename = filename
-        news.title = form.title.data
-        news.content = form.content.data
-        news.slug = slugify(news.title)
-        if slug == 'add':
-            db.session.add(news)
-        db.session.commit()
-    	flash('News item "%s" saved' %
-              (form.title.data))
-        return redirect('admin/news')
-    else:
-        url = newsimages.url(news.filename) if news.filename else None
-        form.title.data = news.title
-        form.content.data = news.content
-    
-    return render_template('admin/news_item.html', 
-                           id=news.id,
-                           url=url,
-                           form=form)
-
-@app.route('/admin/news/delete/<id>')
-@login_required
-def admin_news_delete(id):
-    news = News.query.filter_by(id=id).first()
-    if news is not None:
-        title = news.title
-        db.session.delete(news)
-        db.session.commit()
-        flash('News item "%s" deleted' %
-              (title))
-        return redirect('admin/news')
-    return redirect('index')
-
-@app.route('/admin/news/removeimage/<id>')
-@login_required
-def admin_news_removeimage(id):
-    news = News.query.filter_by(id=id).first()
-    if news is not None:
-        #if os.path.isfile('/var/www/cap/app/static/img/news/' + news.filename):
-        #    os.remove('/var/www/cap/app/static/img/news/' + news.filename)
-        news.filename = None
-        db.session.commit()
-        return redirect('admin/news/' + news.slug)
-    return redirect('index')
-       
 
 ## COUNTRIES
 
 @app.route('/admin/countries')
 @login_required
-def admin_countries():
+def admin_country_list():
     countries = Country.query.order_by(Country.name)
     return render_template('admin/country_list.html', 
                            title='Country',
@@ -179,7 +116,7 @@ def admin_countries():
                                                
 @app.route('/admin/countries/<slug>', methods=['GET', 'POST'])
 @login_required
-def admin_countries_slug(slug):
+def admin_country_item(slug):
     country = Country() if slug == 'add' else Country.query.filter_by(slug=slug).first()
     form = CountryForm()
     if form.validate_on_submit():
@@ -206,7 +143,7 @@ def admin_countries_slug(slug):
         form.heading.data = country.heading
         form.about.data = country.about
     
-    return render_template('admin/country.html', 
+    return render_template('admin/country_item.html', 
                            id=country.id,
                            slug=country.slug,
                            url=url,
@@ -215,7 +152,7 @@ def admin_countries_slug(slug):
 
 @app.route('/admin/countries/delete/<id>')
 @login_required
-def admin_countries_delete(id):
+def admin_country_delete(id):
     country = Country.query.filter_by(id=id).first()
     if country is not None:
         title = country.name
@@ -228,7 +165,7 @@ def admin_countries_delete(id):
 
 @app.route('/admin/countries/removeimage/<id>')
 @login_required
-def admin_countries_removeimage(id):
+def admin_country_removeimage(id):
     country = Country.query.filter_by(id=id).first()
     if country is not None:
         country.filename = None
@@ -240,14 +177,14 @@ def admin_countries_removeimage(id):
 
 @app.route('/admin/users')
 @login_required
-def admin_users():
+def admin_user_list():
     users = User.query.all()
     return render_template('admin/user_list.html',
                            users=users)
                                                
 @app.route('/admin/users/<id>', methods=['GET', 'POST'])
 @login_required
-def admin_users_id(id):
+def admin_user_item(id):
     user = User() if id == 'add' else User.query.filter_by(id=id).first()
     form = UserForm()
     if form.validate_on_submit():
@@ -267,13 +204,13 @@ def admin_users_id(id):
         form.password.data = user.password
         form.country.data = user.country
     
-    return render_template('admin/user.html', 
+    return render_template('admin/user_item.html', 
                            id=user.id,
                            form=form)
                            
 @app.route('/admin/users/delete/<id>')
 @login_required
-def admin_users_delete(id):
+def admin_user_delete(id):
     user = User.query.filter_by(id=id).first()
     if user is not None:
         name = user.name
@@ -284,29 +221,97 @@ def admin_users_delete(id):
         return redirect('admin/users')
     return redirect('index')
 
+## NEWS
+
+@app.route('/admin/countries/<slug>/news')
+@login_required
+def admin_news_list(slug):
+    country = Country.query.filter_by(slug=slug).first()
+    news = News.query.filter_by(country_id=country.id).all()
+    #news = News.query.all()
+    return render_template('admin/news_list.html', 
+                           title='News',
+                           country=country,
+                           news=news)
+                    
+@app.route('/admin/countries/<slug>/news/<id>', methods=['GET', 'POST'])
+@login_required
+def admin_news_item(slug,id):
+    country = Country.query.filter_by(slug=slug).first()
+    news = News() if id == 'add' else News.query.filter_by(id=id).first()
+    form = NewsForm()
+    if form.validate_on_submit():
+        if 'image' in request.files and request.files['image'].filename != '':
+            filename = newsimages.save(request.files['image'])
+            news.filename = filename
+        news.title = form.title.data
+        news.content = form.content.data
+        news.slug = slugify(news.title)
+        if id == 'add':
+            news.country_id = country.id
+            db.session.add(news)
+        db.session.commit()
+    	flash('News item "%s" saved' %
+              (form.title.data))
+        return redirect('admin/countries/' + slug + '/news')
+    else:
+        url = newsimages.url(news.filename) if news.filename else None
+        form.title.data = news.title
+        form.content.data = news.content
+    
+    return render_template('admin/news_item.html', 
+                           id=news.id,
+                           country=country,
+                           slug=slug,
+                           url=url,
+                           form=form)
+
+@app.route('/admin/countries/<slug>/news/delete/<id>')
+@login_required
+def admin_news_delete(slug,id):
+    news = News.query.filter_by(id=id).first()
+    if news is not None:
+        title = news.title
+        db.session.delete(news)
+        db.session.commit()
+        flash('News item "%s" deleted' %
+              (title))
+        return redirect(url_for('admin_news_list',slug=slug))
+    return redirect('index')
+
+@app.route('/admin/countries/<slug>/news/removeimage/<id>')
+@login_required
+def admin_news_removeimage(slug,id):
+    news = News.query.filter_by(id=id).first()
+    if news is not None:
+        #if os.path.isfile('/var/www/cap/app/static/img/news/' + news.filename):
+        #    os.remove('/var/www/cap/app/static/img/news/' + news.filename)
+        news.filename = None
+        db.session.commit()
+        return redirect('admin/countries/' + slug + '/news/' + id)
+    return redirect('index')
 
 ## RESEARCH
 
 @app.route('/admin/countries/<slug>/research', methods=['GET', 'POST'])
 @login_required
-def admin_countries_research(slug):
+def admin_research_list(slug):
     country = Country.query.filter_by(slug=slug).first()
     research = Research.query.filter_by(country_id=country.id).all()
-    return render_template('admin/country_research.html', 
+    return render_template('admin/research_list.html', 
                            country=country,
                            research=research)
 
 @app.route('/admin/countries/<slug>/research/<id>', methods=['GET', 'POST'])
 @login_required
-def admin_countries_research_id(slug,id):
+def admin_research_item(slug,id):
+    #app.logger.debug('ooooooo yeah')
     country = Country.query.filter_by(slug=slug).first()
-    app.logger.debug('woah')
-    app.logger.debug(country)
     research = Research() if id == 'add' else Research.query.filter_by(id=id).first()
     form = ResearchForm()
     if form.validate_on_submit():
-        if 'image' in request.files and request.files['image'].filename != '':
-            filename = researchimages.save(request.files['image'])
+        if 'paper' in request.files and request.files['paper'].filename != '':
+            filename = researchfiles.save(request.files['paper'])
             research.filename = filename
         research.title = form.title.data
         research.body = form.body.data
@@ -318,12 +323,13 @@ def admin_countries_research_id(slug,id):
               (form.title.data))
         return redirect('admin/countries/' + slug + '/research')
     else:
-        url = researchimages.url(research.filename) if research.filename else None
+        url = researchfiles.url(research.filename) if research.filename else None
         form.title.data = research.title
         form.body.data = research.body
     
-    return render_template('admin/country_research_item.html',
+    return render_template('admin/research_item.html',
                            slug=slug,
+                           filename=research.filename,
                            country=country,
                            id=research.id,
                            url=url,
@@ -344,7 +350,7 @@ def admin_research_delete(slug,id):
 
 @app.route('/admin/countries/<slug>/research/removeimage/<id>')
 @login_required
-def admin_research_removeimage(slug,id):
+def admin_research_removefile(slug,id):
     research = Research.query.filter_by(id=id).first()
     if research is not None:
         #if os.path.isfile('/var/www/cap/app/static/img/news/' + news.filename):

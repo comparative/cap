@@ -18,10 +18,11 @@ class NewsForm(Form):
     title = StringField('title', validators=[DataRequired()])
     image = FileField('image')
     content = StringField('content', validators=[DataRequired()],widget=TextArea())
+    country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
 
 class ResearchForm(Form):
     title = StringField('title', validators=[DataRequired()])
-    image = FileField('image')
+    paper = FileField('paper')
     body = StringField('content', validators=[DataRequired()],widget=TextArea()) 
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)   
 

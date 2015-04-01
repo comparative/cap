@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<h4><a href="{{ url_for('admin_countries_slug',slug=country.slug) }}">{{ country.name }}</a> >> Research</h4>
+<h4><a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> Research</h4>
 <table>
 {% for item in research %}
 <tr><td><a href="/admin/countries/{{ country.slug }}/research/{{ item.id }}">edit</a></td><td>{{ item.title }}</td></tr>

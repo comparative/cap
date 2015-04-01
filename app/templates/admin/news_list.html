@@ -3,12 +3,12 @@
 
 {% block content %}
 
-<h4>News</h4>
+<h4><a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> News</h4>
 <table>
 {% for item in news %}
-<tr><td><a href="/admin/news/{{ item.slug }}">edit</a></td><td>{{ item.title }}</td></tr>
+<tr><td><a href="/admin/countries/{{ country.slug }}/news/{{ item.id }}">edit</a></td><td>{{ item.title }}</td></tr>
 {% endfor %}
 </table>
-<a href="/admin/news/add">Add news</a>
+<a href="/admin/countries/{{ country.slug }}/news/add">Add news</a>
 
 {% endblock %}

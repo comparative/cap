@@ -69,7 +69,7 @@
 	      <p>
 	      <img src="{{ url }}">
 	      <br>
-	      <a href="{{ url_for('admin_countries_removeimage',id=id) }}">remove image</a>
+	      <a href="{{ url_for('admin_country_removeimage',id=id) }}">remove image</a>
 	      </p>
       {% else %}
           <label class="error">
@@ -118,18 +118,18 @@
 <input class="button small" type="submit" value="Save">
 {% if id %}
 &nbsp;&nbsp;
-<a href="{{ url_for('admin_countries_delete',id=id) }}">
+<a href="{{ url_for('admin_country_delete',id=id) }}">
 <input class="button alert small" type="button" value="Delete">
 </a>
 {% endif %}
 </div>
 
 <div class="small-2 columns">
-<a href="{{ url_for('admin_countries_research',slug=slug) }}">Research</a>
+<a href="{{ url_for('admin_news_list',slug=slug) }}">News</a>
 </div>
 
 <div class="small-2 columns">
-<a href="{{ url_for('admin_countries_research',slug=slug) }}">News</a>
+<a href="{{ url_for('admin_research_list',slug=slug) }}">Research</a>
 </div>
 
 <div class="small-2 columns">

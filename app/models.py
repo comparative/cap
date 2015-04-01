@@ -7,6 +7,8 @@ class News(db.Model):
     filename = db.Column(db.String(200))
     content = db.Column(db.String(1000))
     slug = db.Column(db.String(80))
+    country_id = db.Column(db.Integer,db.ForeignKey('country.id'))
+    country = db.relationship('Country',backref=db.backref('news', lazy='dynamic'))
 
 class Country(db.Model):
 
