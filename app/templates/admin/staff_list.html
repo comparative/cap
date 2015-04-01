@@ -1,0 +1,14 @@
+<!-- extend from base layout -->
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4><a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> Staff</h4>
+<table>
+{% for item in staff %}
+<tr><td><a href="/admin/countries/{{ country.slug }}/staff/{{ item.id }}">edit</a></td><td>{{ item.name }}</td></tr>
+{% endfor %}
+</table>
+<a href="/admin/countries/{{ country.slug }}/staff/add">Add staff</a>
+
+{% endblock %}

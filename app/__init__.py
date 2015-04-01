@@ -15,8 +15,9 @@ lm.init_app(app)
 
 newsimages = UploadSet('newsimages', IMAGES)
 countryimages = UploadSet('countryimages', IMAGES)
+staffimages = UploadSet('staffimages', IMAGES)
 researchfiles = UploadSet('researchfiles', 'pdf')
-configure_uploads(app, (newsimages,countryimages,researchfiles,))
+configure_uploads(app, (newsimages,countryimages,staffimages,researchfiles,))
 
 from app import views, models
 

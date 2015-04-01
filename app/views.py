@@ -6,9 +6,9 @@ from flask.ext.login import login_user, logout_user, current_user, login_require
 from werkzeug import secure_filename
 from json import dumps
 from slugify import slugify
-from app import app, db, lm, newsimages, countryimages, researchfiles
+from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles
 from .models import User, News, Country, Research, Staff
-from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm
+from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm
 
 @lm.user_loader
 def load_user(id):
@@ -137,11 +137,12 @@ def admin_country_item(slug):
         return redirect( url_for('admin_countries_slug',slug=current_user.country.slug) if current_user.country else 'admin/countries' )
     else:
         url = countryimages.url(country.filename) if country.filename else None
-        form.name.data = country.name
-        form.principal.data = country.principal
-        form.location.data = country.location
-        form.heading.data = country.heading
-        form.about.data = country.about
+        if request.method == 'GET':
+            form.name.data = country.name
+            form.principal.data = country.principal
+            form.location.data = country.location
+            form.heading.data = country.heading
+            form.about.data = country.about
     
     return render_template('admin/country_item.html', 
                            id=country.id,
@@ -199,10 +200,11 @@ def admin_user_item(id):
               (form.name.data))
         return redirect('admin/users')
     else:
-        form.name.data = user.name
-        form.email.data = user.email
-        form.password.data = user.password
-        form.country.data = user.country
+        if request.method == 'GET':
+            form.name.data = user.name
+            form.email.data = user.email
+            form.password.data = user.password
+            form.country.data = user.country
     
     return render_template('admin/user_item.html', 
                            id=user.id,
@@ -256,8 +258,9 @@ def admin_news_item(slug,id):
         return redirect('admin/countries/' + slug + '/news')
     else:
         url = newsimages.url(news.filename) if news.filename else None
-        form.title.data = news.title
-        form.content.data = news.content
+        if request.method == 'GET':
+            form.title.data = news.title
+            form.content.data = news.content
     
     return render_template('admin/news_item.html', 
                            id=news.id,
@@ -324,8 +327,9 @@ def admin_research_item(slug,id):
         return redirect('admin/countries/' + slug + '/research')
     else:
         url = researchfiles.url(research.filename) if research.filename else None
-        form.title.data = research.title
-        form.body.data = research.body
+        if request.method == 'GET':
+            form.title.data = research.title
+            form.body.data = research.body
     
     return render_template('admin/research_item.html',
                            slug=slug,
@@ -360,6 +364,79 @@ def admin_research_removefile(slug,id):
         return redirect('admin/countries/' + slug + '/research/' + id)
     return redirect('index')
 
+## STAFF
+
+@app.route('/admin/countries/<slug>/staff', methods=['GET', 'POST'])
+@login_required
+def admin_staff_list(slug):
+    country = Country.query.filter_by(slug=slug).first()
+    staff = Staff.query.filter_by(country_id=country.id).all()
+    return render_template('admin/staff_list.html', 
+                           country=country,
+                           staff=staff)
+
+@app.route('/admin/countries/<slug>/staff/<id>', methods=['GET', 'POST'])
+@login_required
+def admin_staff_item(slug,id):
+    #app.logger.debug('ooooooo yeah')
+    country = Country.query.filter_by(slug=slug).first()
+    staff = Staff() if id == 'add' else Staff.query.filter_by(id=id).first()
+    form = StaffForm()
+    if form.validate_on_submit():
+        if 'image' in request.files and request.files['image'].filename != '':
+            filename = staffimages.save(request.files['image'])
+            staff.filename = filename
+        staff.name = form.name.data
+        staff.title = form.title.data
+        staff.institution = form.institution.data
+        staff.body = form.body.data
+        if id == 'add':
+            staff.country_id = country.id
+            db.session.add(staff)
+        db.session.commit()
+    	flash('Staff item "%s" saved' %
+              (form.name.data))
+        return redirect('admin/countries/' + slug + '/staff')
+    else:
+        url = staffimages.url(staff.filename) if staff.filename else None
+        if request.method == 'GET':
+            form.name.data = staff.name
+            form.title.data = staff.title
+            form.institution.data = staff.institution
+            form.body.data = staff.body
+    
+    return render_template('admin/staff_item.html',
+                           slug=slug,
+                           filename=staff.filename,
+                           country=country,
+                           id=staff.id,
+                           url=url,
+                           form=form)
+
+@app.route('/admin/countries/<slug>/staff/delete/<id>')
+@login_required
+def admin_staff_delete(slug,id):
+    staff = Staff.query.filter_by(id=id).first()
+    if staff is not None:
+        title = staff.title
+        db.session.delete(staff)
+        db.session.commit()
+        flash('News item "%s" deleted' %
+              (title))
+        return redirect('admin/countries/' + slug + '/staff')
+    return redirect('index')
+
+@app.route('/admin/countries/<slug>/staff/removeimage/<id>')
+@login_required
+def admin_staff_removefile(slug,id):
+    staff = Staff.query.filter_by(id=id).first()
+    if staff is not None:
+        #if os.path.isfile('/var/www/cap/app/static/img/news/' + news.filename):
+        #    os.remove('/var/www/cap/app/static/img/news/' + news.filename)
+        staff.filename = None
+        db.session.commit()
+        return redirect('admin/countries/' + slug + '/staff/' + id)
+    return redirect('index')
 
 ######### API ROUTES
 
