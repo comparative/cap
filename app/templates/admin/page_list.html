@@ -1,0 +1,14 @@
+<!-- extend from base layout -->
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4>Pages</h4>
+<table>
+{% for item in pages %}
+<tr><td><a href="/admin/pages/{{ item.slug }}">edit</a></td><td>{{ item.title }}</td></tr>
+{% endfor %}
+</table>
+<a href="/admin/pages/add">Add page</a>
+
+{% endblock %}

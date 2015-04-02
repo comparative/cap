@@ -15,6 +15,10 @@ class LoginForm(Form):
     email = StringField('username', validators=[DataRequired()])
     password = PasswordField('password', validators=[DataRequired()])
 
+class PageForm(Form):
+    title = StringField('title', validators=[DataRequired()])
+    body = StringField('body', validators=[DataRequired()],widget=TextArea())
+
 class NewsForm(Form):
     title = StringField('title', validators=[DataRequired()])
     image = FileField('image',validators=[FileAllowed(IMAGES, 'Please choose an image file.')])

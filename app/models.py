@@ -1,5 +1,13 @@
 from app import db
 
+class Page(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(80))
+    body = db.Column(db.String(2000))
+    slug = db.Column(db.String(80))
+    
+
 class News(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)    

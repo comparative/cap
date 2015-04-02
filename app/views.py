@@ -7,8 +7,8 @@ from werkzeug import secure_filename
 from json import dumps
 from slugify import slugify
 from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles
-from .models import User, News, Country, Research, Staff
-from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm
+from .models import User, News, Country, Research, Staff, Page
+from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm
 
 @lm.user_loader
 def load_user(id):
@@ -34,12 +34,18 @@ def index():
 def country(country_slug):
     countries = Country.query.order_by(Country.name)
     country = Country.query.filter_by(slug=country_slug).first()
+    latest_research = Research.query.paginate(1, 2, False).items
+    research = Research.query.filter_by(country_id=country.id)
+    staff = Staff.query.filter_by(country_id=country.id)
     url = countryimages.url(country.filename) if country.filename else None
     return render_template("country.html",
                            title='Country',
                            countries=countries,
                            url = url,
-                           country=country)
+                           latest_research=latest_research,
+                           country=country,
+                           research=research,
+                           staff=staff)
 
 @app.route('/tool')
 def tool():
@@ -72,6 +78,10 @@ def about():
 def datasets_codebooks():
     return render_template('datasets_codebooks.html')
 
+@app.route('/pages/<slug>')
+def pages(slug):
+    page = Page.query.filter_by(slug=slug).first()
+    return render_template('page.html',page=page)
 
 ######### ADMIN ROUTES
 
@@ -86,7 +96,7 @@ def login():
         if user is not None:
             login_user(user)
             flash("Logged in successfully.")
-            return redirect(url_for('admin_countries_slug',slug=user.country.slug) if user.country else request.args.get("next"))
+            return redirect(url_for('admin_country_item',slug=user.country.slug) if user.country else request.args.get("next"))
         else:
             flash("Login credentials incorrect!")
             return redirect(url_for("login"))
@@ -101,8 +111,57 @@ def logout():
 @app.route("/admin")
 @login_required
 def landing():
-    return redirect(url_for('admin_countries_slug',slug=current_user.country.slug)) if current_user.country else render_template("admin/index.html")
+    return redirect(url_for('admin_country_item',slug=current_user.country.slug)) if current_user.country else render_template("admin/index.html")
  
+## PAGES
+
+@app.route('/admin/pages')
+@login_required
+def admin_page_list():
+    pages = Page.query.order_by(Page.title)
+    return render_template('admin/page_list.html', 
+                           title='Page',
+                           pages=pages)
+                                               
+@app.route('/admin/pages/<slug>', methods=['GET', 'POST'])
+@login_required
+def admin_page_item(slug):
+    page = Page() if slug == 'add' else Page.query.filter_by(slug=slug).first()
+    form = PageForm()
+    if form.validate_on_submit():
+        page.title = form.title.data
+        page.body = form.body.data
+        page.slug = slugify(page.title)
+        if slug == 'add':
+            db.session.add(page)
+        db.session.commit()
+    	flash('Page "%s" saved' %
+              (form.title.data))
+        return redirect( 'admin/pages' )
+    else:
+        if request.method == 'GET':
+            form.title.data = page.title
+            form.body.data = page.body
+    
+    return render_template('admin/page_item.html', 
+                           id=page.id,
+                           slug=page.slug,
+                           form=form)
+ 
+
+@app.route('/admin/pages/delete/<id>')
+@login_required
+def admin_page_delete(id):
+    page = Page.query.filter_by(id=id).first()
+    if page is not None:
+        title = page.title
+        db.session.delete(page)
+        db.session.commit()
+        flash('Country "%s" deleted' %
+              (title))
+        return redirect('admin/pages')
+    return redirect('index')
+
 
 ## COUNTRIES
 
