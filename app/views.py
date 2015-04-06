@@ -1,7 +1,8 @@
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from flask import render_template, flash, redirect, url_for, request
+from functools import wraps, update_wrapper
+from flask import render_template, flash, redirect, url_for, request, make_response, send_file, abort
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from werkzeug import secure_filename
 from json import dumps
@@ -9,10 +10,23 @@ from slugify import slugify
 from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, adhocfiles
 from .models import User, News, Country, Research, Staff, Page, File
 from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm
+from datetime import datetime
 
 @lm.user_loader
 def load_user(id):
     return User.query.get(int(id))
+
+def nocache(view):
+    @wraps(view)
+    def no_cache(*args, **kwargs):
+        response = make_response(view(*args, **kwargs))
+        response.headers['Last-Modified'] = datetime.now()
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '-1'
+        return response
+        
+    return update_wrapper(no_cache, view)
 
 ######### PUBLIC ROUTES
 
@@ -82,6 +96,17 @@ def datasets_codebooks():
 def pages(slug):
     page = Page.query.filter_by(slug=slug).first()
     return render_template('page.html',page=page)
+
+@app.route('/files/<slug>')
+@nocache
+def files(slug):
+    file = File.query.filter_by(slug=slug).first()
+    if file:
+        if file.filename:
+            path = adhocfiles.path(file.filename)
+            return send_file(path)
+    else:
+        abort(404)
 
 ######### ADMIN ROUTES
 
