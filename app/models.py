@@ -7,6 +7,12 @@ class Page(db.Model):
     body = db.Column(db.String(2000))
     slug = db.Column(db.String(80))
     
+class File(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80))
+    filename = db.Column(db.String(200))
+    slug = db.Column(db.String(80))
 
 class News(db.Model):
 

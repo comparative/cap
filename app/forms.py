@@ -18,6 +18,10 @@ class LoginForm(Form):
 class PageForm(Form):
     title = StringField('title', validators=[DataRequired()])
     body = StringField('body', validators=[DataRequired()],widget=TextArea())
+    
+class FileForm(Form):
+    name = StringField('name', validators=[DataRequired()])
+    file = FileField('file')
 
 class NewsForm(Form):
     title = StringField('title', validators=[DataRequired()])

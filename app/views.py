@@ -6,9 +6,9 @@ from flask.ext.login import login_user, logout_user, current_user, login_require
 from werkzeug import secure_filename
 from json import dumps
 from slugify import slugify
-from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles
-from .models import User, News, Country, Research, Staff, Page
-from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm
+from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, adhocfiles
+from .models import User, News, Country, Research, Staff, Page, File
+from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm
 
 @lm.user_loader
 def load_user(id):
@@ -161,6 +161,70 @@ def admin_page_delete(id):
               (title))
         return redirect('admin/pages')
     return redirect('index')
+
+## FILES
+
+@app.route('/admin/files')
+@login_required
+def admin_file_list():
+    files = File.query.order_by(File.name)
+    return render_template('admin/file_list.html', 
+                           title='File',
+                           files=files)
+                                               
+@app.route('/admin/files/<slug>', methods=['GET', 'POST'])
+@login_required
+def admin_file_item(slug):
+    file = File() if slug == 'add' else File.query.filter_by(slug=slug).first()
+    form = FileForm()
+    if form.validate_on_submit():
+        if 'file' in request.files and request.files['file'].filename != '':
+            filename = adhocfiles.save(request.files['file'])
+            file.filename = filename
+        file.name = form.name.data
+        file.slug = slugify(file.name)
+        if slug == 'add':
+            db.session.add(file)
+        db.session.commit()
+    	flash('File "%s" saved' %
+              (form.name.data))
+        return redirect( 'admin/files' )
+    else:
+        url = adhocfiles.url(file.filename) if file.filename else None
+        if request.method == 'GET':
+            form.name.data = file.name
+    
+    return render_template('admin/file_item.html', 
+                           id=file.id,
+                           filename=file.filename,
+                           url=url,
+                           slug=file.slug,
+                           form=form)
+ 
+
+@app.route('/admin/files/delete/<id>')
+@login_required
+def admin_file_delete(id):
+    file = File.query.filter_by(id=id).first()
+    if file is not None:
+        name = file.name
+        db.session.delete(file)
+        db.session.commit()
+        flash('File "%s" deleted' %
+              (name))
+        return redirect('admin/files')
+    return redirect('index')
+
+@app.route('/admin/files/removefile/<id>')
+@login_required
+def admin_file_removefile(id):
+    file = File.query.filter_by(id=id).first()
+    if file is not None:
+        file.filename = None
+        db.session.commit()
+        return redirect('admin/files/' + file.slug)
+    return redirect('index')  
+
 
 
 ## COUNTRIES

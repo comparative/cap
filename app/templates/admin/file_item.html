@@ -4,51 +4,49 @@
 {% block content %}
 
 
-
+<h4>File</h4>
 <form action="" method="post" name="user" enctype="multipart/form-data">
 {{ form.hidden_tag() }}
 
 <div class="row">
 	<div class="small-1 columns">
-	  <label for="title" class="right inline">Title</label>
+	  <label for="title" class="right inline">Name</label>
 	</div>
 	<div class="small-11 columns">
 	  <label class="error">
-	  {{ form.title(size=40) }}
+	  {{ form.name(size=40) }}
 	  </label>
-	  {% for error in form.title.errors %}
+	  {% for error in form.name.errors %}
 	  <small class="error">{{ error }}</small>
       {% endfor %}
 	</div>
 </div>
 
-{% if slug %}
+
 
 <div class="row">
 	<div class="small-1 columns">
-	  <label for="title" class="right inline">URL</label>
-	</div>
-	<div class="small-11 columns">
-	  http://www.coolbest.net:5000/pages/{{ slug }}
-	</div>
-</div>
-
-{% endif %}
-
-<div class="row">
-	<div class="small-1 columns">
-	  <label for="title" class="right inline">Body</label>
-	</div>
-	<div class="small-11 columns">
-	  <label class="error">
-	  {{ form.body(cols="35", rows="15") }}
+	  <label for="title" class="right inline">
+	  {% if url %}URL{% else %}File{% endif %}
 	  </label>
-	  {% for error in form.body.errors %}
-	  <small class="error">{{ error }}</small>
-      {% endfor %}
+	</div>
+	<div class="small-11 columns">
+	  {% if url %}
+	      <p>
+	      <a href="{{ url }}" target="_new">http://www.coolbest.net:5000/_uploads/adhocfiles/{{ slug }}</a>
+	      <br>
+	      <a href="{{ url_for('admin_file_removefile',slug=slug,id=id) }}">remove file</a>
+	      </p>
+      {% else %}
+          <label class="error">
+          {{ form.file(size=40) }}
+          </label>
+          {% for error in form.file.errors %}
+          <small class="error">{{ error }}</small>
+          {% endfor %}
+      {% endif %}
 	</div>
 </div>
-<br>
 
 <div class="row">
 <div class="small-1 columns">&nbsp;</div>
@@ -56,7 +54,7 @@
 <input class="button small" type="submit" value="Save">
 {% if id %}
 &nbsp;&nbsp;
-<a href="{{ url_for('admin_page_delete',id=id) }}">
+<a href="{{ url_for('admin_file_delete',id=id) }}">
 <input class="button alert small" type="button" value="Delete">
 </a>
 {% endif %}

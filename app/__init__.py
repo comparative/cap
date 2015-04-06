@@ -2,7 +2,7 @@ import logging
 from flask import Flask
 from flask.ext.login import LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.uploads import UploadSet, configure_uploads, IMAGES
+from flask.ext.uploads import UploadSet, configure_uploads, IMAGES, ALL
 
 app = Flask(__name__)
 app.config.from_object('config')
@@ -17,7 +17,8 @@ newsimages = UploadSet('newsimages', IMAGES)
 countryimages = UploadSet('countryimages', IMAGES)
 staffimages = UploadSet('staffimages', IMAGES)
 researchfiles = UploadSet('researchfiles', 'pdf')
-configure_uploads(app, (newsimages,countryimages,staffimages,researchfiles,))
+adhocfiles = UploadSet('adhocfiles', ALL)
+configure_uploads(app, (newsimages,countryimages,staffimages,researchfiles,adhocfiles,))
 
 from app import views, models
 
