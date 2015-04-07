@@ -40,20 +40,18 @@ def index():
             item.url = url
     countries = Country.query.order_by(Country.name)
     return render_template("index.html",
-                           title='Home',
                            countries=countries,
                            news=news)
 
-@app.route('/countries/<country_slug>')
-def country(country_slug):
+@app.route('/countries/<slug>')
+def country(slug):
     countries = Country.query.order_by(Country.name)
-    country = Country.query.filter_by(slug=country_slug).first()
+    country = Country.query.filter_by(slug=slug).first()
     latest_research = Research.query.paginate(1, 2, False).items
     research = Research.query.filter_by(country_id=country.id)
     staff = Staff.query.filter_by(country_id=country.id)
     url = countryimages.url(country.filename) if country.filename else None
     return render_template("country.html",
-                           title='Country',
                            countries=countries,
                            url = url,
                            latest_research=latest_research,
@@ -75,13 +73,13 @@ def news(page=1):
             item.url = url
     return render_template('news.html',news=news)
 
-@app.route('/news/<news_slug>')
-def news_item(news_slug):    
-    item = News.query.filter_by(slug=news_slug).first()
+@app.route('/news/<slug>')
+def news_item(slug):    
+    item = News.query.filter_by(slug=slug).first()
     if item.filename:
             url = newsimages.url(item.filename)
             item.url = url
-    news = News.query.filter(News.slug!=news_slug).limit(2).all()
+    news = News.query.filter(News.slug!=slug).limit(2).all()
     return render_template('news_item.html',item=item,news=news)
 
 @app.route('/about')
@@ -93,13 +91,13 @@ def datasets_codebooks():
     return render_template('datasets_codebooks.html')
 
 @app.route('/pages/<slug>')
-def pages(slug):
+def page(slug):
     page = Page.query.filter_by(slug=slug).first()
     return render_template('page.html',page=page)
 
 @app.route('/files/<slug>')
 @nocache
-def files(slug):
+def file(slug):
     file = File.query.filter_by(slug=slug).first()
     if file:
         if file.filename:
@@ -121,7 +119,8 @@ def login():
         if user is not None:
             login_user(user)
             flash("Logged in successfully.")
-            return redirect(url_for('admin_country_item',slug=user.country.slug) if user.country else request.args.get("next"))
+            return redirect(request.args.get("next") or url_for("admin"))
+            #return redirect(url_for('admin_country_item',slug=user.country.slug) if user.country else request.args.get("next"))
         else:
             flash("Login credentials incorrect!")
             return redirect(url_for("login"))
@@ -135,7 +134,7 @@ def logout():
  
 @app.route("/admin")
 @login_required
-def landing():
+def admin():
     return redirect(url_for('admin_country_item',slug=current_user.country.slug)) if current_user.country else render_template("admin/index.html")
  
 ## PAGES
@@ -144,8 +143,7 @@ def landing():
 @login_required
 def admin_page_list():
     pages = Page.query.order_by(Page.title)
-    return render_template('admin/page_list.html', 
-                           title='Page',
+    return render_template('admin/page_list.html',
                            pages=pages)
                                                
 @app.route('/admin/pages/<slug>', methods=['GET', 'POST'])
@@ -162,7 +160,7 @@ def admin_page_item(slug):
         db.session.commit()
     	flash('Page "%s" saved' %
               (form.title.data))
-        return redirect( 'admin/pages' )
+        return redirect(url_for('admin_page_list'))
     else:
         if request.method == 'GET':
             form.title.data = page.title
@@ -182,10 +180,11 @@ def admin_page_delete(id):
         title = page.title
         db.session.delete(page)
         db.session.commit()
-        flash('Country "%s" deleted' %
+        flash('Page "%s" deleted' %
               (title))
-        return redirect('admin/pages')
-    return redirect('index')
+        return redirect(url_for('admin_page_list'))
+    flash('Page not found!')
+    return redirect(url_for('admin'))  
 
 ## FILES
 
@@ -193,8 +192,7 @@ def admin_page_delete(id):
 @login_required
 def admin_file_list():
     files = File.query.order_by(File.name)
-    return render_template('admin/file_list.html', 
-                           title='File',
+    return render_template('admin/file_list.html',
                            files=files)
                                                
 @app.route('/admin/files/<slug>', methods=['GET', 'POST'])
@@ -237,8 +235,9 @@ def admin_file_delete(id):
         db.session.commit()
         flash('File "%s" deleted' %
               (name))
-        return redirect('admin/files')
-    return redirect('index')
+        return redirect(url_for('admin_file_list'))
+    flash('File not found!')
+    return redirect(url_for('admin'))  
 
 @app.route('/admin/files/removefile/<id>')
 @login_required
@@ -247,8 +246,9 @@ def admin_file_removefile(id):
     if file is not None:
         file.filename = None
         db.session.commit()
-        return redirect('admin/files/' + file.slug)
-    return redirect('index')  
+        return redirect(url_for('admin_file_item',slug=file.slug))
+    flash('File not found!')
+    return redirect(url_for('admin'))   
 
 
 
@@ -258,8 +258,7 @@ def admin_file_removefile(id):
 @login_required
 def admin_country_list():
     countries = Country.query.order_by(Country.name)
-    return render_template('admin/country_list.html', 
-                           title='Country',
+    return render_template('admin/country_list.html',
                            countries=countries)
                                                
 @app.route('/admin/countries/<slug>', methods=['GET', 'POST'])
@@ -309,8 +308,9 @@ def admin_country_delete(id):
         db.session.commit()
         flash('Country "%s" deleted' %
               (title))
-        return redirect('admin/countries')
-    return redirect('index')
+        return redirect(url_for('admin_country_list'))
+    flash('Country not found!')
+    return redirect(url_for('admin'))  
 
 @app.route('/admin/countries/removeimage/<id>')
 @login_required
@@ -319,8 +319,9 @@ def admin_country_removeimage(id):
     if country is not None:
         country.filename = None
         db.session.commit()
-        return redirect('admin/countries/' + country.slug)
-    return redirect('index')                         
+        return redirect(url_for('admin_country_item',slug=country.slug))
+    flash('Country not found!')
+    return redirect(url_for('admin'))                         
 
 ## USERS
 
@@ -346,7 +347,7 @@ def admin_user_item(id):
         db.session.commit()
     	flash('User "%s" saved' %
               (form.name.data))
-        return redirect('admin/users')
+        return redirect(url_for('admin_user_list'))
     else:
         if request.method == 'GET':
             form.name.data = user.name
@@ -368,8 +369,9 @@ def admin_user_delete(id):
         db.session.commit()
         flash('User "%s" deleted' %
               (user.name))
-        return redirect('admin/users')
-    return redirect('index')
+        return redirect(url_for('admin_user_list'))
+    flash('User not found!')
+    return redirect(url_for('admin'))  
 
 ## NEWS
 
@@ -379,8 +381,7 @@ def admin_news_list(slug):
     country = Country.query.filter_by(slug=slug).first()
     news = News.query.filter_by(country_id=country.id).all()
     #news = News.query.all()
-    return render_template('admin/news_list.html', 
-                           title='News',
+    return render_template('admin/news_list.html',
                            country=country,
                            news=news)
                     
@@ -403,7 +404,7 @@ def admin_news_item(slug,id):
         db.session.commit()
     	flash('News item "%s" saved' %
               (form.title.data))
-        return redirect('admin/countries/' + slug + '/news')
+        return redirect(url_for('admin_news_list',slug=slug))
     else:
         url = newsimages.url(news.filename) if news.filename else None
         if request.method == 'GET':
@@ -428,7 +429,8 @@ def admin_news_delete(slug,id):
         flash('News item "%s" deleted' %
               (title))
         return redirect(url_for('admin_news_list',slug=slug))
-    return redirect('index')
+    flash('News not found!')
+    return redirect(url_for('admin'))  
 
 @app.route('/admin/countries/<slug>/news/removeimage/<id>')
 @login_required
@@ -439,8 +441,9 @@ def admin_news_removeimage(slug,id):
         #    os.remove('/var/www/cap/app/static/img/news/' + news.filename)
         news.filename = None
         db.session.commit()
-        return redirect('admin/countries/' + slug + '/news/' + id)
-    return redirect('index')
+        return redirect(url_for('admin_news_item',slug=slug,id=id))
+    flash('News not found!')
+    return redirect(url_for('admin')) 
 
 ## RESEARCH
 
@@ -472,7 +475,7 @@ def admin_research_item(slug,id):
         db.session.commit()
     	flash('Research item "%s" saved' %
               (form.title.data))
-        return redirect('admin/countries/' + slug + '/research')
+        return redirect(url_for('admin_research_list',slug=slug))
     else:
         url = researchfiles.url(research.filename) if research.filename else None
         if request.method == 'GET':
@@ -497,8 +500,9 @@ def admin_research_delete(slug,id):
         db.session.commit()
         flash('News item "%s" deleted' %
               (title))
-        return redirect('admin/countries/' + slug + '/research')
-    return redirect('index')
+        return redirect(url_for('admin_research_list',slug=slug))
+    flash('Research not found!')
+    return redirect(url_for('admin')) 
 
 @app.route('/admin/countries/<slug>/research/removeimage/<id>')
 @login_required
@@ -509,8 +513,9 @@ def admin_research_removefile(slug,id):
         #    os.remove('/var/www/cap/app/static/img/news/' + news.filename)
         research.filename = None
         db.session.commit()
-        return redirect('admin/countries/' + slug + '/research/' + id)
-    return redirect('index')
+        return redirect(url_for('admin_research_item',slug=slug,id=id))
+    flash('Research not found!')
+    return redirect(url_for('admin')) 
 
 ## STAFF
 
@@ -526,7 +531,6 @@ def admin_staff_list(slug):
 @app.route('/admin/countries/<slug>/staff/<id>', methods=['GET', 'POST'])
 @login_required
 def admin_staff_item(slug,id):
-    #app.logger.debug('ooooooo yeah')
     country = Country.query.filter_by(slug=slug).first()
     staff = Staff() if id == 'add' else Staff.query.filter_by(id=id).first()
     form = StaffForm()
@@ -542,9 +546,9 @@ def admin_staff_item(slug,id):
             staff.country_id = country.id
             db.session.add(staff)
         db.session.commit()
-    	flash('Staff item "%s" saved' %
+    	flash('Staff member "%s" saved' %
               (form.name.data))
-        return redirect('admin/countries/' + slug + '/staff')
+        return redirect(url_for('admin_staff_list',slug=slug))
     else:
         url = staffimages.url(staff.filename) if staff.filename else None
         if request.method == 'GET':
@@ -571,8 +575,9 @@ def admin_staff_delete(slug,id):
         db.session.commit()
         flash('News item "%s" deleted' %
               (title))
-        return redirect('admin/countries/' + slug + '/staff')
-    return redirect('index')
+        return redirect(url_for('admin_staff_list',slug=slug))
+    flash('Staff member not found!')
+    return redirect(url_for('admin'))
 
 @app.route('/admin/countries/<slug>/staff/removeimage/<id>')
 @login_required
@@ -583,8 +588,9 @@ def admin_staff_removefile(slug,id):
         #    os.remove('/var/www/cap/app/static/img/news/' + news.filename)
         staff.filename = None
         db.session.commit()
-        return redirect('admin/countries/' + slug + '/staff/' + id)
-    return redirect('index')
+        return redirect(url_for('admin_staff_item',slug=slug,id=id))
+    flash('Staff member not found!')
+    return redirect(url_for('admin'))
 
 ######### API ROUTES
 

@@ -19,7 +19,7 @@
 
 				<h6>{{ n.title }}</h6>
 				{{ smart_truncate(n.content,100)|safe }}
-				<a class="orange-link" href="/news/{{ n.slug }}">read more</a>
+				<a class="orange-link" href="{{ url_for('news_item',slug=n.slug) }}">read more</a>
 
 
 

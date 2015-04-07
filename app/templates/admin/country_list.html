@@ -6,9 +6,9 @@
 <h4>Countries</h4>
 <table>
 {% for item in countries %}
-<tr><td><a href="/admin/countries/{{ item.slug }}">edit</a></td><td>{{ item.name }}</td></tr>
+<tr><td><a href="{{ url_for('admin_country_item',slug=item.slug) }}">edit</a></td><td>{{ item.name }}</td></tr>
 {% endfor %}
 </table>
-<a href="/admin/countries/add">Add country</a>
+<a href="{{ url_for('admin_country_item',slug='add') }}">Add country</a>
 
 {% endblock %}

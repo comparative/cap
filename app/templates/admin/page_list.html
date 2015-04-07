@@ -6,9 +6,9 @@
 <h4>Pages</h4>
 <table>
 {% for item in pages %}
-<tr><td><a href="/admin/pages/{{ item.slug }}">edit</a></td><td>{{ item.title }}</td></tr>
+<tr><td><a href="{{ url_for('admin_page_item',slug=item.slug) }}">edit</a></td><td>{{ item.title }}</td></tr>
 {% endfor %}
 </table>
-<a href="/admin/pages/add">Add page</a>
+<a href="{{ url_for('admin_page_item',slug='add') }}">Add page</a>
 
 {% endblock %}

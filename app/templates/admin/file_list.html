@@ -6,9 +6,9 @@
 <h4>Files</h4>
 <table>
 {% for item in files %}
-<tr><td><a href="/admin/files/{{ item.slug }}">edit</a></td><td>{{ item.name }}</td></tr>
+<tr><td><a href="{{ url_for('admin_file_item',slug=item.slug) }}">edit</a></td><td>{{ item.name }}</td></tr>
 {% endfor %}
 </table>
-<a href="/admin/files/add">Add file</a>
+<a href="{{ url_for('admin_file_item',slug='add') }}">Add file</a>
 
 {% endblock %}

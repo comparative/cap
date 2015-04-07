@@ -8,16 +8,16 @@
 
 <li>
 {% if current_user.country %}
-<a href="/admin/countries/{{ current_user.country.slug }}">{{ current_user.country.name }}</a>
+<a href="{{ url_for('admin_country_item',slug=current_user.country.slug) }}">{{ current_user.country.name }}</a>
 {% else %}
-<a href="/admin/countries">Countries</a>
+<a href="{{ url_for('admin_country_list') }}">Countries</a>
 {% endif %}
 </li>
 
 {% if not current_user.country %}
-<li><a href="/admin/users">Users</a></li>
-<li><a href="/admin/pages">Pages</a></li>
-<li><a href="/admin/files">Files</a></li>
+<li><a href="{{ url_for('admin_user_list') }}">Users</a></li>
+<li><a href="{{ url_for('admin_page_list') }}">Pages</a></li>
+<li><a href="{{ url_for('admin_file_list') }}">Files</a></li>
 {% endif %}
 
 </ul>

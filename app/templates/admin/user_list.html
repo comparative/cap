@@ -6,9 +6,9 @@
 <h4>Users</h4>
 <table>
 {% for item in users %}
-<tr><td><a href="/admin/users/{{ item.id }}">edit</a></td><td>{{ item.name }}</td></tr>
+<tr><td><a href="{{ url_for('admin_user_item',id=item.id) }}">edit</a></td><td>{{ item.name }}</td></tr>
 {% endfor %}
 </table>
-<a href="/admin/users/add">Add user</a>
+<a href="{{ url_for('admin_user_item',id='add') }}">Add user</a>
 
 {% endblock %}

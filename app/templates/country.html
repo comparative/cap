@@ -54,7 +54,7 @@
         	    
                 <div class="medium-3 columns left">
                     
-                    <a href="/tool" target="_tool"><img src="/static/img/trends_tool.png"/></a>
+                    <a href="{{ url_for('tool') }}" target="_tool"><img src="/static/img/trends_tool.png"/></a>
                     
                 </div>
         
@@ -161,7 +161,7 @@
                                 
                                 <h4>Explore Trends in {{ country.name }} Policy</h4>
                                 
-                                <a href="/tool" target="_tool">
+                                <a href="{{ url_for('admin') }}" target="_tool">
                                 <img style="height:200px;" src="/static/img/chart-us.png" width="100%"/>    
                                 </a>
                                 
@@ -239,7 +239,7 @@
                     
                     <div class="scrollable">
                     {% for item in countries %}
-                    <a href="/countries/{{ item.slug }}"><p>{{ item.name }}</p></a>
+                    <a href="{{ url_for('country',slug=item.slug) }}"><p>{{ item.name }}</p></a>
                     {% endfor %}
                     </div>  
                     

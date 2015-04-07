@@ -24,12 +24,12 @@
     <div class="row">
     <div class="medium-4 columns">
     {% if not current_user.country %}
-    <h3><a href="/admin">Admin</a></h3>
+    <h3><a href="{{ url_for('admin') }}">Admin</a></h3>
     {% endif %}
     </div>
     <div class="medium-8 columns text-right">
     {% if current_user.is_authenticated() %}
-    Hi {{ current_user.name }}! <a href="/admin/logout">Logout</a>
+    Hi {{ current_user.name }}! <a href="{{ url_for('logout') }}">Logout</a>
     {% endif %}
     </div>
     </div>

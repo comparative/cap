@@ -124,18 +124,33 @@
 {% endif %}
 </div>
 
-<div class="small-2 columns">
+<div class="small-6 columns">
+
+{% if id %}
+
+<div class="row">
+
+<div class="small-3 columns">
+<a href="">Datasets</a>
+</div>
+
+<div class="small-3 columns">
 <a href="{{ url_for('admin_news_list',slug=slug) }}">News</a>
 </div>
 
-<div class="small-2 columns">
+<div class="small-3 columns">
 <a href="{{ url_for('admin_research_list',slug=slug) }}">Research</a>
 </div>
 
-<div class="small-2 columns">
+<div class="small-3 columns">
 <a href="{{ url_for('admin_staff_list',slug=slug) }}">Staff</a>
 </div>
 
+</div>
+
+{% endif %}
+
+</div>
 
 </form>
 
