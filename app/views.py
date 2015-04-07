@@ -244,6 +244,9 @@ def admin_file_delete(id):
 def admin_file_removefile(id):
     file = File.query.filter_by(id=id).first()
     if file is not None:
+        path = adhocfiles.path(file.filename)
+        if os.path.isfile(path):
+            os.remove(path)
         file.filename = None
         db.session.commit()
         return redirect(url_for('admin_file_item',slug=file.slug))
@@ -317,6 +320,9 @@ def admin_country_delete(id):
 def admin_country_removeimage(id):
     country = Country.query.filter_by(id=id).first()
     if country is not None:
+        path = countryimages.path(country.filename)
+        if os.path.isfile(path):
+            os.remove(path)
         country.filename = None
         db.session.commit()
         return redirect(url_for('admin_country_item',slug=country.slug))
@@ -437,8 +443,9 @@ def admin_news_delete(slug,id):
 def admin_news_removeimage(slug,id):
     news = News.query.filter_by(id=id).first()
     if news is not None:
-        #if os.path.isfile('/var/www/cap/app/static/img/news/' + news.filename):
-        #    os.remove('/var/www/cap/app/static/img/news/' + news.filename)
+        path = newsimages.path(news.filename)
+        if os.path.isfile(path):
+            os.remove(path)
         news.filename = None
         db.session.commit()
         return redirect(url_for('admin_news_item',slug=slug,id=id))
@@ -509,8 +516,9 @@ def admin_research_delete(slug,id):
 def admin_research_removefile(slug,id):
     research = Research.query.filter_by(id=id).first()
     if research is not None:
-        #if os.path.isfile('/var/www/cap/app/static/img/news/' + news.filename):
-        #    os.remove('/var/www/cap/app/static/img/news/' + news.filename)
+        path = researchfiles.path(research.filename)
+        if os.path.isfile(path):
+            os.remove(path)
         research.filename = None
         db.session.commit()
         return redirect(url_for('admin_research_item',slug=slug,id=id))
@@ -584,8 +592,9 @@ def admin_staff_delete(slug,id):
 def admin_staff_removefile(slug,id):
     staff = Staff.query.filter_by(id=id).first()
     if staff is not None:
-        #if os.path.isfile('/var/www/cap/app/static/img/news/' + news.filename):
-        #    os.remove('/var/www/cap/app/static/img/news/' + news.filename)
+        path = staffimages.path(staff.filename)
+        if os.path.isfile(path):
+            os.remove(path)
         staff.filename = None
         db.session.commit()
         return redirect(url_for('admin_staff_item',slug=slug,id=id))
