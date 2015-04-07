@@ -511,7 +511,7 @@ def admin_research_delete(slug,id):
     flash('Research not found!')
     return redirect(url_for('admin')) 
 
-@app.route('/admin/countries/<slug>/research/removeimage/<id>')
+@app.route('/admin/countries/<slug>/research/removefile/<id>')
 @login_required
 def admin_research_removefile(slug,id):
     research = Research.query.filter_by(id=id).first()
