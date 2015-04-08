@@ -33,17 +33,17 @@
 	  <label for="title" class="right inline">File</label>
 	</div>
 	<div class="small-11 columns">
-	  {% if url %}
+	  {% if fileurl %}
 	      <p>
-	      <a href="{{ url }}" target="_new">{{ filename }}</a>
+	      <a href="{{ fileurl }}" target="_new">{{ filename }}</a>
 	      <br>
 	      <a href="{{ url_for('admin_research_removefile',slug=slug,id=id) }}">detach file</a>
 	      </p>
       {% else %}
           <label class="error">
-          {{ form.paper(size=40) }}
+          {{ form.file(size=40) }}
           </label>
-          {% for error in form.paper.errors %}
+          {% for error in form.file.errors %}
           <small class="error">{{ error }}</small>
           {% endfor %}
       {% endif %}
@@ -51,6 +51,27 @@
 </div>
 
 
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Image</label>
+	</div>
+	<div class="small-11 columns">
+	  {% if imageurl %}
+	      <p>
+	      <img src="{{ imageurl }}">
+	      <br>
+	      <a href="{{ url_for('admin_research_removeimage',slug=slug,id=id) }}">remove image</a>
+	      </p>
+      {% else %}
+          <label class="error">
+          {{ form.image(size=40) }}
+          </label>
+          {% for error in form.image.errors %}
+          <small class="error">{{ error }}</small>
+          {% endfor %}
+      {% endif %}
+	</div>
+</div>
 
 
 <div class="row">

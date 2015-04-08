@@ -31,7 +31,8 @@ class NewsForm(Form):
 
 class ResearchForm(Form):
     title = StringField('title', validators=[DataRequired()])
-    paper = FileField('paper',validators=[FileAllowed(['pdf'], 'Papers must be formatted as .pdf')])
+    file = FileField('file',validators=[FileAllowed(['pdf'], 'Papers must be formatted as .pdf')])
+    image = FileField('image')
     body = StringField('content', validators=[DataRequired()],widget=TextArea()) 
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
     

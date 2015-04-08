@@ -23,6 +23,7 @@ class News(db.Model):
     slug = db.Column(db.String(80))
     country_id = db.Column(db.Integer,db.ForeignKey('country.id'))
     country = db.relationship('Country',backref=db.backref('news', lazy='dynamic'))
+    saved_date = db.Column(db.DateTime)
 
 class Country(db.Model):
 
@@ -41,12 +42,14 @@ class Country(db.Model):
 
 class Research(db.Model):
 
-    id = db.Column(db.Integer, primary_key=True)    
-    title = db.Column(db.String(80))
-    filename = db.Column(db.String(200))
-    body = db.Column(db.String(1000))
+    id = db.Column(db.Integer, primary_key=True) 
     country_id = db.Column(db.Integer,db.ForeignKey('country.id'))
     country = db.relationship('Country',backref=db.backref('research', lazy='dynamic'))
+    title = db.Column(db.String(80))
+    filename = db.Column(db.String(200))
+    imagename = db.Column(db.String(200))
+    body = db.Column(db.String(1000))
+    saved_date = db.Column(db.DateTime)
     
     def __repr__(self):
         return self.title    

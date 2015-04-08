@@ -1,13 +1,14 @@
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from datetime import datetime
 from functools import wraps, update_wrapper
 from flask import render_template, flash, redirect, url_for, request, make_response, send_file, abort
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from werkzeug import secure_filename
 from json import dumps
 from slugify import slugify
-from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, adhocfiles
+from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles
 from .models import User, News, Country, Research, Staff, Page, File
 from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm
 from datetime import datetime
@@ -409,6 +410,7 @@ def admin_news_item(slug,id):
         if id == 'add':
             news.country_id = country.id
             db.session.add(news)
+        news.saved_date = datetime.utcnow()
         db.session.commit()
     	flash('News item "%s" saved' %
               (form.title.data))
@@ -468,25 +470,30 @@ def admin_research_list(slug):
 @app.route('/admin/countries/<slug>/research/<id>', methods=['GET', 'POST'])
 @login_required
 def admin_research_item(slug,id):
-    #app.logger.debug('ooooooo yeah')
     country = Country.query.filter_by(slug=slug).first()
     research = Research() if id == 'add' else Research.query.filter_by(id=id).first()
     form = ResearchForm()
     if form.validate_on_submit():
-        if 'paper' in request.files and request.files['paper'].filename != '':
-            filename = researchfiles.save(request.files['paper'])
+        if 'file' in request.files and request.files['file'].filename != '':
+            app.logger.debug('ooooooo lordy')
+            filename = researchfiles.save(request.files['file'])
             research.filename = filename
+        if 'image' in request.files and request.files['image'].filename != '':
+            imagename = researchimages.save(request.files['image'])
+            research.imagename = imagename
         research.title = form.title.data
         research.body = form.body.data
         if id == 'add':
             research.country_id = country.id
             db.session.add(research)
+        research.saved_date = datetime.utcnow()
         db.session.commit()
     	flash('Research item "%s" saved' %
               (form.title.data))
         return redirect(url_for('admin_research_list',slug=slug))
     else:
-        url = researchfiles.url(research.filename) if research.filename else None
+        fileurl = researchfiles.url(research.filename) if research.filename else None
+        imageurl = researchimages.url(research.imagename) if research.imagename else None
         if request.method == 'GET':
             form.title.data = research.title
             form.body.data = research.body
@@ -494,9 +501,11 @@ def admin_research_item(slug,id):
     return render_template('admin/research_item.html',
                            slug=slug,
                            filename=research.filename,
+                           imagename=research.imagename,
                            country=country,
                            id=research.id,
-                           url=url,
+                           fileurl=fileurl,
+                           imageurl=imageurl,
                            form=form)
 
 @app.route('/admin/countries/<slug>/research/delete/<id>')
@@ -507,7 +516,7 @@ def admin_research_delete(slug,id):
         title = research.title
         db.session.delete(research)
         db.session.commit()
-        flash('News item "%s" deleted' %
+        flash('Research item "%s" deleted' %
               (title))
         return redirect(url_for('admin_research_list',slug=slug))
     flash('Research not found!')
@@ -522,6 +531,20 @@ def admin_research_removefile(slug,id):
         if os.path.isfile(path):
             os.remove(path)
         research.filename = None
+        db.session.commit()
+        return redirect(url_for('admin_research_item',slug=slug,id=id))
+    flash('Research not found!')
+    return redirect(url_for('admin'))
+
+@app.route('/admin/countries/<slug>/research/removeimage/<id>')
+@login_required
+def admin_research_removeimage(slug,id):
+    research = Research.query.filter_by(id=id).first()
+    if research is not None:
+        path = researchimages.path(research.imagename)
+        if os.path.isfile(path):
+            os.remove(path)
+        research.imagename = None
         db.session.commit()
         return redirect(url_for('admin_research_item',slug=slug,id=id))
     flash('Research not found!')
@@ -583,7 +606,7 @@ def admin_staff_delete(slug,id):
         title = staff.title
         db.session.delete(staff)
         db.session.commit()
-        flash('News item "%s" deleted' %
+        flash('Staff member "%s" deleted' %
               (title))
         return redirect(url_for('admin_staff_list',slug=slug))
     flash('Staff member not found!')
