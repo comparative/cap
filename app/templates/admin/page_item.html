@@ -4,7 +4,7 @@
 {% block content %}
 
 
-
+<h4><a href="{{ url_for('admin_page_list') }}">Pages</a></h4>
 <form action="" method="post" name="user" enctype="multipart/form-data">
 {{ form.hidden_tag() }}
 
@@ -29,7 +29,7 @@
 	  <label for="title" class="right inline">URL</label>
 	</div>
 	<div class="small-11 columns">
-	  http://www.coolbest.net:5000/pages/{{ slug }}
+	  <a href="{{ url_for('page',slug=slug) }}" target="_new">http://www.coolbest.net:5000{{ url_for('page',slug=slug) }}</a>
 	</div>
 </div>
 

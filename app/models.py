@@ -28,6 +28,7 @@ class Country(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)    
     name = db.Column(db.String(80))
+    short_name = db.Column(db.String(80))
     filename = db.Column(db.String(200))
     principal = db.Column(db.String(200))
     location = db.Column(db.String(200))

@@ -3,7 +3,12 @@
 
 {% block content %}
 
-<h4><a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> News</h4>
+<h4>
+{% if not current_user.country %}
+    <a href="{{ url_for('admin_country_list') }}">Countries</a> >>
+{% endif %}
+<a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> News
+</h4>
 <table>
 {% for item in news %}
 <tr><td><a href="{{ url_for('admin_news_item',slug=country.slug,id=item.id) }}">edit</a></td><td>{{ item.title }}</td></tr>

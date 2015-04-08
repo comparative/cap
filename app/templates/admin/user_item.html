@@ -3,6 +3,7 @@
 
 {% block content %}
 
+<h4><a href="{{ url_for('admin_user_list') }}">Users</a></h4>
 <form action="" method="post" name="user" enctype="multipart/form-data">
 {{ form.hidden_tag() }}
 

@@ -274,21 +274,23 @@ def admin_country_item(slug):
             filename = countryimages.save(request.files['image'])
             country.filename = filename
         country.name = form.name.data
+        country.short_name = form.short_name.data
         country.principal = form.principal.data
         country.location = form.location.data
         country.heading = form.heading.data
         country.about = form.about.data
-        country.slug = slugify(country.name)
+        country.slug = slugify(country.short_name)
         if slug == 'add':
             db.session.add(country)
         db.session.commit()
     	flash('Country "%s" saved' %
               (form.name.data))
-        return redirect( url_for('admin_countries_slug',slug=current_user.country.slug) if current_user.country else 'admin/countries' )
+        return redirect( url_for('admin_country_item',slug=current_user.country.slug) if current_user.country else 'admin/countries' )
     else:
         url = countryimages.url(country.filename) if country.filename else None
         if request.method == 'GET':
             form.name.data = country.name
+            form.short_name.data = country.short_name
             form.principal.data = country.principal
             form.location.data = country.location
             form.heading.data = country.heading

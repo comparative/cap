@@ -45,6 +45,7 @@ class StaffForm(Form):
 
 class CountryForm(Form):
     name = StringField('name', validators=[DataRequired()])
+    short_name = StringField('name', validators=[DataRequired()])
     principal = StringField('principal')
     location = StringField('location')
     image = FileField('image',validators=[FileAllowed(IMAGES, 'Please choose an image file.')])

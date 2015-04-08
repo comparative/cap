@@ -3,9 +3,12 @@
 
 {% block content %}
 
-{% if current_user.country %}
-<h4>{{ form.name.data }}</h4>
+<h4>
+{% if not current_user.country %}
+    <a href="{{ url_for('admin_country_list') }}">Countries</a> >>
 {% endif %}
+{{ form.name.data }}
+</h4>
 
 <form action="" method="post" name="country" enctype="multipart/form-data">
 {{ form.hidden_tag() }}
@@ -14,6 +17,7 @@
 {% if current_user.country %}
 
 <input type=hidden name="{{ form.name.name }}" value="{{ form.name.data }}">
+<input type=hidden short_name="{{ form.short_name.name }}" value="{{ form.short_name.data }}">
 
 {% else %}
 
@@ -30,7 +34,24 @@
       {% endfor %}
 	</div>
 </div>
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Shortname</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.short_name(size=40) }}
+	  </label>
+	  {% for error in form.short_name.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
 {% endif %}
+
+
 
 <div class="row">
 	<div class="small-1 columns">
@@ -116,7 +137,7 @@
 <div class="small-1 columns">&nbsp;</div>
 <div class="small-5 columns">
 <input class="button small" type="submit" value="Save">
-{% if id %}
+{% if id and not current_user.country %}
 &nbsp;&nbsp;
 <a href="{{ url_for('admin_country_delete',id=id) }}">
 <input class="button alert small" type="button" value="Delete">
@@ -131,7 +152,7 @@
 <div class="row">
 
 <div class="small-3 columns">
-<a href="">Datasets</a>
+Datasets
 </div>
 
 <div class="small-3 columns">
