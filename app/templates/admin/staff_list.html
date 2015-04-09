@@ -11,10 +11,18 @@
 </h4>
 
 <table>
-{% for item in staff %}
+{% for item in staff.items %}
 <tr><td><a href="{{ url_for('admin_staff_item',slug=country.slug,id=item.id) }}">edit</a></td><td>{{ item.name }}</td></tr>
 {% endfor %}
 </table>
+
+{% if staff.has_prev or staff.has_next %}
+<p>
+{% if staff.has_prev %}<a href="{{ url_for('admin_staff_list', slug=country.slug, page=staff.prev_num) }}">&lt;&lt; Previous</a>{% else %}&lt;&lt; Previous{% endif %} | 
+{% if staff.has_next %}<a href="{{ url_for('admin_staff_list', slug=country.slug, page=staff.next_num) }}">Next &gt;&gt;</a>{% else %}Next &gt;&gt;{% endif %}
+</p>
+{% endif %}
+
 <a href="{{ url_for('admin_staff_item',slug=country.slug,id='add') }}">Add staff</a>
 
 {% endblock %}

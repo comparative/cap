@@ -1,5 +1,6 @@
 import os
 import psycopg2
+from sqlalchemy import desc
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
 from functools import wraps, update_wrapper
@@ -34,7 +35,7 @@ def nocache(view):
 @app.route('/')
 @app.route('/index')
 def index():
-    news = News.query.paginate(1, 2, False).items
+    news = News.query.order_by(News.saved_date).paginate(1, 2, False).items
     for item in news:
         if item.filename:
             url = newsimages.url(item.filename)
@@ -335,9 +336,11 @@ def admin_country_removeimage(id):
 ## USERS
 
 @app.route('/admin/users')
+@app.route('/admin/users/p/<int:page>')
 @login_required
-def admin_user_list():
-    users = User.query.all()
+def admin_user_list(page=1):
+    users = User.query.order_by(desc(User.country_id)).paginate(page, 10, False)
+    #users = User.query.order_by(desc(User.country_id)).all()
     return render_template('admin/user_list.html',
                            users=users)
                                                
@@ -385,10 +388,11 @@ def admin_user_delete(id):
 ## NEWS
 
 @app.route('/admin/countries/<slug>/news')
+@app.route('/admin/countries/<slug>/news/p/<int:page>')
 @login_required
-def admin_news_list(slug):
+def admin_news_list(slug,page=1):
     country = Country.query.filter_by(slug=slug).first()
-    news = News.query.filter_by(country_id=country.id).all()
+    news = News.query.filter_by(country_id=country.id).order_by(desc(News.saved_date)).paginate(page, 10, False)
     #news = News.query.all()
     return render_template('admin/news_list.html',
                            country=country,
@@ -458,11 +462,14 @@ def admin_news_removeimage(slug,id):
 
 ## RESEARCH
 
-@app.route('/admin/countries/<slug>/research', methods=['GET', 'POST'])
+
+
+@app.route('/admin/countries/<slug>/research')
+@app.route('/admin/countries/<slug>/research/p/<int:page>')
 @login_required
-def admin_research_list(slug):
+def admin_research_list(slug,page=1):
     country = Country.query.filter_by(slug=slug).first()
-    research = Research.query.filter_by(country_id=country.id).all()
+    research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date)).paginate(page, 10, False)
     return render_template('admin/research_list.html', 
                            country=country,
                            research=research)
@@ -551,12 +558,12 @@ def admin_research_removeimage(slug,id):
     return redirect(url_for('admin')) 
 
 ## STAFF
-
-@app.route('/admin/countries/<slug>/staff', methods=['GET', 'POST'])
+@app.route('/admin/countries/<slug>/staff')
+@app.route('/admin/countries/<slug>/staff/p/<int:page>')
 @login_required
-def admin_staff_list(slug):
+def admin_staff_list(slug,page=1):
     country = Country.query.filter_by(slug=slug).first()
-    staff = Staff.query.filter_by(country_id=country.id).all()
+    staff = Staff.query.filter_by(country_id=country.id).order_by(Staff.name).paginate(page, 10, False)
     return render_template('admin/staff_list.html', 
                            country=country,
                            staff=staff)

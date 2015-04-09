@@ -10,10 +10,18 @@
 <a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> Research
 </h4>
 <table>
-{% for item in research %}
+{% for item in research.items %}
 <tr><td><a href="{{ url_for('admin_research_item',slug=country.slug,id=item.id) }}">edit</a></td><td>{{ item.title }}</td></tr>
 {% endfor %}
 </table>
+
+{% if research.has_prev or research.has_next %}
+<p>
+{% if research.has_prev %}<a href="{{ url_for('admin_research_list', slug=country.slug, page=research.prev_num) }}">&lt;&lt; Newer</a>{% else %}&lt;&lt; Newer{% endif %} | 
+{% if research.has_next %}<a href="{{ url_for('admin_research_list', slug=country.slug, page=research.next_num) }}">Older &gt;&gt;</a>{% else %}Older &gt;&gt;{% endif %}
+</p>
+{% endif %}
+
 <a href="{{ url_for('admin_research_item',slug=country.slug,id='add') }}">Add research</a>
 
 {% endblock %}

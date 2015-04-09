@@ -5,10 +5,18 @@
 
 <h4>Users</h4>
 <table>
-{% for item in users %}
-<tr><td><a href="{{ url_for('admin_user_item',id=item.id) }}">edit</a></td><td>{{ item.name }}</td></tr>
+{% for item in users.items %}
+<tr><td><a href="{{ url_for('admin_user_item',id=item.id) }}">edit</a></td><td>{{ item.name }}</td><td>{% if item.country %}{{ item.country }}{% endif %}</td></tr>
 {% endfor %}
 </table>
+
+{% if users.has_prev or users.has_next %}
+<p>
+{% if users.has_prev %}<a href="{{ url_for('admin_user_list', page=users.prev_num) }}">&lt;&lt; Previous</a>{% else %}&lt;&lt; Previous{% endif %} | 
+{% if users.has_next %}<a href="{{ url_for('admin_user_list', page=users.next_num) }}">Next &gt;&gt;</a>{% else %}Next &gt;&gt;{% endif %}
+</p>
+{% endif %}
+
 <a href="{{ url_for('admin_user_item',id='add') }}">Add user</a>
 
 {% endblock %}
