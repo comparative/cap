@@ -35,7 +35,7 @@ def nocache(view):
 @app.route('/')
 @app.route('/index')
 def index():
-    news = News.query.order_by(News.saved_date).paginate(1, 2, False).items
+    news = News.query.order_by(desc(News.saved_date)).paginate(1, 2, False).items
     for item in news:
         if item.filename:
             url = newsimages.url(item.filename)
@@ -46,20 +46,30 @@ def index():
                            news=news)
 
 @app.route('/countries/<slug>')
-def country(slug):
+@app.route('/countries/<slug>/<pane>')
+def country(slug,pane='about'):
     countries = Country.query.order_by(Country.name)
     country = Country.query.filter_by(slug=slug).first()
-    latest_research = Research.query.paginate(1, 2, False).items
-    research = Research.query.filter_by(country_id=country.id)
+    latest_research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date)).paginate(1, 1, False).items
+    research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date))
     staff = Staff.query.filter_by(country_id=country.id)
     url = countryimages.url(country.filename) if country.filename else None
     return render_template("country.html",
                            countries=countries,
+                           pane=pane,
                            url = url,
                            latest_research=latest_research,
                            country=country,
                            research=research,
                            staff=staff)
+
+@app.route('/countries/<slug>/research/<id>')
+def research_item(slug,id):
+    countries = Country.query.order_by(Country.name)
+    country = Country.query.filter_by(slug=slug).first()
+    research = Research.query.filter_by(id=id).first()
+    return render_template("research_item.html",countries=countries,country=country,research=research) 
+    
 
 @app.route('/tool')
 def tool():
@@ -68,7 +78,7 @@ def tool():
 @app.route('/news')
 @app.route('/news/<int:page>')
 def news(page=1):
-    news = News.query.paginate(page, 3, False)
+    news = News.query.order_by(desc(News.saved_date)).paginate(page, 3, False)
     for item in news.items:
         if item.filename:
             url = newsimages.url(item.filename)
@@ -81,7 +91,7 @@ def news_item(slug):
     if item.filename:
             url = newsimages.url(item.filename)
             item.url = url
-    news = News.query.filter(News.slug!=slug).limit(2).all()
+    news = News.query.filter(News.slug!=slug).order_by(desc(News.saved_date)).limit(3).all()
     return render_template('news_item.html',item=item,news=news)
 
 @app.route('/about')
@@ -482,7 +492,6 @@ def admin_research_item(slug,id):
     form = ResearchForm()
     if form.validate_on_submit():
         if 'file' in request.files and request.files['file'].filename != '':
-            app.logger.debug('ooooooo lordy')
             filename = researchfiles.save(request.files['file'])
             research.filename = filename
         if 'image' in request.files and request.files['image'].filename != '':

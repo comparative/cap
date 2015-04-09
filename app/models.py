@@ -4,7 +4,7 @@ class Page(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(80))
-    body = db.Column(db.String(2000))
+    body = db.Column(db.String(9000))
     slug = db.Column(db.String(80))
     
 class File(db.Model):
@@ -19,7 +19,7 @@ class News(db.Model):
     id = db.Column(db.Integer, primary_key=True)    
     title = db.Column(db.String(80))
     filename = db.Column(db.String(200))
-    content = db.Column(db.String(1000))
+    content = db.Column(db.String(9000))
     slug = db.Column(db.String(80))
     country_id = db.Column(db.Integer,db.ForeignKey('country.id'))
     country = db.relationship('Country',backref=db.backref('news', lazy='dynamic'))
@@ -34,7 +34,7 @@ class Country(db.Model):
     principal = db.Column(db.String(200))
     location = db.Column(db.String(200))
     heading = db.Column(db.String(80))
-    about = db.Column(db.String(1000))
+    about = db.Column(db.String(9000))
     slug = db.Column(db.String(80))
     
     def __repr__(self):
@@ -48,7 +48,7 @@ class Research(db.Model):
     title = db.Column(db.String(80))
     filename = db.Column(db.String(200))
     imagename = db.Column(db.String(200))
-    body = db.Column(db.String(1000))
+    body = db.Column(db.String(9000))
     saved_date = db.Column(db.DateTime)
     
     def __repr__(self):
@@ -61,7 +61,7 @@ class Staff(db.Model):
     title = db.Column(db.String(80))
     institution = db.Column(db.String(80))
     filename = db.Column(db.String(200))
-    body = db.Column(db.String(1000))
+    body = db.Column(db.String(9000))
     country_id = db.Column(db.Integer,db.ForeignKey('country.id'))
     country = db.relationship('Country',backref=db.backref('staff', lazy='dynamic'))
     

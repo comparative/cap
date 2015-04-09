@@ -2,7 +2,7 @@ from flask.ext.uploads import IMAGES
 from flask.ext.wtf import Form
 from flask.ext.wtf.file import FileField, FileAllowed
 from wtforms import StringField, BooleanField, PasswordField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, Length
 from wtforms.widgets import TextArea
 from wtforms.ext.sqlalchemy.orm import model_form
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
@@ -33,7 +33,7 @@ class ResearchForm(Form):
     title = StringField('title', validators=[DataRequired()])
     file = FileField('file',validators=[FileAllowed(['pdf'], 'Papers must be formatted as .pdf')])
     image = FileField('image')
-    body = StringField('content', validators=[DataRequired()],widget=TextArea()) 
+    body = StringField('content', validators=[Length(min=0, max=9000)],widget=TextArea()) 
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
     
 class StaffForm(Form):

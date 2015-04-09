@@ -10,6 +10,47 @@
 {{ form.name.data }}
 </h4>
 
+
+<div class="row">
+
+<div class="medium-4 columns">
+
+</div>
+
+<div class="medium-8 columns">
+
+{% if id %}
+
+<div class="row">
+
+<div class="small-3 columns text-center">
+Datasets
+</div>
+
+<div class="small-3 columns text-center">
+<a href="{{ url_for('admin_news_list',slug=slug) }}">News</a>
+</div>
+
+<div class="small-3 columns text-center">
+<a href="{{ url_for('admin_research_list',slug=slug) }}">Research</a>
+</div>
+
+<div class="small-3 columns text-center">
+<a href="{{ url_for('admin_staff_list',slug=slug) }}">Staff</a>
+</div>
+
+
+</div>
+
+{% endif %}
+
+<br>
+
+</div>
+
+
+</div>
+
 <form action="" method="post" name="country" enctype="multipart/form-data">
 {{ form.hidden_tag() }}
 
@@ -146,30 +187,8 @@
 </div>
 
 <div class="small-6 columns">
-
-{% if id %}
-
-<div class="row">
-
-<div class="small-3 columns text-center">
-Datasets
 </div>
 
-<div class="small-3 columns text-center">
-<a href="{{ url_for('admin_news_list',slug=slug) }}">News</a>
-</div>
-
-<div class="small-3 columns text-center">
-<a href="{{ url_for('admin_research_list',slug=slug) }}">Research</a>
-</div>
-
-<div class="small-3 columns text-center">
-<a href="{{ url_for('admin_staff_list',slug=slug) }}">Staff</a>
-</div>
-
-</div>
-
-{% endif %}
 
 </div>
 

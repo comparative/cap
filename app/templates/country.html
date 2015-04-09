@@ -24,10 +24,31 @@
         	        <div id="menu" class="row">
         	                
                         <dl class="tabs" data-tab>
+                            
+                          {% if pane=='about' %}
                           <dd class="active"><a href="#about-pane">About</a></dd>
+                          {% else %}
+                          <dd><a href="#about-pane">About</a></dd>
+                          {% endif %}
+                          
+                          {% if pane=='datasets' %}
+                          <dd class="active"><a href="#datasets-pane">Datasets</a></dd>
+                          {% else %}
                           <dd><a href="#datasets-pane">Datasets</a></dd>
+                          {% endif %}
+                          
+                          {% if pane=='research' %}
+                          <dd class="active"><a href="#research-pane">Research</a></dd>
+                          {% else %}
                           <dd><a href="#research-pane">Research</a></dd>
+                          {% endif %}
+                          
+                          {% if pane=='staff' %}
+                          <dd class="active"><a href="#staff-pane">Staff</a></dd>
+                          {% else %}
                           <dd><a href="#staff-pane">Staff</a></dd>
+                          {% endif %}
+                          
                         </dl>
         	            
         	            <!--<div class="medium-3 columns">
@@ -81,8 +102,14 @@
                 <div class="row">
                 
                     <div class="tabs-content">
-                    
-                        <div class="content" id="datasets-pane">
+                        
+                        
+                        {% if pane=='datasets' %}
+                        <div class="content active" id="datasets-pane"> 
+                        {% else %}
+                        <div class="content" id="datasets-pane"> 
+                        {% endif %} 
+                         
                             
                             <div class="medium-12 columns">
                             
@@ -92,8 +119,12 @@
                     
                         </div>
                 
-                        <div class="content" id="research-pane">
-                            
+                        {% if pane=='research' %}
+                        <div class="content active" id="research-pane"> 
+                        {% else %}
+                        <div class="content" id="research-pane"> 
+                        {% endif %} 
+                        
                             <div class="medium-12 columns">
                             
                                 <h4>Research</h4>
@@ -102,17 +133,19 @@
 
                                 <div class="row">
 
-                                    <!--<div class="medium-3 columns">
-                                    <img class="news-image" src="{{ item.url }}"/>
-                                    </div>-->
+                                    <div class="medium-4 columns">
+                                    <img class="news-image" src="http://www.coolbest.net:5000/_uploads/researchimages/{{ item.imagename }}"/>
+                                    </div>
 
-                                    <div class="medium-12 columns">
+                                    <div class="medium-8 columns">
                                     <h5>{{ item.title }}</h5>
                                     {{ smart_truncate(item.body,200)|safe }}
-                                    <!--<a class="orange-link" href="#">read more</a>-->
+                                    <a class="orange-link" href="{{ url_for('research_item',slug=country.slug,id=item.id) }}">read more</a>
                                     </div>
 
                                 </div>
+                                
+                                <p>&nbsp;</p>
 
                                 {% endfor %} 
                                 
@@ -123,7 +156,11 @@
                     
                         </div>
                 
+                        {% if pane=='staff' %}
+                        <div class="content active" id="staff-pane">
+                        {% else %}
                         <div class="content" id="staff-pane">
+                        {% endif %}
                             
                             <div class="medium-12 columns">
                             
@@ -139,9 +176,9 @@
 
                                     <div class="medium-9 columns">
                                     <h5>{{ item.name }}</h5>
-                                    <br><strong>Title:</strong> {{ item.title }}
+                                    <strong>Title:</strong> {{ item.title }}
                                     <br><strong>Institution:</strong> {{ item.institution }}
-                                    {{ smart_truncate(item.body,200)|safe }}
+                                    {{ item.body|safe }}
                                     </div>
 
                                 </div>
@@ -152,14 +189,18 @@
                             </div>
                     
                         </div>
-                
+                        
+                        {% if pane=='about' %}
                         <div class="content active" id="about-pane">
-                
+                        {% else %}
+                        <div class="content" id="about-pane">
+                        {% endif %}
+                        
                             <div class="medium-6 columns">
                                 
                                 
                                 
-                                <h4>Explore Trends in {{ country.name }} Policy</h4>
+                                <h4>Explore Trends in {{ country.short_name }} Policy</h4>
                                 
                                 <a href="{{ url_for('admin') }}" target="_tool">
                                 <img style="height:200px;" src="/static/img/chart-us.png" width="100%"/>    
@@ -186,7 +227,7 @@
                             
                             <h4>{{ country.heading }}</h4>
                                 
-                                <strong>Latest Research:</strong>
+                                <strong>Featured Research:</strong>
                                 
                                 
                                 {% for item in latest_research %}
@@ -199,8 +240,10 @@
 
                                     <div class="medium-12 columns">
                                     <h5>{{ item.title }}</h5>
-                                    {{ smart_truncate(item.body,200)|safe }}
-                                    <a class="orange-link" href="#">read more</a>
+                                    {% if item.imagename %}<img src="http://www.coolbest.net:5000/_uploads/researchimages/{{ item.imagename }}">{% endif %}
+                                    <p>{{ smart_truncate(item.body,500)|safe }}
+                                    <a class="orange-link" href="{{ url_for('research_item',slug=country.slug,id=item.id) }}">read more</a></p>
+                                    <p class="text-center"><a class="orange-link" href="{{ url_for('country',slug=country.slug,pane='research') }}">more research</a></p>
                                     </div>
 
                                 </div>
@@ -211,7 +254,6 @@
                                 
                                 {% if country.principal %}<strong>Principal Investigator:</strong>&nbsp;{{ country.principal }}<br/>{% endif %}
                                 {% if country.location %}<strong>Location:</strong>&nbsp;{{ country.location }}<br/>{% endif %}
-                                <strong>Faculty & Graduate Students:</strong>&nbsp;15<br/>
                                 <strong>Downloadable Data Series:</strong>&nbsp;13<br/>
                                 <strong>Time Span:</strong>&nbsp;1945-2012<br/>
                                 <strong>Total Observations:</strong>&nbsp;500,371<br/>
