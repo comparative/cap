@@ -19,7 +19,8 @@ staffimages = UploadSet('staffimages', IMAGES)
 researchfiles = UploadSet('researchfiles', 'pdf')
 researchimages = UploadSet('researchimages', IMAGES)
 adhocfiles = UploadSet('adhocfiles', ALL)
-configure_uploads(app, (newsimages,countryimages,staffimages,researchfiles,researchimages,adhocfiles,))
+slideimages = UploadSet('slideimages', ALL)
+configure_uploads(app, (newsimages,countryimages,staffimages,researchfiles,researchimages,adhocfiles,slideimages))
 
 from app import views, models
 

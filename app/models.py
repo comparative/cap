@@ -1,5 +1,14 @@
 from app import db
 
+class Slide(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    heading = db.Column(db.String(80))
+    subheading = db.Column(db.String(9000))
+    link = db.Column(db.String(200))
+    imagename = db.Column(db.String(200))
+    active = db.Column(db.Boolean())
+
 class Page(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)

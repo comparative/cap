@@ -58,5 +58,12 @@ class UserForm(Form):
     email = StringField('email', validators=[DataRequired()])
     password = StringField('password', validators=[DataRequired()])
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
+    
+class SlideForm(Form):
+    heading = StringField('heading', validators=[DataRequired()])
+    subheading = StringField('subheading', validators=[DataRequired()])
+    link = StringField('link', validators=[DataRequired()])
+    image = FileField('image',validators=[FileAllowed(IMAGES, 'Please choose an image file.')])
+    active = BooleanField('active', default=False)
    
     

@@ -9,9 +9,9 @@ from flask.ext.login import login_user, logout_user, current_user, login_require
 from werkzeug import secure_filename
 from json import dumps
 from slugify import slugify
-from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles
-from .models import User, News, Country, Research, Staff, Page, File
-from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm
+from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles, slideimages
+from .models import User, News, Country, Research, Staff, Page, File, Slide
+from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm, SlideForm
 from datetime import datetime
 
 @lm.user_loader
@@ -35,6 +35,11 @@ def nocache(view):
 @app.route('/')
 @app.route('/index')
 def index():
+    slides = Slide.query.paginate(1,3,False).items
+    for item in slides:
+        if item.imagename:
+            url = slideimages.url(item.imagename)
+            item.url = url
     news = News.query.order_by(desc(News.saved_date)).paginate(1, 2, False).items
     for item in news:
         if item.filename:
@@ -43,6 +48,7 @@ def index():
     countries = Country.query.order_by(Country.name)
     return render_template("index.html",
                            countries=countries,
+                           slides=slides,
                            news=news)
 
 @app.route('/countries/<slug>')
@@ -641,6 +647,78 @@ def admin_staff_removefile(slug,id):
         return redirect(url_for('admin_staff_item',slug=slug,id=id))
     flash('Staff member not found!')
     return redirect(url_for('admin'))
+
+
+## SLIDES
+
+@app.route('/admin/slides')
+@login_required
+def admin_slide_list():
+    slides = Slide.query.order_by(Slide.heading)
+    return render_template('admin/slide_list.html',
+                           slides=slides)
+                                               
+@app.route('/admin/slides/<id>', methods=['GET', 'POST'])
+@login_required
+def admin_slide_item(id):
+    slide = Slide() if id == 'add' else Slide.query.filter_by(id=id).first()
+    form = SlideForm()
+    if form.validate_on_submit():
+        if 'image' in request.files and request.files['image'].filename != '':
+            imagename = slideimages.save(request.files['image'])
+            slide.imagename = imagename
+        slide.heading = form.heading.data
+        slide.subheading = form.subheading.data
+        slide.link = form.link.data
+        slide.active = form.active.data
+        if id == 'add':
+            db.session.add(slide)
+        db.session.commit()
+    	flash('Slide "%s" saved' %
+              (form.heading.data))
+        return redirect(url_for('admin_slide_list'))
+    else:
+        url = slideimages.url(slide.imagename) if slide.imagename else None
+        if request.method == 'GET':
+            form.heading.data = slide.heading
+            form.subheading.data = slide.subheading
+            form.link.data = slide.link
+            form.active.data = slide.active
+    
+    return render_template('admin/slide_item.html',
+                           id=slide.id,
+                           url=url,
+                           form=form)
+ 
+
+@app.route('/admin/slides/delete/<id>')
+@login_required
+def admin_slide_delete(id):
+    slide = Slide.query.filter_by(id=id).first()
+    if slide is not None:
+        title = page.heading
+        db.session.delete(slide)
+        db.session.commit()
+        flash('Slide "%s" deleted' %
+              (title))
+        return redirect(url_for('admin_slide_list'))
+    flash('Slide not found!')
+    return redirect(url_for('admin'))  
+
+@app.route('/admin/slides/removeimage/<id>')
+@login_required
+def admin_slide_removeimage(id):
+    slide = Slide.query.filter_by(id=id).first()
+    if slide is not None:
+        path = slideimages.path(slide.imagename)
+        if os.path.isfile(path):
+            os.remove(path)
+        slide.imagename = None
+        db.session.commit()
+        return redirect(url_for('admin_slide_item',id=id))
+    flash('Slide not found!')
+    return redirect(url_for('admin')) 
+
 
 ######### API ROUTES
 

@@ -1,0 +1,90 @@
+<!-- extend from base layout -->
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4><a href="{{ url_for('admin_slide_list') }}">Slides</a></h4>
+<form action="" method="post" name="user" enctype="multipart/form-data">
+{{ form.hidden_tag() }}
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Heading</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.heading(size=40) }}
+	  </label>
+	  {% for error in form.heading.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Subheading</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.subheading(size=40) }}
+	  </label>
+	  {% for error in form.subheading.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Link</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.link(size=40) }}
+	  </label>
+	  {% for error in form.link.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Image</label>
+	</div>
+	<div class="small-11 columns">
+	  {% if url %}
+	      <p>
+	      <img src="{{ url }}">
+	      <br>
+	      <a href="{{ url_for('admin_slide_removeimage', id=id) }}">remove image</a>
+	      </p>
+      {% else %}
+          <label class="error">
+          {{ form.image(size=40) }}
+          </label>
+          {% for error in form.image.errors %}
+          <small class="error">{{ error }}</small>
+          {% endfor %}
+      {% endif %}
+	</div>
+</div>
+
+<br>
+
+<div class="row">
+<div class="small-1 columns">&nbsp;</div>
+<div class="small-11 columns">
+<input class="button small" type="submit" value="Save">
+{% if id %}
+&nbsp;&nbsp;
+<a href="{{ url_for('admin_slide_delete',id=id) }}">
+<input class="button alert small" type="button" value="Delete">
+</a>
+{% endif %}
+</div>
+
+</form>
+
+{% endblock %}

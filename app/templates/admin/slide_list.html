@@ -1,0 +1,22 @@
+<!-- extend from base layout -->
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4>Slides</h4>
+<table>
+{% for item in slides %}
+<tr><td><a href="{{ url_for('admin_slide_item',id=item.id) }}">edit</a></td><td>{{ item.heading }}</td></tr>
+{% endfor %}
+</table>
+
+{% if slides.has_prev or slides.has_next %}
+<p>
+{% if slides.has_prev %}<a href="{{ url_for('admin_slide_list', page=slides.prev_num) }}">&lt;&lt; Previous</a>{% else %}&lt;&lt; Previous{% endif %} | 
+{% if slides.has_next %}<a href="{{ url_for('admin_slide_list', page=slides.next_num) }}">Next &gt;&gt;</a>{% else %}Next &gt;&gt;{% endif %}
+</p>
+{% endif %}
+
+<a href="{{ url_for('admin_slide_item',id='add') }}">Add slide</a>
+
+{% endblock %}

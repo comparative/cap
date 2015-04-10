@@ -22,30 +22,20 @@
      
         <div class="medium-12 columns">
         	<ul class="slider" data-orbit>
+        	 
+        	{% for item in slides %}
+        	 
 			  <li>
-				<a target="_tool" href="/tool"><img class="orbit-img" src="/static/img/chart.png" alt="slide 1" /></a>
+				<a target="_tool" href="{{ item.link }}"><img class="orbit-img" src="{{ item.url }}" alt="slide 1" /></a>
 				<div class="orbit-caption">
-				  <h4>Caption One.</h4>
-				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</br>
-				  <a class="orange-link bold-link" target="_tool" href="/tool">open in trends tool</a></h6>
+				  <h4>{{ item.heading }}</h4>
+				  <h6>{{ item.subheading }}</br>
+				  <a class="orange-link bold-link" target="_tool" href="{{ item.link }}">open in trends tool</a></h6>
 				</div>
 			  </li>
-			  <li>
-				<a target="_tool" href="/tool"><img class="orbit-img" src="/static/img/chart2.png" alt="slide 2" /></a>
-				<div class="orbit-caption">
-				  <h4>Caption Two.</h4>
-				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</br>
-				  <a class="orange-link bold-link" target="_tool" href="/tool">open in trends tool</a></h6>
-				</div>
-			  </li>
-			  <li>
-				<a target="_tool" href="/tool"><img class="orbit-img" src="/static/img/chart3.png" alt="slide 3" /></a>
-				<div class="orbit-caption">
-				  <h4>Caption Three.</h4>
-				  <h6>Aute in reprehenderit, dolore aliqua non est magna in labore pig pork biltong. Eiusmod swine spare ribs reprehenderit culpa.</br>
-				  <a class="orange-link bold-link" target="_tool" href="/tool">open in trends tool</a></h6>
-				</div>
-			  </li>
+			  
+			{% endfor %}
+			  
 			</ul>
         </div>
         
