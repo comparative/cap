@@ -248,7 +248,8 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
 {
 	     
 	$scope.selected = [];
-
+    
+    $scope.recent = [];
     
     $http.get('http://www.coolbest.net:5000/api/countries').success(function(data){
         $scope.countries = data;
@@ -300,10 +301,34 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
 			console.log(url);
 			console.log(retval);
 			
-			theChart.addSeries({
+			s = {
 				name: series.name,
 				data: retval
-			});
+			}
+			
+			theChart.addSeries(s);
+			theChart.options.series.push(s);
+			
+			//console.log(theChart.options)
+			
+            var obj = {},
+            exportUrl = 'http://export.highcharts.com/';
+            obj.options = JSON.stringify(theChart.options);
+            obj.type = 'image/png';
+            obj.async = true;
+            
+            console.log(obj.options)
+            
+            $.ajax({
+                type: 'post',
+                url: exportUrl,
+                data: obj,
+                success: function (data) {
+                    $scope.recent.push(exportUrl + data)
+                    //$scope.$apply()
+                    //alert(exportUrl + data)
+                }
+            });
 			
 		});
 		

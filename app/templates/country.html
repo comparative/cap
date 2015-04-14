@@ -113,7 +113,7 @@
                             
                             <div class="medium-12 columns">
                             
-                                <h4>Datasets</h4>
+                                <h3>Datasets</h3>
                             
                             </div>
                     
@@ -127,7 +127,7 @@
                         
                             <div class="medium-12 columns">
                             
-                                <h4>Research</h4>
+                                <h3>Research</h3>
                                 
                                 {% for item in research %}
 
@@ -139,7 +139,7 @@
 
                                     <div class="medium-8 columns">
                                     <h5>{{ item.title }}</h5>
-                                    {{ smart_truncate(item.body,200)|safe }}
+                                    {{ smart_truncate(item.body,250)|safe }}
                                     <a class="orange-link" href="{{ url_for('research_item',slug=country.slug,id=item.id) }}">read more</a>
                                     </div>
 
@@ -164,11 +164,11 @@
                             
                             <div class="medium-12 columns">
                             
-                                <h4>Staff</h4>
+                                <h3>Staff</h3>
                                 
                                 {% for item in staff %}
 
-                                <div class="row news-item">
+                                <div class="row">
 
                                     <div class="medium-3 columns">
                                     <img class="news-image" src="_uploads/staffimages/{{ item.filename }}"/>
@@ -200,7 +200,7 @@
                                 
                                 
                                 
-                                <h4>Explore Trends in {{ country.short_name }} Policy</h4>
+                                <h3>Explore Trends in {{ country.short_name }} Policy</h3>
                                 
                                 <a href="{{ url_for('admin') }}" target="_tool">
                                 <img style="height:200px;" src="/static/img/chart-us.png" width="100%"/>    
@@ -225,7 +225,7 @@
                             <div class="medium-6 columns">
                           
                             
-                            <h4>{{ country.heading }}</h4>
+                            <h3>{{ country.heading }}</h3>
                                 
                                 <strong>Featured Research:</strong>
                                 
@@ -241,7 +241,7 @@
                                     <div class="medium-12 columns">
                                     <h5>{{ item.title }}</h5>
                                     {% if item.imagename %}<img src="http://www.coolbest.net:5000/_uploads/researchimages/{{ item.imagename }}">{% endif %}
-                                    <p>{{ smart_truncate(item.body,200)|safe }}
+                                    <p>{{ smart_truncate(item.body,250)|safe }}
                                     <a class="orange-link" href="{{ url_for('research_item',slug=country.slug,id=item.id) }}">read more</a></p>
                                     <p class="text-center"><a class="orange-link" href="{{ url_for('country',slug=country.slug,pane='research') }}">more research</a></p>
                                     </div>

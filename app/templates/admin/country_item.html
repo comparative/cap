@@ -124,7 +124,7 @@ Datasets
 
 <div class="row">
 	<div class="small-1 columns">
-	  <label for="title" class="right inline">Image</label>
+	  <label for="title" class="right inline">Image (345&nbsp;x&nbsp;230)</label>
 	</div>
 	<div class="small-11 columns">
 	  {% if url %}
@@ -171,8 +171,21 @@ Datasets
       {% endfor %}
 	</div>
 </div>
-
 <br>
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Embed URL</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.embed_url(size=40) }}
+	  </label>
+	  {% for error in form.embed_url.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
 
 <div class="row">
 <div class="small-1 columns">&nbsp;</div>

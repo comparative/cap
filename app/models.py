@@ -44,6 +44,7 @@ class Country(db.Model):
     location = db.Column(db.String(200))
     heading = db.Column(db.String(80))
     about = db.Column(db.String(9000))
+    embed_url = db.Column(db.String(200))
     slug = db.Column(db.String(80))
     
     def __repr__(self):

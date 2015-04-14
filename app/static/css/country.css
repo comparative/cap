@@ -46,6 +46,7 @@ div.scrollable-header {
     font-size:14px;
     font-weight:bold;
     border-bottom:0px;
+    margin-top:24px;
 }
 
 .country-hover {
@@ -73,4 +74,22 @@ div.scrollable-header {
 .tabs dd.active a, .tabs .tab-title.active a {
   background-color: transparent;
   color:#b2bcc8;
+}
+
+div#countrystripe {
+  /* background-color: #f9fafc; */
+   background-color: #3b4e6f;
+   width: 100%;
+   margin-left: auto;
+   margin-right: auto;
+   margin-top: .5rem;
+   margin-bottom: 0;
+   max-width: initial;
+   min-width:790px;
+   padding-top:30px;
+   padding-bottom:5px;
+}
+
+div#countrystripe h1 {
+    color:#ffffff;
 }

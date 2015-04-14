@@ -1,5 +1,23 @@
+h3 {
+    margin-bottom:10px;
+}
+
+
+body {
+  line-height: 1.4;
+}
+
 p {
   line-height: 1.4;
+}
+
+h5 {
+  font-size: 1.4rem;
+}
+
+h4 {
+  font-size: 1.7rem;
+  line-height: .5rem;
 }
 
 textarea {
@@ -11,15 +29,10 @@ footer {
 }
 
 .news-image {
-	margin-top:9px;
+	margin-top:0px;
 }
 
-.news-item {
-	padding-left:0;
-	padding-right:1.25rem;
-	padding-top:1.25rem;
-	padding-bottom:1.25rem;
-}
+
 
 .highlight {
 	background:#ffffff;
@@ -167,10 +180,6 @@ div#bluestripe {
    padding-bottom:5px;
 }
 
-div#under-graph {
-	margin-top: 20px;
-}
-
 
 .orbit-container {
 	width: 99%;
@@ -200,22 +209,4 @@ div#under-graph {
 
 .orbit-caption a {
     display: none;
-}
-
-div#countrystripe {
-  /* background-color: #f9fafc; */
-   background-color: #3b4e6f;
-   width: 100%;
-   margin-left: auto;
-   margin-right: auto;
-   margin-top: .5rem;
-   margin-bottom: .5rem;
-   max-width: initial;
-   min-width:790px;
-   padding-top:30px;
-   padding-bottom:5px;
-}
-
-div#countrystripe h1 {
-    color:#ffffff;
 }

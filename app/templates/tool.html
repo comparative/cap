@@ -230,10 +230,9 @@ border: 2px solid #dadada;-->
     	
      <h5>Recent</h5>
      <div style="overflow: auto; height: 200px; border: 2px solid #dadada;">
-     <img class="thumb" src="/static/img/lilchart.png">
-     <img class="thumb" src="/static/img/lilchart1.png">   
-     <img class="thumb" src="/static/img/lilchart3.png">
-     <img class="thumb" src="/static/img/lilchart4.png">
+     
+     <img class="thumb" ng-repeat="thumb in recent" ng-src="{@thumb@}">
+     
 	 </div>
     
   </div>
@@ -397,10 +396,9 @@ border: 2px solid #dadada;-->
       <script src="//cdnjs.cloudflare.com/ajax/libs/velocity/1.1.0/velocity.min.js"></script>-->
       
       <script src="/static/js/highcharts.js"></script>
- 
+        <script src="http://code.highcharts.com/modules/exporting.js"></script>
       <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
       <script src="/static/js/tool.js"></script>
-      <!--<script src="http://code.highcharts.com/modules/exporting.js"></script>-->
       <script src="/static/js/mtree.js"></script>
 
     {% endblock %}

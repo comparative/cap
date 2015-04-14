@@ -52,11 +52,12 @@ class CountryForm(Form):
     image = FileField('image',validators=[FileAllowed(IMAGES, 'Please choose an image file.')])
     heading = StringField('heading', validators=[DataRequired()])
     about = StringField('content', validators=[DataRequired()],widget=TextArea())
+    embed_url = principal = StringField('embed_url')
     
 class UserForm(Form):
     name = StringField('name', validators=[DataRequired()])
     email = StringField('email', validators=[DataRequired()])
-    password = StringField('password', validators=[DataRequired()])
+    password = PasswordField('password', validators=[DataRequired()])
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
     
 class SlideForm(Form):
