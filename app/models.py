@@ -60,6 +60,7 @@ class Research(db.Model):
     imagename = db.Column(db.String(200))
     body = db.Column(db.String(9000))
     saved_date = db.Column(db.DateTime)
+    featured = db.Column(db.Boolean())
     
     def __repr__(self):
         return self.title    
@@ -74,6 +75,7 @@ class Staff(db.Model):
     body = db.Column(db.String(9000))
     country_id = db.Column(db.Integer,db.ForeignKey('country.id'))
     country = db.relationship('Country',backref=db.backref('staff', lazy='dynamic'))
+    sort_order = db.Column(db.Integer)
     
     def __repr__(self):
         return self.title 

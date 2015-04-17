@@ -4,15 +4,25 @@
 
 {% block content %}
 
+<div id="bluestripe">
+     
+    <div class="row">
+     	<div id="slogan" class="medium-12 columns">
+     	The Comparative Agendas Project collects and organizes data from archived sources to track policy outcomes across countries. <a class="orange-link" href="pages/About">more</a>
+     	</div>
+     </div>
+
+</div>
+
 <div class="row">
 
-<div class="medium-8 columns">
+<div class="medium-9 columns">
 <h3>{{ item.title }}</h3>   
 <img class="news-image" src="{{ item.url }}"/>
 <p>{{ item.content|safe }}</p>
 </div>
 
-<div class="medium-4 columns">
+<div class="medium-3 columns">
 <h3>&nbsp;</h3>
 			{% for n in news %}
 

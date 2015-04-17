@@ -100,7 +100,7 @@ var options = {
             enabled: false
         },
         
-        /*exporting:{
+        exporting:{
             buttons:{
                 printButton:{
                     enabled: false
@@ -109,9 +109,9 @@ var options = {
                     enabled: true
                 }	 
             },
-            url: 'http://www.policyagendas.org/papgraph/exporting',
+            url: 'http://104.237.136.8:8080/highcharts-export-web/',
             width: '960'
-        },*/
+        },
         
         series: [],
     	
@@ -312,7 +312,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
 			//console.log(theChart.options)
 			
             var obj = {},
-            exportUrl = 'http://export.highcharts.com/';
+            exportUrl = 'http://104.237.136.8:8080/highcharts-export-web/';
             obj.options = JSON.stringify(theChart.options);
             obj.type = 'image/png';
             obj.async = true;

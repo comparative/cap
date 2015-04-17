@@ -7,16 +7,16 @@
 {% endblock %}
 
 {% block content %}
-
-     <p/>
      
-     <div class="row">
+
+     <div id="bluestripe">
+     
+    <div class="row">
      	<div id="slogan" class="medium-12 columns">
      	The Comparative Agendas Project collects and organizes data from archived sources to track policy outcomes across countries. <a class="orange-link" href="pages/About">more</a>
      	</div>
      </div>
       
-     <div id="bluestripe">
      
      <div class="row">
      
@@ -28,7 +28,7 @@
 			  <li>
 				<a target="_tool" href="{{ item.link }}"><img class="orbit-img" src="{{ item.url }}" alt="slide 1" /></a>
 				<div class="orbit-caption">
-				  <h4>{{ item.heading }}</h4>
+				  <h3>{{ item.heading }}</h3>
 				  <h6>{{ item.subheading }}</br>
 				  <a class="orange-link bold-link" target="_tool" href="{{ item.link }}">open in trends tool</a></h6>
 				</div>

@@ -90,6 +90,21 @@
 <br>
 
 <div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Featured</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.featured }}
+	  </label>
+	  {% for error in form.featured.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+
+<div class="row">
 <div class="small-1 columns">&nbsp;</div>
 <div class="small-11 columns">
 <input class="button small" type="submit" value="Save">

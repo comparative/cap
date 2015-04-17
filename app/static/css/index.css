@@ -1,3 +1,8 @@
+.news-image {
+    margin-bottom:20px; 
+    margin-top:10px;
+}
+
 textarea {
     height: 10em;
 }
@@ -82,19 +87,13 @@ a.orange-link {
 	color:#cc6633;
 }
 
-#slogan {
-	margin-bottom: .5rem;
-}
+
 
 hr {
 	margin: .5rem 0 .5rem;
 }
 
-#header {
-	margin-top:10px;
-}
-
-h1,h2,h3,h4,h5,h6,p.panel,p.panel a, #page-title, #page-subtitle, #slogan {
+h1,h2,h3,h4,h5,h6,p.panel,p.panel a, #page-title, #page-subtitle {
 	color: #3b4e6f;
 }
 
@@ -116,18 +115,18 @@ h1,h2,h3,h4,h5,h6,p.panel,p.panel a, #page-title, #page-subtitle, #slogan {
 	line-height:1;
 }
 
-
+/*
 div#bluestripe {
-  /* background-color: #f9fafc; */
    background-color: #3b4e6f;
    width: 100%;
    margin-left: auto;
    margin-right: auto;
    max-width: initial;
    min-width:790px;
-   padding-top:30px;
+   padding-top:15px;
    padding-bottom:5px;
 }
+*/
 
 div#under-graph {
 	margin-top: 15px;

@@ -139,20 +139,7 @@
         	    
                 <div class="medium-3 columns left">
                     
-                    <div class="scrollable-header">Select a country</div>
-                    
-                    <div class="scrollable">
-                    {% for item in countries %}
-                    <a href="{{ url_for('country',slug=item.slug) }}"><p>{{ item.name }}</p></a>
-                    {% endfor %}
-                    </div>  
-                    
-                    <p></p>
-                    
-                    
-                <a class="twitter-timeline" href="https://twitter.com/policyagendasUS" data-widget-id="575883914687877122">Tweets by @policyagendasUS</a>
-<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>                     
-                   
+{% include "sidebar.html" %}
                 </div>
         
             </div>

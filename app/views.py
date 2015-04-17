@@ -70,7 +70,7 @@ def country(slug,pane='about'):
     country = Country.query.filter_by(slug=slug).first()
     latest_research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date)).paginate(1, 1, False).items
     research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date))
-    staff = Staff.query.filter_by(country_id=country.id)
+    staff = Staff.query.filter_by(country_id=country.id).order_by(Staff.sort_order)
     url = countryimages.url(country.filename) if country.filename else None
     return render_template("country.html",
                            countries=countries,
@@ -96,12 +96,13 @@ def tool():
 @app.route('/news')
 @app.route('/news/<int:page>')
 def news(page=1):
+    countries = Country.query.order_by(Country.name)
     news = News.query.order_by(desc(News.saved_date)).paginate(page, 3, False)
     for item in news.items:
         if item.filename:
             url = newsimages.url(item.filename)
             item.url = url
-    return render_template('news.html',news=news)
+    return render_template('news.html',news=news,countries=countries)
 
 @app.route('/news/<slug>')
 def news_item(slug):    
@@ -122,8 +123,9 @@ def datasets_codebooks():
 
 @app.route('/pages/<slug>')
 def page(slug):
+    countries = Country.query.order_by(Country.name)
     page = Page.query.filter_by(slug=slug).first()
-    return render_template('page.html',page=page)
+    return render_template('page.html',page=page,countries=countries)
 
 @app.route('/files/<slug>')
 @nocache
@@ -519,6 +521,7 @@ def admin_research_item(slug,id):
             research.imagename = imagename
         research.title = form.title.data
         research.body = form.body.data
+        research.featured = form.featured.data
         if id == 'add':
             research.country_id = country.id
             db.session.add(research)
@@ -533,6 +536,7 @@ def admin_research_item(slug,id):
         if request.method == 'GET':
             form.title.data = research.title
             form.body.data = research.body
+            form.featured.data = research.featured
     
     return render_template('admin/research_item.html',
                            slug=slug,
@@ -592,7 +596,7 @@ def admin_research_removeimage(slug,id):
 @login_required
 def admin_staff_list(slug,page=1):
     country = Country.query.filter_by(slug=slug).first()
-    staff = Staff.query.filter_by(country_id=country.id).order_by(Staff.name).paginate(page, 10, False)
+    staff = Staff.query.filter_by(country_id=country.id).order_by(Staff.sort_order).paginate(page, 10, False)
     return render_template('admin/staff_list.html', 
                            country=country,
                            staff=staff)
@@ -610,6 +614,7 @@ def admin_staff_item(slug,id):
         staff.name = form.name.data
         staff.title = form.title.data
         staff.institution = form.institution.data
+        staff.sort_order = form.sort_order.data
         staff.body = form.body.data
         if id == 'add':
             staff.country_id = country.id
@@ -624,6 +629,7 @@ def admin_staff_item(slug,id):
             form.name.data = staff.name
             form.title.data = staff.title
             form.institution.data = staff.institution
+            form.sort_order.data = staff.sort_order
             form.body.data = staff.body
     
     return render_template('admin/staff_item.html',

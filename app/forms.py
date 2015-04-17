@@ -1,8 +1,8 @@
 from flask.ext.uploads import IMAGES
 from flask.ext.wtf import Form
 from flask.ext.wtf.file import FileField, FileAllowed
-from wtforms import StringField, BooleanField, PasswordField
-from wtforms.validators import DataRequired, Length
+from wtforms import StringField, BooleanField, PasswordField, IntegerField
+from wtforms.validators import DataRequired, Length, NumberRange
 from wtforms.widgets import TextArea
 from wtforms.ext.sqlalchemy.orm import model_form
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
@@ -34,15 +34,17 @@ class ResearchForm(Form):
     file = FileField('file',validators=[FileAllowed(['pdf'], 'Papers must be formatted as .pdf')])
     image = FileField('image')
     body = StringField('content', validators=[Length(min=0, max=9000)],widget=TextArea()) 
+    featured = BooleanField('featured', default=False)
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
     
 class StaffForm(Form):
     name = StringField('name', validators=[DataRequired()])
     title = StringField('title')
     institution = StringField('institution')
+    sort_order = IntegerField('sort_order', [NumberRange(min=0, max=10)])
     image = FileField('image',validators=[FileAllowed(IMAGES, 'Please choose an image file.')])
     body = StringField('content', validators=[DataRequired()],widget=TextArea()) 
-    country = QuerySelectField(query_factory=countries_factory,allow_blank=True)   
+    country = QuerySelectField(query_factory=countries_factory,allow_blank=True) 
 
 class CountryForm(Form):
     name = StringField('name', validators=[DataRequired()])

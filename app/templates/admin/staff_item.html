@@ -59,6 +59,20 @@
 
 <div class="row">
 	<div class="small-1 columns">
+	  <label for="title" class="right inline">Order</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.sort_order() }}
+	  </label>
+	  {% for error in form.sort_order.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-1 columns">
 	  <label for="title" class="right inline">Image (220&nbsp;x&nbsp;260)</label>
 	</div>
 	<div class="small-11 columns">
