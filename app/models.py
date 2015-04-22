@@ -1,4 +1,6 @@
 from app import db
+from sqlalchemy.dialects.postgresql import JSON
+import datetime
 
 class Slide(db.Model):
 
@@ -104,3 +106,14 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.name
+        
+              
+class Chart(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    slug = db.Column(db.String(80), unique=True)
+    options = db.Column(JSON)
+    date = db.Column(db.DateTime, default=datetime.datetime.utcnow())
+    
+    def __repr__(self):
+        return self.slug
+    

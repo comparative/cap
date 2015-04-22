@@ -9,10 +9,10 @@ from functools import wraps, update_wrapper
 from flask import render_template, flash, redirect, url_for, request, make_response, send_file, abort
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from werkzeug import secure_filename
-from json import dumps
+from json import dumps, loads
 from slugify import slugify
 from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles, slideimages
-from .models import User, News, Country, Research, Staff, Page, File, Slide
+from .models import User, News, Country, Research, Staff, Page, File, Slide, Chart
 from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm, SlideForm
 from datetime import datetime
 
@@ -32,7 +32,51 @@ def nocache(view):
         
     return update_wrapper(no_cache, view)
 
-######### PUBLIC ROUTES
+
+######### CHARTING ROUTES
+
+@app.route('/tool')
+@app.route('/tool/<slug>')
+def tool(slug=None):
+    exists = Chart.query.filter_by(slug=slug).first()
+    options = exists.options if exists else None
+    return render_template('tool.html',options=options)
+
+@app.route('/charts/<slug>', methods=['GET', 'POST'])
+@app.route('/charts/<slug>/<switch>')
+def charts(slug,switch=None):
+    if request.method == 'GET':
+    
+        exists = Chart.query.filter_by(slug=slug).first()
+        if exists:
+            url = 'http://104.237.136.8:8080/highcharts-export-web/'
+            values = {}
+            values['options'] = dumps(loads(exists.options))
+            values['type'] = 'image/png'
+            values['width'] = '960'
+            values['constr'] = 'Chart'
+            data = urllib.urlencode(values)
+            req = urllib2.Request(url, data)
+            response = urllib2.urlopen(req)
+            resp = make_response(response.read())
+            resp.headers['Content-Type'] = 'image/png'
+            if switch == "download":
+                resp.headers['Content-Disposition'] = 'attachment; filename=' + slug + '.png'
+            return resp
+        else:
+            return 'not found',404
+              
+    else:
+        # save chart on post
+        chart = Chart()
+        chart.slug = slug
+        chart.options = request.get_data()
+        db.session.add(chart)
+        db.session.commit()
+        return 'cool',200
+        
+
+######### CMS ROUTES
 
 @app.route('/')
 @app.route('/index')
@@ -53,15 +97,6 @@ def index():
                            slides=slides,
                            news=news)
 
-@app.route('/test')
-def test():
-    url = 'http://export.highcharts.com'
-    values = {'options':'{"colors":["#7cb5ec","#90ed7d","#f7a35c","#8085e9","#f15c80","#e4d354","#8085e8","#8d4653","#91e8e1"],"symbols":["circle","diamond","square","triangle","triangle-down"],"lang":{"loading":"Loading...","months":["January","February","March","April","May","June","July","August","September","October","November","December"],"shortMonths":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"weekdays":["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],"decimalPoint":".","numericSymbols":["k","M","G","T","P","E"],"resetZoom":"Reset zoom","resetZoomTitle":"Reset zoom level 1:1","thousandsSep":",","printChart":"Print chart","downloadPNG":"Download PNG image","downloadJPEG":"Download JPEG image","downloadPDF":"Download PDF document","downloadSVG":"Download SVG vector image","contextButtonTitle":"Chart context menu"},"global":{"useUTC":true,"canvasToolsURL":"http://code.highcharts.com/4.0.4/modules/canvas-tools.js","VMLRadialGradientURL":"http://code.highcharts.com/4.0.4/gfx/vml-radial-gradient.png"},"chart":{"borderColor":"#4572A7","borderRadius":0,"defaultSeriesType":"line","ignoreHiddenSeries":false,"spacing":[10,10,15,10],"backgroundColor":"#FFFFFF","plotBorderColor":"#C0C0C0","resetZoomButton":{"theme":{"zIndex":20},"position":{"align":"right","x":-10,"y":10}},"renderTo":"chart"},"title":{"text":"","align":"center","margin":15,"style":{"color":"#333333","fontSize":"18px"}},"subtitle":{"text":"","align":"center","style":{"color":"#555555"}},"plotOptions":{"line":{"allowPointSelect":false,"showCheckbox":false,"animation":{"duration":1000},"events":{},"lineWidth":2,"marker":{"lineWidth":0,"radius":4,"lineColor":"#FFFFFF","states":{"hover":{"enabled":true,"lineWidthPlus":1,"radiusPlus":2},"select":{"fillColor":"#FFFFFF","lineColor":"#000000","lineWidth":2}}},"point":{"events":{}},"dataLabels":{"enabled":false,"x":0,"y":0,"style":{"color":"#606060","cursor":"default","fontSize":"11px"},"align":"center","verticalAlign":"bottom"},"cropThreshold":300,"pointRange":0,"states":{"hover":{"lineWidthPlus":1,"marker":{},"halo":{"size":10,"opacity":0.25}},"select":{"marker":{}}},"stickyTracking":true,"turboThreshold":1000},"area":{"allowPointSelect":false,"showCheckbox":false,"animation":{"duration":1000},"events":{},"lineWidth":2,"marker":{"lineWidth":0,"radius":4,"lineColor":"#FFFFFF","states":{"hover":{"enabled":true,"lineWidthPlus":1,"radiusPlus":2},"select":{"fillColor":"#FFFFFF","lineColor":"#000000","lineWidth":2}}},"point":{"events":{}},"dataLabels":{"enabled":false,"x":0,"y":0,"style":{"color":"#606060","cursor":"default","fontSize":"11px"},"align":"center","verticalAlign":"bottom"},"cropThreshold":300,"pointRange":0,"states":{"hover":{"lineWidthPlus":1,"marker":{},"halo":{"size":10,"opacity":0.25}},"select":{"marker":{}}},"stickyTracking":true,"turboThreshold":1000,"threshold":0},"spline":{"allowPointSelect":false,"showCheckbox":false,"animation":{"duration":1000},"events":{},"lineWidth":2,"marker":{"lineWidth":0,"radius":4,"lineColor":"#FFFFFF","states":{"hover":{"enabled":true,"lineWidthPlus":1,"radiusPlus":2},"select":{"fillColor":"#FFFFFF","lineColor":"#000000","lineWidth":2}}},"point":{"events":{}},"dataLabels":{"enabled":false,"x":0,"y":0,"style":{"color":"#606060","cursor":"default","fontSize":"11px"},"align":"center","verticalAlign":"bottom"},"cropThreshold":300,"pointRange":0,"states":{"hover":{"lineWidthPlus":1,"marker":{},"halo":{"size":10,"opacity":0.25}},"select":{"marker":{}}},"stickyTracking":true,"turboThreshold":1000},"areaspline":{"allowPointSelect":false,"showCheckbox":false,"animation":{"duration":1000},"events":{},"lineWidth":2,"marker":{"lineWidth":0,"radius":4,"lineColor":"#FFFFFF","states":{"hover":{"enabled":true,"lineWidthPlus":1,"radiusPlus":2},"select":{"fillColor":"#FFFFFF","lineColor":"#000000","lineWidth":2}}},"point":{"events":{}},"dataLabels":{"enabled":false,"x":0,"y":0,"style":{"color":"#606060","cursor":"default","fontSize":"11px"},"align":"center","verticalAlign":"bottom"},"cropThreshold":300,"pointRange":0,"states":{"hover":{"lineWidthPlus":1,"marker":{},"halo":{"size":10,"opacity":0.25}},"select":{"marker":{}}},"stickyTracking":true,"turboThreshold":1000,"threshold":0},"column":{"allowPointSelect":false,"showCheckbox":false,"animation":{"duration":1000},"events":{},"lineWidth":2,"marker":null,"point":{"events":{}},"dataLabels":{"enabled":false,"x":0,"y":null,"style":{"color":"#606060","cursor":"default","fontSize":"11px"},"align":null,"verticalAlign":null},"cropThreshold":50,"pointRange":null,"states":{"hover":{"lineWidthPlus":1,"marker":{},"halo":false,"brightness":0.1,"shadow":false},"select":{"marker":{},"color":"#C0C0C0","borderColor":"#000000","shadow":false}},"stickyTracking":false,"turboThreshold":1000,"borderColor":"#FFFFFF","borderRadius":0,"groupPadding":0.2,"pointPadding":0.1,"minPointLength":0,"tooltip":{"distance":6},"threshold":0,"borderWidth":0.2},"bar":{"allowPointSelect":false,"showCheckbox":false,"animation":{"duration":1000},"events":{},"lineWidth":2,"marker":null,"point":{"events":{}},"dataLabels":{"enabled":false,"x":0,"y":null,"style":{"color":"#606060","cursor":"default","fontSize":"11px"},"align":null,"verticalAlign":null},"cropThreshold":50,"pointRange":null,"states":{"hover":{"lineWidthPlus":1,"marker":{},"halo":false,"brightness":0.1,"shadow":false},"select":{"marker":{},"color":"#C0C0C0","borderColor":"#000000","shadow":false}},"stickyTracking":false,"turboThreshold":1000,"borderColor":"#FFFFFF","borderRadius":0,"groupPadding":0.2,"pointPadding":0.1,"minPointLength":0,"tooltip":{"distance":6},"threshold":0},"scatter":{"allowPointSelect":false,"showCheckbox":false,"animation":{"duration":1000},"events":{},"lineWidth":0,"marker":{"lineWidth":0,"radius":4,"lineColor":"#FFFFFF","states":{"hover":{"enabled":true,"lineWidthPlus":1,"radiusPlus":2},"select":{"fillColor":"#FFFFFF","lineColor":"#000000","lineWidth":2}}},"point":{"events":{}},"dataLabels":{"enabled":false,"x":0,"y":0,"style":{"color":"#606060","cursor":"default","fontSize":"11px"},"align":"center","verticalAlign":"bottom"},"cropThreshold":300,"pointRange":0,"states":{"hover":{"lineWidthPlus":1,"marker":{},"halo":{"size":10,"opacity":0.25}},"select":{"marker":{}}},"stickyTracking":false,"turboThreshold":1000,"tooltip":{"headerFormat":"<span style=\"color:{series.color}\"></span> <span style=\"font-size: 10px;\"> {series.name}</span><br/>","pointFormat":"x: <b>{point.x}</b><br/>y: <b>{point.y}</b><br/>"}},"pie":{"allowPointSelect":false,"showCheckbox":false,"animation":{"duration":1000},"events":{},"lineWidth":2,"marker":null,"point":{"events":{}},"dataLabels":{"enabled":true,"x":0,"y":0,"style":{"color":"#606060","cursor":"default","fontSize":"11px"},"align":"center","verticalAlign":"bottom","distance":30},"cropThreshold":300,"pointRange":0,"states":{"hover":{"lineWidthPlus":1,"marker":{},"halo":{"size":10,"opacity":0.25},"brightness":0.1,"shadow":false},"select":{"marker":{}}},"stickyTracking":false,"turboThreshold":1000,"borderColor":"#FFFFFF","borderWidth":1,"center":[null,null],"clip":false,"colorByPoint":true,"ignoreHiddenPoint":true,"legendType":"point","size":null,"showInLegend":false,"slicedOffset":10,"tooltip":{"followPointer":true}},"series":{"point":{"events":{}},"states":{"hover":{"halo":false}},"shadow":false,"animation":false,"cursor":"pointer"}},"labels":{"style":{"position":"absolute","color":"#3E576F"}},"legend":{"enabled":false,"align":"center","layout":"horizontal","borderColor":"#909090","borderRadius":0,"navigation":{"activeColor":"#274b6d","inactiveColor":"#CCC"},"shadow":false,"itemStyle":{"color":"#333333","fontSize":"12px","fontWeight":"bold","cursor":"pointer"},"itemHoverStyle":{"color":"#000"},"itemHiddenStyle":{"color":"#CCC"},"itemCheckboxStyle":{"position":"absolute","width":"13px","height":"13px"},"symbolPadding":5,"verticalAlign":"bottom","x":0,"y":0,"title":{"style":{"fontWeight":"bold"}}},"loading":{"labelStyle":{"fontWeight":"bold","position":"relative","top":"45%"},"style":{"position":"absolute","backgroundColor":"white","opacity":0.5,"textAlign":"center"}},"tooltip":{"enabled":false,"animation":true,"backgroundColor":"rgba(249, 249, 249, .85)","borderWidth":1,"borderRadius":3,"dateTimeLabelFormats":{"millisecond":"%A, %b %e, %H:%M:%S.%L","second":"%A, %b %e, %H:%M:%S","minute":"%A, %b %e, %H:%M","hour":"%A, %b %e, %H:%M","day":"%A, %b %e, %Y","week":"Week from %A, %b %e, %Y","month":"%B %Y","year":"%Y"},"headerFormat":"<span style=\"font-size: 10px\">{point.key}</span><br/>","pointFormat":"<span style=\"color:{series.color}\"></span> {series.name}: <b>{point.y}</b><br/>","shadow":true,"snap":10,"style":{"color":"#333333","cursor":"default","fontSize":"12px","padding":"8px","whiteSpace":"nowrap"}},"credits":{"enabled":false,"text":"Highcharts.com","href":"http://www.highcharts.com","position":{"align":"right","x":-10,"verticalAlign":"bottom","y":-5},"style":{"cursor":"pointer","color":"#909090","fontSize":"9px"}},"navigation":{"menuStyle":{"border":"1px solid #A0A0A0","background":"#FFFFFF","padding":"5px 0"},"menuItemStyle":{"padding":"0 10px","background":"none","color":"#303030","fontSize":"11px"},"menuItemHoverStyle":{"background":"#4572A5","color":"#FFFFFF"},"buttonOptions":{"symbolFill":"#E0E0E0","symbolSize":14,"symbolStroke":"#666","symbolStrokeWidth":3,"symbolX":12.5,"symbolY":10.5,"align":"right","buttonSpacing":3,"height":22,"theme":{"fill":"white","stroke":"none"},"verticalAlign":"top","width":24}},"exporting":{"type":"image/png","url":"http://export.highcharts.com/","buttons":{"contextButton":{"menuClassName":"highcharts-contextmenu","symbol":"menu","_titleKey":"contextButtonTitle","menuItems":[{"textKey":"printChart"},{"separator":true},{"textKey":"downloadPNG"},{"textKey":"downloadJPEG"},{"textKey":"downloadPDF"},{"textKey":"downloadSVG"}]}}},"xAxis":[{"title":{"text":"Year"},"categories":["2001","2002","2003","2004","2005","2006","2007","2008","2009","2010"],"index":0,"isX":true}],"yAxis":[{"title":{"text":"Count"},"plotLines":[{"value":0,"width":1,"color":"#808080"}],"index":0}],"series":[{"name":"United States: NYT #Gender","data":[0,1,5,5,3,2,0,10,9,8],"_colorIndex":0,"_symbolIndex":0}]}','type':'image/png'}
-    data = urllib.urlencode(values)
-    req = urllib2.Request(url, data)
-    response = urllib2.urlopen(req)
-    the_page = response.read()
-    return the_page
 
 @app.route('/countries/<slug>')
 @app.route('/countries/<slug>/<pane>')
@@ -88,10 +123,6 @@ def research_item(slug,id):
     research = Research.query.filter_by(id=id).first()
     return render_template("research_item.html",countries=countries,country=country,research=research) 
     
-
-@app.route('/tool')
-def tool():
-    return render_template('tool.html')
 
 @app.route('/news')
 @app.route('/news/<int:page>')
