@@ -1,4 +1,5 @@
 import os
+import uuid
 import psycopg2
 import urllib
 import urllib2
@@ -38,43 +39,59 @@ def nocache(view):
 @app.route('/tool')
 @app.route('/tool/<slug>')
 def tool(slug=None):
+    
+    # identify user
+    if 'captool_user' in request.cookies:
+        user = request.cookies['captool_user']
+    else:
+        user = str(uuid.uuid1())
+        
+    # thumbnails for this user?
+    recent = Chart.query.filter_by(user=user).order_by(desc(Chart.date)).all()
+    
+    # were we passed a permalink slug?
     exists = Chart.query.filter_by(slug=slug).first()
     options = exists.options if exists else None
-    return render_template('tool.html',options=options)
+    
+    # send response
+    resp=make_response(render_template('tool.html',user=user,slug=slug,options=options,recent=recent))    
+    resp.set_cookie('captool_user',value=user)
+    return resp
 
-@app.route('/charts/<slug>', methods=['GET', 'POST'])
+@app.route('/charts/save/<user>/<slug>', methods=['POST'])
+def save_chart(user,slug):
+    chart = Chart()
+    chart.slug = slug
+    chart.user = user
+    chart.options = request.get_data()
+    db.session.add(chart)
+    db.session.commit()
+    return 'cool',200
+
+@app.route('/charts/<slug>')
 @app.route('/charts/<slug>/<switch>')
 def charts(slug,switch=None):
-    if request.method == 'GET':
-    
-        exists = Chart.query.filter_by(slug=slug).first()
-        if exists:
-            url = 'http://104.237.136.8:8080/highcharts-export-web/'
-            values = {}
-            values['options'] = dumps(loads(exists.options))
-            values['type'] = 'image/png'
-            values['width'] = '960'
-            values['constr'] = 'Chart'
-            data = urllib.urlencode(values)
-            req = urllib2.Request(url, data)
-            response = urllib2.urlopen(req)
-            resp = make_response(response.read())
-            resp.headers['Content-Type'] = 'image/png'
-            if switch == "download":
-                resp.headers['Content-Disposition'] = 'attachment; filename=' + slug + '.png'
-            return resp
-        else:
-            return 'not found',404
-              
+    exists = Chart.query.filter_by(slug=slug).first()
+    if exists and switch != "embed":
+        url = 'http://104.237.136.8:8080/highcharts-export-web/'
+        values = {}
+        values['options'] = dumps(loads(exists.options))
+        values['type'] = 'image/png'
+        values['width'] = '960'
+        values['constr'] = 'Chart'
+        data = urllib.urlencode(values)
+        req = urllib2.Request(url, data)
+        response = urllib2.urlopen(req)
+        resp = make_response(response.read())
+        resp.headers['Content-Type'] = 'image/png'
+        if switch == "download":
+            resp.headers['Content-Disposition'] = 'attachment; filename=' + slug + '.png'
+        return resp
+    elif exists and switch == "embed":
+        return 'nope'
     else:
-        # save chart on post
-        chart = Chart()
-        chart.slug = slug
-        chart.options = request.get_data()
-        db.session.add(chart)
-        db.session.commit()
-        return 'cool',200
-        
+        return 'not found',404  
+
 
 ######### CMS ROUTES
 
@@ -772,6 +789,13 @@ def admin_slide_removeimage(id):
 
 
 ######### API ROUTES
+
+@app.route('/api/charts/<user>')
+def api_charts(user):
+    conn = psycopg2.connect(app.config['CONN_STRING'])
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute('SELECT \'http://www.coolbest.net:5000/charts/\' || slug as url, id FROM chart WHERE "user" = %(user)s', {"user": user})
+    return dumps(cur.fetchall())
 
 @app.route('/api/countries')
 def api_countries():

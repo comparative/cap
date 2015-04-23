@@ -196,3 +196,7 @@ div#countrystripe {
 div#countrystripe * {
     color:#ffffff;
 }
+
+p.panel {
+    font-size:.9rem;
+}

@@ -229,7 +229,7 @@ border: 2px solid #dadada;-->
      <h5>Recent Charts</h5>
      <div style="overflow: auto; height: 600px; border: 2px solid #dadada;">
      
-     <img class="thumb" ng-click="thumbMenu($index)" ng-repeat="thumb in recent | orderBy: 'id':true" ng-src="{@thumb.url@}">
+     <img class="thumb" ng-repeat="thumb in recent | orderBy: 'id':true" ng-src="{@thumb.url@}">
      
 	 </div>
     
@@ -240,27 +240,22 @@ border: 2px solid #dadada;-->
 </div>
         
 </div>
-       
-  
-            
-<div id="embed_code" class="reveal-modal small" data-reveal>
+        
     
-    <p>To embed this mighty CAP chart copy the following code and slap it up on a web page:</p>
+    <div id="embed_code" class="reveal-modal small" data-reveal>
+        
+        <textarea>
+<pre>
+<div id="chart_container">&nbsp;</div>
+<script src="//code.highcharts.com/adapters/standalone-framework.js"></script>
+<script src="//code.highcharts.com/highcharts.js"></script>
+<script>// <![CDATA[
+new Highcharts.Chart(options);
+// ]]></script>
+</pre>
+        </textarea>
     
-    <textarea>
-    <pre>
-    <div id="chart"></div>
-    <script src="//code.highcharts.com/adapters/standalone-framework.js"></script>
-    <script src="//code.highcharts.com/highcharts.js"></script>
-    <script>// <![CDATA[
-    new Highcharts.Chart({{ options | safe }});
-    // ]]></script>
-    </pre>
-    </textarea>
-
-</div>  
-    
-    
+    </div>  
     
       
     <div id="lineoptions" class="reveal-modal small" data-reveal>

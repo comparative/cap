@@ -15,7 +15,7 @@ class Page(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(80))
-    body = db.Column(db.String(9000))
+    body = db.Column(db.String(29000))
     slug = db.Column(db.String(80))
     
 class File(db.Model):
@@ -113,6 +113,7 @@ class Chart(db.Model):
     slug = db.Column(db.String(80), unique=True)
     options = db.Column(JSON)
     date = db.Column(db.DateTime, default=datetime.datetime.utcnow())
+    user = db.Column(db.String(36))
     
     def __repr__(self):
         return self.slug

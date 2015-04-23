@@ -15,8 +15,10 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
 	$scope.selected = [];
     
-    $scope.recent = [];
-    
+    $http.get('http://www.coolbest.net:5000/api/charts/' + $("#user").val() ).success(function(data){
+        $scope.recent = data;
+    });
+        
     $http.get('http://www.coolbest.net:5000/api/countries').success(function(data){
         $scope.countries = data;
     });
@@ -92,16 +94,17 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                     
                     slug = data.substr(6,8) // slug is between 'files/' & '.png' in return value
                     $scope.slug = slug;
+                    $("#slug").val(slug);
                     
                     // SAVE CHART
                     resp = $.ajax({
                         type: 'POST',
-                        url: '/charts/' + slug,
+                        url: '/charts/save/' + $("#user").val() + '/' + slug ,
                         data: obj.options
                     });
                     
                     // ADD THUMBNAIL TO RECENT
-                    $scope.recent.push(exportUrl + data)
+                    $scope.recent.unshift({"url": exportUrl + data})
                     $scope.$apply()
                     
                 }
@@ -123,6 +126,13 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     	$scope.selected.splice(index,1);
     	theChart.series[index].remove();
     	
+    }
+    
+    $scope.thumbMenu = function(index) {
+        
+        url = $scope.recent[index].url;        
+        window.location = 'http://www.coolbest.net:5000/tool/' + url.split('charts/')[1];
+        
     }
     
     $scope.actions = function(index) {
