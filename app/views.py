@@ -13,8 +13,8 @@ from werkzeug import secure_filename
 from json import dumps, loads
 from slugify import slugify
 from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles, slideimages
-from .models import User, News, Country, Research, Staff, Page, File, Slide, Chart
-from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm, SlideForm
+from .models import User, News, Country, Research, Staff, Page, File, Slide, Chart, Dataset, Category
+from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm, SlideForm, DatasetForm
 from datetime import datetime
 
 @lm.user_loader
@@ -35,6 +35,10 @@ def nocache(view):
 
 
 ######### CHARTING ROUTES
+
+@app.route('/tooltest')
+def tooltest():
+    return render_template('tooltest.html')
 
 @app.route('/tool')
 @app.route('/tool/<slug>')
@@ -333,6 +337,76 @@ def admin_file_removefile(id):
     flash('File not found!')
     return redirect(url_for('admin'))   
 
+
+## SLIDES
+
+@app.route('/admin/slides')
+@login_required
+def admin_slide_list():
+    slides = Slide.query.order_by(Slide.heading)
+    return render_template('admin/slide_list.html',
+                           slides=slides)
+                                               
+@app.route('/admin/slides/<id>', methods=['GET', 'POST'])
+@login_required
+def admin_slide_item(id):
+    slide = Slide() if id == 'add' else Slide.query.filter_by(id=id).first()
+    form = SlideForm()
+    if form.validate_on_submit():
+        if 'image' in request.files and request.files['image'].filename != '':
+            imagename = slideimages.save(request.files['image'])
+            slide.imagename = imagename
+        slide.heading = form.heading.data
+        slide.subheading = form.subheading.data
+        slide.link = form.link.data
+        slide.active = form.active.data
+        if id == 'add':
+            db.session.add(slide)
+        db.session.commit()
+    	flash('Slide "%s" saved' %
+              (form.heading.data))
+        return redirect(url_for('admin_slide_list'))
+    else:
+        url = slideimages.url(slide.imagename) if slide.imagename else None
+        if request.method == 'GET':
+            form.heading.data = slide.heading
+            form.subheading.data = slide.subheading
+            form.link.data = slide.link
+            form.active.data = slide.active
+    
+    return render_template('admin/slide_item.html',
+                           id=slide.id,
+                           url=url,
+                           form=form)
+ 
+
+@app.route('/admin/slides/delete/<id>')
+@login_required
+def admin_slide_delete(id):
+    slide = Slide.query.filter_by(id=id).first()
+    if slide is not None:
+        title = page.heading
+        db.session.delete(slide)
+        db.session.commit()
+        flash('Slide "%s" deleted' %
+              (title))
+        return redirect(url_for('admin_slide_list'))
+    flash('Slide not found!')
+    return redirect(url_for('admin'))  
+
+@app.route('/admin/slides/removeimage/<id>')
+@login_required
+def admin_slide_removeimage(id):
+    slide = Slide.query.filter_by(id=id).first()
+    if slide is not None:
+        path = slideimages.path(slide.imagename)
+        if os.path.isfile(path):
+            os.remove(path)
+        slide.imagename = None
+        db.session.commit()
+        return redirect(url_for('admin_slide_item',id=id))
+    flash('Slide not found!')
+    return redirect(url_for('admin')) 
 
 
 ## COUNTRIES
@@ -717,75 +791,89 @@ def admin_staff_removefile(slug,id):
     return redirect(url_for('admin'))
 
 
-## SLIDES
+## DATASETS
 
-@app.route('/admin/slides')
+@app.route('/admin/countries/<slug>/datasets')
+@app.route('/admin/countries/<slug>/datasets/p/<int:page>')
 @login_required
-def admin_slide_list():
-    slides = Slide.query.order_by(Slide.heading)
-    return render_template('admin/slide_list.html',
-                           slides=slides)
-                                               
-@app.route('/admin/slides/<id>', methods=['GET', 'POST'])
+def admin_dataset_list(slug,page=1):
+    country = Country.query.filter_by(slug=slug).first()
+    datasets = Dataset.query.filter_by(country_id=country.id).order_by(desc(Dataset.saved_date)).paginate(page, 10, False)
+    return render_template('admin/dataset_list.html',
+                           country=country,
+                           datasets=datasets)
+                    
+@app.route('/admin/countries/<slug>/dataset/<id>', methods=['GET', 'POST'])
 @login_required
-def admin_slide_item(id):
-    slide = Slide() if id == 'add' else Slide.query.filter_by(id=id).first()
-    form = SlideForm()
+def admin_dataset_item(slug,id):
+    country = Country.query.filter_by(slug=slug).first()
+    dataset = Dataset() if id == 'add' else Dataset.query.filter_by(id=id).first()
+    form = DatasetForm()
     if form.validate_on_submit():
-        if 'image' in request.files and request.files['image'].filename != '':
-            imagename = slideimages.save(request.files['image'])
-            slide.imagename = imagename
-        slide.heading = form.heading.data
-        slide.subheading = form.subheading.data
-        slide.link = form.link.data
-        slide.active = form.active.data
+        app.logger.debug('oooo')
+        #if 'content' in request.files and request.files['content'].filename != '':
+            #filename = datasetimages.save(request.files['image'])
+            #dataset.filename = filename
+        dataset.display = form.display.data
+        dataset.short_display = form.short_display.data
+        dataset.description = form.description.data
+        dataset.unit = form.unit.data
+        dataset.source = form.source.data
+        dataset.category = form.category.data        
         if id == 'add':
-            db.session.add(slide)
+            dataset.country_id = country.id
+            db.session.add(dataset)
+        dataset.saved_date = datetime.utcnow()
         db.session.commit()
-    	flash('Slide "%s" saved' %
-              (form.heading.data))
-        return redirect(url_for('admin_slide_list'))
+    	flash('Dataset "%s" saved' %
+              (form.display.data))
+        return redirect(url_for('admin_dataset_list',slug=slug))
     else:
-        url = slideimages.url(slide.imagename) if slide.imagename else None
+        #url = datasetimages.url(dataset.filename) if dataset.filename else None
+        url = None
         if request.method == 'GET':
-            form.heading.data = slide.heading
-            form.subheading.data = slide.subheading
-            form.link.data = slide.link
-            form.active.data = slide.active
+            form.display.data = dataset.display
+            form.short_display.data = dataset.short_display
+            form.description.data = dataset.description
+            form.unit.data = dataset.unit
+            form.source.data = dataset.source
+            form.category.data = dataset.category
     
-    return render_template('admin/slide_item.html',
-                           id=slide.id,
+    return render_template('admin/dataset_item.html', 
+                           id=dataset.id,
+                           country=country,
+                           slug=slug,
                            url=url,
                            form=form)
- 
 
-@app.route('/admin/slides/delete/<id>')
+@app.route('/admin/countries/<slug>/dataset/delete/<id>')
 @login_required
-def admin_slide_delete(id):
-    slide = Slide.query.filter_by(id=id).first()
-    if slide is not None:
-        title = page.heading
-        db.session.delete(slide)
+def admin_dataset_delete(slug,id):
+    dataset = Dataset.query.filter_by(id=id).first()
+    if dataset is not None:
+        title = dataset.display
+        db.session.delete(dataset)
         db.session.commit()
-        flash('Slide "%s" deleted' %
+        flash('Dataset "%s" deleted' %
               (title))
-        return redirect(url_for('admin_slide_list'))
-    flash('Slide not found!')
+        return redirect(url_for('admin_dataset_list',slug=slug))
+    flash('Dataset not found!')
     return redirect(url_for('admin'))  
 
-@app.route('/admin/slides/removeimage/<id>')
+@app.route('/admin/countries/<slug>/dataset/removeimage/<id>')
 @login_required
-def admin_slide_removeimage(id):
-    slide = Slide.query.filter_by(id=id).first()
-    if slide is not None:
-        path = slideimages.path(slide.imagename)
+def admin_dataset_removeimage(slug,id):
+    dataset = Dataset.query.filter_by(id=id).first()
+    if dataset is not None:
+        path = datasetimages.path(dataset.filename)
         if os.path.isfile(path):
             os.remove(path)
-        slide.imagename = None
+        dataset.filename = None
         db.session.commit()
-        return redirect(url_for('admin_slide_item',id=id))
-    flash('Slide not found!')
+        return redirect(url_for('admin_dataset_item',slug=slug,id=id))
+    flash('Dataset not found!')
     return redirect(url_for('admin')) 
+
 
 
 ######### API ROUTES

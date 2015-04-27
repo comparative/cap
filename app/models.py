@@ -36,6 +36,21 @@ class News(db.Model):
     country = db.relationship('Country',backref=db.backref('news', lazy='dynamic'))
     saved_date = db.Column(db.DateTime)
 
+class Dataset(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)    
+    display = db.Column(db.String(80))
+    short_display = db.Column(db.String(80))
+    description = db.Column(db.String(80))
+    unit = db.Column(db.String(80))
+    source = db.Column(db.String(80))
+    content = db.Column(JSON)
+    country_id = db.Column(db.Integer,db.ForeignKey('country.id'))
+    country = db.relationship('Country',backref=db.backref('datasets', lazy='dynamic'))
+    category_id = db.Column(db.Integer,db.ForeignKey('category.id'))
+    category = db.relationship('Category',backref=db.backref('categories', lazy='dynamic'))
+    saved_date = db.Column(db.DateTime)
+
 class Country(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)    
@@ -51,6 +66,14 @@ class Country(db.Model):
     
     def __repr__(self):
         return self.name
+
+class Category(db.Model):
+    
+    id = db.Column(db.Integer, primary_key=True)    
+    name = db.Column(db.String(80))
+    
+    def __repr__(self):
+        return self.name 
 
 class Research(db.Model):
 

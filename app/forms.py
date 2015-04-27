@@ -6,10 +6,13 @@ from wtforms.validators import DataRequired, Length, NumberRange
 from wtforms.widgets import TextArea
 from wtforms.ext.sqlalchemy.orm import model_form
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
-from models import Country
+from models import Country, Category
 
 def countries_factory():
     return Country.query.all()
+    
+def categories_factory():
+    return Category.query.all()
 
 class LoginForm(Form):
     email = StringField('username', validators=[DataRequired()])
@@ -45,6 +48,17 @@ class StaffForm(Form):
     image = FileField('image',validators=[FileAllowed(IMAGES, 'Please choose an image file.')])
     body = StringField('content', validators=[DataRequired()],widget=TextArea()) 
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True) 
+
+class DatasetForm(Form):
+    display = StringField('display', validators=[DataRequired()])
+    short_display = StringField('short_display', validators=[DataRequired()])
+    description = StringField('description', validators=[DataRequired()])
+    unit = StringField('unit', validators=[DataRequired()])
+    source = StringField('source', validators=[DataRequired()])
+    content = FileField('content',validators=[FileAllowed(IMAGES, 'Please upload a csv.')])
+    country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
+    category = QuerySelectField(query_factory=categories_factory,allow_blank=True)
+
 
 class CountryForm(Form):
     name = StringField('name', validators=[DataRequired()])

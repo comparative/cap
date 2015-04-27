@@ -1,0 +1,144 @@
+<!-- extend from base layout -->
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4>
+{% if not current_user.country %}
+    <a href="{{ url_for('admin_country_list') }}">Countries</a> >>
+{% endif %}
+<a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> <a href="{{ url_for('admin_dataset_list',slug=country.slug) }}">Datasets</a>
+</h4>
+
+<form action="" method="post" name="login" enctype="multipart/form-data">
+{{ form.hidden_tag() }}
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Display</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.display(size=40) }}
+	  </label>
+	  {% for error in form.display.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Short Display</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.short_display(size=40) }}
+	  </label>
+	  {% for error in form.short_display.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Description</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.description(size=40) }}
+	  </label>
+	  {% for error in form.description.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Unit</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.unit(size=40) }}
+	  </label>
+	  {% for error in form.unit.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Source</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.source(size=40) }}
+	  </label>
+	  {% for error in form.source.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Content</label>
+	</div>
+	<div class="small-11 columns">
+	  {% if url %}
+	      <p>
+	      <img src="{{ url }}">
+	      <br>
+	      <a href="{{ url_for('admin_news_removeimage',slug=slug,id=id) }}">remove image</a>
+	      </p>
+      {% else %}
+          <label class="error">
+          {{ form.content(size=40) }}
+          </label>
+          {% for error in form.content.errors %}
+          <small class="error">{{ error }}</small>
+          {% endfor %}
+      {% endif %}
+	</div>
+</div>
+
+
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Category</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.category }}
+	  </label>
+	  {% for error in form.category.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+<br>
+
+<div class="row">
+<div class="small-1 columns">&nbsp;</div>
+<div class="small-11 columns">
+<input class="button small" type="submit" value="Save">
+{% if id %}
+&nbsp;&nbsp;
+<a href="{{ url_for('admin_dataset_delete',slug=slug,id=id) }}">
+<input class="button alert small" type="button" value="Delete">
+</a>
+{% endif %}
+</div>
+
+</div>
+
+
+</form>
+
+{% endblock %}

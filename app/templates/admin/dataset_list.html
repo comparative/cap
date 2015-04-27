@@ -1,0 +1,27 @@
+<!-- extend from base layout -->
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4>
+{% if not current_user.country %}
+    <a href="{{ url_for('admin_country_list') }}">Countries</a> >>
+{% endif %}
+<a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> Datasets
+</h4>
+<table>
+{% for item in datasets.items %}
+<tr><td><a href="{{ url_for('admin_dataset_item',slug=country.slug,id=item.id) }}">edit</a></td><td>{{ item.display }}</td></tr>
+{% endfor %}
+</table>
+
+{% if datasets.has_prev or datasets.has_next %}
+<p>
+{% if datasets.has_prev %}<a href="{{ url_for('admin_dataset_list', slug=country.slug, page=datasets.prev_num) }}">&lt;&lt; Newer</a>{% else %}&lt;&lt; Newer{% endif %} | 
+{% if datasets.has_next %}<a href="{{ url_for('admin_dataset_list', slug=country.slug, page=datasets.next_num) }}">Older &gt;&gt;</a>{% else %}Older &gt;&gt;{% endif %}
+</p>
+{% endif %}
+
+<a href="{{ url_for('admin_dataset_item',slug=country.slug,id='add') }}">Add dataset</a>
+
+{% endblock %}
