@@ -15,8 +15,10 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
 	$scope.selected = [];
     
+    $scope.recent = [];
+    
     $http.get('http://www.coolbest.net:5000/api/charts/' + $("#user").val() ).success(function(data){
-        $scope.recent = data;
+        $scope.saved = data;
     });
         
     $http.get('http://www.coolbest.net:5000/api/countries').success(function(data){
@@ -97,15 +99,17 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                     $("#slug").val(slug);
                     
                     // SAVE CHART
-                    resp = $.ajax({
+                   /* resp = $.ajax({
                         type: 'POST',
                         url: '/charts/save/' + $("#user").val() + '/' + slug ,
                         data: obj.options
                     });
+                    */
+                    
                     
                     // ADD THUMBNAIL TO RECENT
-                    $scope.recent.unshift({"url": exportUrl + data})
-                    $scope.$apply()
+                    $scope.recent.unshift({"url": exportUrl + data, "options": obj.options });
+                    $scope.$apply();
                     
                 }
             });
@@ -119,6 +123,23 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     	
     }
     
+    
+    $scope.saveChart = function() {
+        
+        options = JSON.stringify(theChart.options);
+            
+        // SAVE CHART
+        resp = $.ajax({
+            type: 'POST',
+            url: '/charts/save/' + $("#user").val() + '/' + $("#slug").val() ,
+            data: options
+        });              
+       
+        $scope.saved.unshift({"url": "http://www.coolbest.net:5000/charts/" + $("#slug").val(), "options": options});
+        //$scope.$apply();
+        
+    }
+    
     $scope.removeFromChart = function(index) {
     	
     	//alert(index);
@@ -128,10 +149,20 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     	
     }
     
+    $scope.savedMenu = function(index) {
+        
+        reverse_index = $scope.saved.length - 1 - index;    
+        url = $scope.saved[reverse_index].url;        
+        window.location = 'http://www.coolbest.net:5000/tool/' + url.split('charts/')[1];
+        
+    }
+    
+    
     $scope.thumbMenu = function(index) {
         
-        url = $scope.recent[index].url;        
-        window.location = 'http://www.coolbest.net:5000/tool/' + url.split('charts/')[1];
+        /*reverse_index = $scope.saved.length - 1 - index;    
+        url = $scope.saved[reverse_index].url;        
+        window.location = 'http://www.coolbest.net:5000/tool/' + url.split('charts/')[1];*/
         
     }
     

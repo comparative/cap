@@ -20,11 +20,14 @@ researchfiles = UploadSet('researchfiles', 'pdf')
 researchimages = UploadSet('researchimages', IMAGES)
 adhocfiles = UploadSet('adhocfiles', ALL)
 slideimages = UploadSet('slideimages', ALL)
-configure_uploads(app, (newsimages,countryimages,staffimages,researchfiles,researchimages,adhocfiles,slideimages))
+codebooks = UploadSet('codebooks', 'pdf')
+datasetfiles = UploadSet('datasetfiles', 'csv')
+configure_uploads(app, (newsimages,countryimages,staffimages,researchfiles,researchimages,adhocfiles,slideimages,codebooks,datasetfiles))
 
 from app import views, models
 
 def smart_truncate(content, length=100, suffix='...'):
+    content = content[3:-4]
     if len(content) <= length:
         return content
     else:

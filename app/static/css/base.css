@@ -1,3 +1,13 @@
+.news-item {
+    margin-top:15px;
+    margin-bottom:15px;
+}
+
+.news-image {
+    margin-bottom:20px; 
+    margin-top:10px;
+}
+
 div.scrollable {
 /*width: 184px;*/
 max-height: 250px;
@@ -55,12 +65,6 @@ textarea {
 footer {
 	margin-left:10px;
 }
-
-.news-image {
-	margin-top:0px;
-}
-
-
 
 .highlight {
 	background:#ffffff;
@@ -154,7 +158,7 @@ hr {
   margin-bottom: 10px;
 }
 
-h1,h2,h3,h4,h5,h6,p.panel,p.panel a, #page-title, #page-subtitle, #slogan {
+h1,h2,h3,h4,h5,h6,p.panel,p.panel a, #page-title a, #page-subtitle a, #slogan {
 	color: #3b4e6f;
 }
 

@@ -21,25 +21,35 @@
           
 			{% for item in news.items %}
 
-			<div class="row news-item">
+			<div class="row">
+                
+                <div class="news-item">
+                
+	
+                    <div class="medium-4 columns">
+                    <img class="news-image" src="{{ item.url }}"/>
+                    </div>
 
-				<div class="medium-3 columns">
-				<img class="news-image" src="{{ item.url }}"/>
+                    <div class="medium-8 columns">
+                    <h5>{{ item.title }}</h5>
+                    {{ smart_truncate(item.content,275)| safe }}
+                    <br>
+                    <a class="orange-link" href="/news/{{ item.slug }}">read more</a>
+				    </div>
+				    
 				</div>
-
-				<div class="medium-9 columns">
-				<h5>{{ item.title }}</h5>
-				{{ smart_truncate(item.content,300)|safe }}
-				<a class="orange-link" href="{{ url_for('news_item',slug=item.slug) }}">read more</a>
-				</div>
+				
+				
 
 			</div>
 
 			{% endfor %} 
-			
+
+{% if news.has_prev or news.has_next %}
+<br/>	
 {% if news.has_prev %}<a href="{{ url_for('news', page=news.prev_num) }}">&lt;&lt; Newer</a>{% else %}&lt;&lt; Newer{% endif %} | 
 {% if news.has_next %}<a href="{{ url_for('news', page=news.next_num) }}">Older &gt;&gt;</a>{% else %}Older &gt;&gt;{% endif %}
-			                  
+{% endif %}			                  
             
 </div>
 

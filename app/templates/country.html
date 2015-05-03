@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+
 {% block head %}
 
 <link href="/static/css/country.css" rel="stylesheet">
@@ -139,7 +140,7 @@
 
                                     <div class="medium-8 columns">
                                     <h5>{{ item.title }}</h5>
-                                    {{ smart_truncate(item.body,250)|safe }}
+                                    {{ smart_truncate(item.body,280)|safe }}
                                     <a class="orange-link" href="{{ url_for('research_item',slug=country.slug,id=item.id) }}">read more</a>
                                     </div>
 
@@ -248,10 +249,15 @@
 
                                     <div class="medium-12 columns">
                                     <h5>{{ item.title }}</h5>
-                                    {% if item.imagename %}<img class="featured-research-image" src="http://www.coolbest.net:5000/_uploads/researchimages/{{ item.imagename }}">{% endif %}
-                                    <p>{{ smart_truncate(item.body,170)|safe }}
+                                    <p>
+                                    {% if item.imagename %}<img style="float:left; margin-right:10px;" class="featured-research-image" src="http://www.coolbest.net:5000/_uploads/researchimages/{{ item.imagename }}">{% endif %}
+                                    {{ smart_truncate(item.body,475)|safe }}
                                     <a class="orange-link" href="{{ url_for('research_item',slug=country.slug,id=item.id) }}">read more</a></p>
-                                    <p><a class="orange-link" href="{{ url_for('country',slug=country.slug,pane='research') }}">more research</a></p>
+                                    
+                                    <div id="more-research">
+                                    <a class="orange-link" href="{{ url_for('country',slug=country.slug,pane='research') }}">more research</a>
+                                    </div>
+                                    
                                     </div>
 
                                 </div>
@@ -277,8 +283,10 @@
         	    
                 <div class="medium-3 columns left">
                     
+                 {% set active_page = "country" %}  
                  {% include "sidebar.html" %}
-                                    
+                  
+                               
                 </div>
         
             </div>

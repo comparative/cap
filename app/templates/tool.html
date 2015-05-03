@@ -8,14 +8,42 @@
 
 {% block content %}
 
+<div ng-app="toolApp">
+
+<div ng-controller="ToolController">
+
+<div id="bluestripe">
+     
+    <div class="row fullWidth">
+     	<div class="medium-12 columns">
+     	 <div class="row fullWidth">
+     	    
+     	    <div class="medium-11 columns text-right">
+     	        <a id="save-chart" ng-click="saveChart()" style="margin-bottom:10px;" class="button tiny">Save chart</a>
+     	    </div>
+     	    
+     	    <div class="medium-1 columns text-left">
+     	    <a class="orange-link tool-help" href="pages/Help">help</a>
+     	    </div>
+     	    
+     	 </div>
+     	</div>
+     </div>
+
+</div> 
+
+
 <div id="app-container" ng-app="toolApp">
 
-<div ng-controller="ToolController" ngclass="row fullWidth">    
+<div ngclass="row fullWidth">    
 
 <input type="hidden" id="user" name="user" value="{{user}}" />
 <input type="hidden" id="slug" name="slug" value="{{slug}}" />
 
 <div class="large-9 medium-9 push-3 columns">
+         
+         
+
             
             
         <div class="row">
@@ -210,15 +238,14 @@
 
   
   <div class="content" id="panel2">
-  <!--  <h5>Saved</h5>
-    <div style="overflow: auto; height: 200px; border: 2px solid #dadada;">
-    <img class="thumb" src="/static/img/lilchart.png">
-    <img class="thumb" src="/static/img/lilchart1.png">  
-    <img class="thumb" src="/static/img/lilchart4.png">  
-	</div>
-    
+  
+   <h5>Saved Charts</h5>
+   <div style="overflow: auto; height: 360px; border: 2px solid #dadada;">
+   <img class="thumb" ng-click="savedMenu($index)" ng-repeat="thumb in saved | orderBy: 'id':true" ng-src="{@thumb.url@}">
+   </div>
     	
-   	max-height: 175px;
+<!--   	
+max-height: 175px;
 min-height: 50px;
 margin: 0;
 padding: 7px 0;
@@ -227,7 +254,7 @@ overflow-y: auto;
 border: 2px solid #dadada;-->
     	
      <h5>Recent Charts</h5>
-     <div style="overflow: auto; height: 600px; border: 2px solid #dadada;">
+     <div style="overflow: auto; height: 180px; border: 2px solid #dadada;">
      
      <img class="thumb" ng-click="thumbMenu($index)" ng-repeat="thumb in recent | orderBy: 'id':true" ng-src="{@thumb.url@}">
      
@@ -311,6 +338,10 @@ border: 2px solid #dadada;-->
     </div>
     
   </div>
+
+</div>
+
+</div>
 
 {% endblock %}
 
@@ -439,7 +470,8 @@ border: 2px solid #dadada;-->
                 $('div.picker:visible').slideToggle('fast','linear');
                 $(this).next('div').slideToggle('fast','linear');
             });
-    
+            
+            
             $('#pushme').click(function(e) {
         
                 /*

@@ -1,3 +1,13 @@
+.news-item {
+    margin-top:15px;
+    margin-bottom:15px;
+}
+
+.news-image {
+    margin-bottom:20px; 
+    margin-top:10px;
+}
+
 h1 a, h1 a:hover, h1 a:visited {
   color: #ffffff;
   text-decoration: none;
@@ -11,6 +21,11 @@ div.latest-research p {
 
 div.latest-research div {
     margin-top:0px;
+    margin-bottom:0px;
+}
+
+div#more-research {
+    margin-top:5px;
     margin-bottom:10px;
 }
 
@@ -76,6 +91,6 @@ div#countrystripe h1 {
 }
 
 .featured-research-image {
-    margin-bottom:10px; 
+    /* margin-bottom:10px; */
     margin-top:5px;
 }

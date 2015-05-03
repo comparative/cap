@@ -41,7 +41,7 @@ class Dataset(db.Model):
     id = db.Column(db.Integer, primary_key=True)    
     display = db.Column(db.String(80))
     short_display = db.Column(db.String(80))
-    description = db.Column(db.String(80))
+    description = db.Column(db.String(9000))
     unit = db.Column(db.String(80))
     source = db.Column(db.String(80))
     content = db.Column(JSON)
@@ -50,6 +50,7 @@ class Dataset(db.Model):
     category_id = db.Column(db.Integer,db.ForeignKey('category.id'))
     category = db.relationship('Category',backref=db.backref('categories', lazy='dynamic'))
     saved_date = db.Column(db.DateTime)
+    filename = db.Column(db.String(200))
 
 class Country(db.Model):
 

@@ -52,13 +52,26 @@ class StaffForm(Form):
 class DatasetForm(Form):
     display = StringField('display', validators=[DataRequired()])
     short_display = StringField('short_display', validators=[DataRequired()])
-    description = StringField('description', validators=[DataRequired()])
-    unit = StringField('unit', validators=[DataRequired()])
-    source = StringField('source', validators=[DataRequired()])
-    content = FileField('content',validators=[FileAllowed(IMAGES, 'Please upload a csv.')])
+    description = StringField('content', validators=[DataRequired()],widget=TextArea())
+    unit = StringField('unit')
+    source = StringField('source')
+    content = FileField('content',validators=[FileAllowed(['csv'], 'Data must be formatted as .csv')])
+    file = FileField('content',validators=[FileAllowed(['pdf'], 'Codebook must be formatted as .csv')])
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
     category = QuerySelectField(query_factory=categories_factory,allow_blank=True)
+    
+    def validate(self):
+        rv = Form.validate(self)
+        if not rv:
+            return False
 
+        valid_json = True
+        if not valid_json:
+            self.content.errors.append('Cmon make yer json valid already')
+            return False
+
+        return True
+    
 
 class CountryForm(Form):
     name = StringField('name', validators=[DataRequired()])

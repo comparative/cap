@@ -1,4 +1,10 @@
-                    <div class="scrollable-header">Select a country</div>
+                    <div class="scrollable-header">
+                    {% if active_page == "country" %}
+                    Select another project
+                    {% else %}
+                    Select a country
+                    {% endif %}
+                    </div>
                     
                     <div class="scrollable">
                     {% for item in countries %}

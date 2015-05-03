@@ -3,6 +3,7 @@ import uuid
 import psycopg2
 import urllib
 import urllib2
+import csv
 from sqlalchemy import desc
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
@@ -12,7 +13,7 @@ from flask.ext.login import login_user, logout_user, current_user, login_require
 from werkzeug import secure_filename
 from json import dumps, loads
 from slugify import slugify
-from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles, slideimages
+from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles, slideimages, codebooks, datasetfiles
 from .models import User, News, Country, Research, Staff, Page, File, Slide, Chart, Dataset, Category
 from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm, SlideForm, DatasetForm
 from datetime import datetime
@@ -122,8 +123,8 @@ def index():
 @app.route('/countries/<slug>')
 @app.route('/countries/<slug>/<pane>')
 def country(slug,pane='about'):
-    countries = Country.query.order_by(Country.name)
     country = Country.query.filter_by(slug=slug).first()
+    countries = Country.query.filter(Country.id != country.id).order_by(Country.name).all()
     latest_research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date)).paginate(1, 1, False).items
     research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date))
     staff = Staff.query.filter_by(country_id=country.id).order_by(Staff.sort_order)
@@ -810,10 +811,16 @@ def admin_dataset_item(slug,id):
     dataset = Dataset() if id == 'add' else Dataset.query.filter_by(id=id).first()
     form = DatasetForm()
     if form.validate_on_submit():
-        app.logger.debug('oooo')
-        #if 'content' in request.files and request.files['content'].filename != '':
-            #filename = datasetimages.save(request.files['image'])
-            #dataset.filename = filename
+        if 'file' in request.files and request.files['file'].filename != '':
+            filename = codebooks.save(request.files['file'])
+            dataset.filename = filename
+        if 'content' in request.files and request.files['content'].filename != '':
+            datasetfilename = datasetfiles.save(request.files['content'])
+            csvfile = open(datasetfiles.path(datasetfilename), 'r')
+            fieldnames = ("id","year","majortopic","subtopic","description","source","code","governor","month","day")
+            reader = csv.DictReader( csvfile, fieldnames)
+            json_data = dumps( [ row for row in reader ] )
+            dataset.content = json_data
         dataset.display = form.display.data
         dataset.short_display = form.short_display.data
         dataset.description = form.description.data

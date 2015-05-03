@@ -55,14 +55,20 @@
 
 			<div class="row">
 
-				<div class="medium-4 columns">
-				<img class="news-image" src="{{ item.url }}"/>
-				</div>
+                <div class="news-item">
+                    
+                    <div class="medium-4 columns">
+                    <img class="news-image" src="{{ item.url }}"/>
+                    </div>
 
-				<div class="medium-8 columns">
-				<h5>{{ item.title }}</h5>
-				{{ smart_truncate(item.content,250)|safe }}
-				<a class="orange-link" href="/news/{{ item.slug }}">read more</a>
+                    <div class="medium-8 columns">
+                    <h5>{{ item.title }}</h5>
+                    {{ smart_truncate(item.content,275)| safe }}
+                    <br>
+                    <a class="orange-link" href="/news/{{ item.slug }}">read more</a>
+				
+				</div>
+				
 				</div>
                 
                 

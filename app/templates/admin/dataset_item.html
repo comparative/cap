@@ -14,12 +14,12 @@
 {{ form.hidden_tag() }}
 
 <div class="row">
-	<div class="small-1 columns">
+	<div class="small-2 columns">
 	  <label for="title" class="right inline">Display</label>
 	</div>
-	<div class="small-11 columns">
+	<div class="small-10 columns">
 	  <label class="error">
-	  {{ form.display(size=40) }}
+	  {{ form.display(size=40,placeholder='ex. Parliamentary Votes') }}
 	  </label>
 	  {% for error in form.display.errors %}
 	  <small class="error">{{ error }}</small>
@@ -28,12 +28,12 @@
 </div>
 
 <div class="row">
-	<div class="small-1 columns">
+	<div class="small-2 columns">
 	  <label for="title" class="right inline">Short Display</label>
 	</div>
-	<div class="small-11 columns">
+	<div class="small-10 columns">
 	  <label class="error">
-	  {{ form.short_display(size=40) }}
+	  {{ form.short_display(size=40,placeholder='ex. Votes') }}
 	  </label>
 	  {% for error in form.short_display.errors %}
 	  <small class="error">{{ error }}</small>
@@ -42,25 +42,26 @@
 </div>
 
 <div class="row">
-	<div class="small-1 columns">
+	<div class="small-2 columns">
 	  <label for="title" class="right inline">Description</label>
 	</div>
-	<div class="small-11 columns">
+	<div class="small-10 columns">
 	  <label class="error">
-	  {{ form.description(size=40) }}
+	  {{ form.description(cols="35", rows="15") }}
 	  </label>
 	  {% for error in form.description.errors %}
 	  <small class="error">{{ error }}</small>
       {% endfor %}
 	</div>
 </div>
+<br>
 
 
 <div class="row">
-	<div class="small-1 columns">
+	<div class="small-2 columns">
 	  <label for="title" class="right inline">Unit</label>
 	</div>
-	<div class="small-11 columns">
+	<div class="small-10 columns">
 	  <label class="error">
 	  {{ form.unit(size=40) }}
 	  </label>
@@ -70,11 +71,11 @@
 	</div>
 </div>
 
-<div class="row">
-	<div class="small-1 columns">
+<!--<div class="row">
+	<div class="small-2 columns">
 	  <label for="title" class="right inline">Source</label>
 	</div>
-	<div class="small-11 columns">
+	<div class="small-10 columns">
 	  <label class="error">
 	  {{ form.source(size=40) }}
 	  </label>
@@ -82,25 +83,39 @@
 	  <small class="error">{{ error }}</small>
       {% endfor %}
 	</div>
-</div>
+</div>-->
 
 
 <div class="row">
-	<div class="small-1 columns">
-	  <label for="title" class="right inline">Content</label>
+	<div class="small-2 columns">
+	  <label for="title" class="right inline">Data.csv</label>
 	</div>
-	<div class="small-11 columns">
-	  {% if url %}
-	      <p>
-	      <img src="{{ url }}">
-	      <br>
-	      <a href="{{ url_for('admin_news_removeimage',slug=slug,id=id) }}">remove image</a>
-	      </p>
-      {% else %}
+	<div class="small-10 columns">
           <label class="error">
           {{ form.content(size=40) }}
           </label>
           {% for error in form.content.errors %}
+          <small class="error">{{ error }}</small>
+          {% endfor %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-2 columns">
+	  <label for="title" class="right inline">Codebook.pdf</label>
+	</div>
+	<div class="small-10 columns">
+	  {% if url %}
+	      <p>
+	      <img src="{{ url }}">
+	      <br>
+	      <a href="{{ url_for('admin_dataset_removefile',slug=slug,id=id) }}">remove file</a>
+	      </p>
+      {% else %}
+          <label class="error">
+          {{ form.file(size=40) }}
+          </label>
+          {% for error in form.file.errors %}
           <small class="error">{{ error }}</small>
           {% endfor %}
       {% endif %}
@@ -110,10 +125,10 @@
 
 
 <div class="row">
-	<div class="small-1 columns">
+	<div class="small-2 columns">
 	  <label for="title" class="right inline">Category</label>
 	</div>
-	<div class="small-11 columns">
+	<div class="small-10 columns">
 	  <label class="error">
 	  {{ form.category }}
 	  </label>
@@ -125,8 +140,8 @@
 <br>
 
 <div class="row">
-<div class="small-1 columns">&nbsp;</div>
-<div class="small-11 columns">
+<div class="small-2 columns">&nbsp;</div>
+<div class="small-10 columns">
 <input class="button small" type="submit" value="Save">
 {% if id %}
 &nbsp;&nbsp;

@@ -1,31 +1,32 @@
+.tool-help {
+font-weight:bold;
+}
+
 p.series i, span.series i {
- color:#000000;
+color:#000000;
 }
 
 #app-container {
-    margin-top: .5rem;
-    margin-bottom: .5rem;
+margin-top: .5rem;
+margin-bottom: .5rem;
 }
 
 
-div#topics {
-	
-	margin-bottom:10px;
-	
+div#topics {	
+margin-bottom:10px;	
 }
 
 .series {
-	
-	font-size:.8rem;
-    margin:5px;
-    padding:5px;
-    border-style: solid;
+font-size:.8rem;
+margin:5px;
+padding:5px;
+border-style: solid;
 border-width: 1px;
 border-color: #d8d8d8;
 }
 
 span.series {
-display:inline-block;
+    display:inline-block;
 }
 
 /**
@@ -74,9 +75,9 @@ img {
 
 img.thumb {
     display:block;
-    margin: 0 auto;
-    padding-bottom:5px; 
-    padding-top:5px;
+    margin: 0 auto 0 auto;
+    padding: 10px 5px 10px 5px;
+    width: 250px;
 }
 
 ul {
