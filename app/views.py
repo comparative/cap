@@ -13,7 +13,7 @@ from flask.ext.login import login_user, logout_user, current_user, login_require
 from werkzeug import secure_filename
 from json import dumps, loads
 from slugify import slugify
-from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles, slideimages, codebooks, datasetfiles
+from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles, slideimages, codebookfiles, datasetfiles
 from .models import User, News, Country, Research, Staff, Page, File, Slide, Chart, Dataset, Category
 from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm, SlideForm, DatasetForm
 from datetime import datetime
@@ -811,16 +811,17 @@ def admin_dataset_item(slug,id):
     dataset = Dataset() if id == 'add' else Dataset.query.filter_by(id=id).first()
     form = DatasetForm()
     if form.validate_on_submit():
-        if 'file' in request.files and request.files['file'].filename != '':
-            filename = codebooks.save(request.files['file'])
-            dataset.filename = filename
+        #app.logger.debug('woah')
+        if 'codebook' in request.files and request.files['codebook'].filename != '':
+            codebookfilename = codebooks.save(request.files['codebook'])
+            dataset.codebookfilename = codebookfilename
         if 'content' in request.files and request.files['content'].filename != '':
             datasetfilename = datasetfiles.save(request.files['content'])
+            dataset.datasetfilename = datasetfilename
             csvfile = open(datasetfiles.path(datasetfilename), 'r')
-            fieldnames = ("id","year","majortopic","subtopic","description","source","code","governor","month","day")
-            reader = csv.DictReader( csvfile, fieldnames)
-            json_data = dumps( [ row for row in reader ] )
-            dataset.content = json_data
+            reader = csv.DictReader(csvfile)
+            app.logger.debug(reader.fieldnames)
+            dataset.content = [ row for row in reader ]
         dataset.display = form.display.data
         dataset.short_display = form.short_display.data
         dataset.description = form.description.data
@@ -836,7 +837,8 @@ def admin_dataset_item(slug,id):
               (form.display.data))
         return redirect(url_for('admin_dataset_list',slug=slug))
     else:
-        #url = datasetimages.url(dataset.filename) if dataset.filename else None
+        dataseturl= datasetfiles.url(dataset.datasetfilename) if dataset.datasetfilename else None
+        codebookurl = codebookfiles.url(dataset.codebookfilename) if dataset.codebookfilename else None
         url = None
         if request.method == 'GET':
             form.display.data = dataset.display
@@ -850,7 +852,10 @@ def admin_dataset_item(slug,id):
                            id=dataset.id,
                            country=country,
                            slug=slug,
-                           url=url,
+                           dataseturl=dataseturl,
+                           datasetfilename=dataset.datasetfilename,
+                           codebookurl=codebookurl,
+                           codebookfilename=dataset.codebookfilename,
                            form=form)
 
 @app.route('/admin/countries/<slug>/dataset/delete/<id>')
@@ -867,21 +872,25 @@ def admin_dataset_delete(slug,id):
     flash('Dataset not found!')
     return redirect(url_for('admin'))  
 
-@app.route('/admin/countries/<slug>/dataset/removeimage/<id>')
+@app.route('/admin/countries/<slug>/dataset/remove/<id>')
 @login_required
-def admin_dataset_removeimage(slug,id):
-    dataset = Dataset.query.filter_by(id=id).first()
-    if dataset is not None:
-        path = datasetimages.path(dataset.filename)
-        if os.path.isfile(path):
-            os.remove(path)
-        dataset.filename = None
-        db.session.commit()
-        return redirect(url_for('admin_dataset_item',slug=slug,id=id))
-    flash('Dataset not found!')
+def admin_dataset_removecontent(slug,id):
+    #dataset = Dataset.query.filter_by(id=id).first()
+    #if dataset is not None:
+    #    path = datasetimages.path(dataset.filename)
+    #    if os.path.isfile(path):
+    #        os.remove(path)
+    #    dataset.filename = None
+    #    db.session.commit()
+    #    return redirect(url_for('admin_dataset_item',slug=slug,id=id))
+    #flash('Dataset not found!')
     return redirect(url_for('admin')) 
 
-
+@app.route('/admin/countries/<slug>/codebook/remove/<id>')
+@login_required
+def admin_dataset_removecodebook(slug,id):
+    return redirect(url_for('admin'))
+    
 
 ######### API ROUTES
 

@@ -50,8 +50,9 @@ class Dataset(db.Model):
     category_id = db.Column(db.Integer,db.ForeignKey('category.id'))
     category = db.relationship('Category',backref=db.backref('categories', lazy='dynamic'))
     saved_date = db.Column(db.DateTime)
-    filename = db.Column(db.String(200))
-
+    codebookfilename = db.Column(db.String(200))
+    datasetfilename = db.Column(db.String(200))
+    
 class Country(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)    

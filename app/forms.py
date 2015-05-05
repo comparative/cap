@@ -56,7 +56,7 @@ class DatasetForm(Form):
     unit = StringField('unit')
     source = StringField('source')
     content = FileField('content',validators=[FileAllowed(['csv'], 'Data must be formatted as .csv')])
-    file = FileField('content',validators=[FileAllowed(['pdf'], 'Codebook must be formatted as .csv')])
+    codebook = FileField('codebook',validators=[FileAllowed(['pdf'], 'Codebook must be formatted as .csv')])
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
     category = QuerySelectField(query_factory=categories_factory,allow_blank=True)
     

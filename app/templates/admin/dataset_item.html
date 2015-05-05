@@ -15,6 +15,50 @@
 
 <div class="row">
 	<div class="small-2 columns">
+	  <label for="title" class="right inline">Data [.csv]</label>
+	</div>
+	<div class="small-10 columns">
+	    {% if dataseturl %}
+	      <p>
+	      <a href="{{ dataseturl }}" target="_new">{{ datasetfilename }}</a>
+	      <br>
+	      <a href="{{ url_for('admin_dataset_removecontent',slug=slug,id=id) }}">update</a>
+	      </p>
+      {% else %}
+          <label class="error">
+          {{ form.content(size=40) }}
+          </label>
+          {% for error in form.content.errors %}
+          <small class="error">{{ error }}</small>
+          {% endfor %}
+      {% endif %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-2 columns">
+	  <label for="title" class="right inline">Codebook [.pdf]</label>
+	</div>
+	<div class="small-10 columns">
+	  {% if codebookurl %}
+	      <p>
+	      <a href="{{ codebookurl }}" target="_new">{{ codebookfilename }}</a>
+	      <br>
+	      <a href="{{ url_for('admin_dataset_removecodebook',slug=slug,id=id) }}">update</a>
+	      </p>
+      {% else %}
+          <label class="error">
+          {{ form.codebook(size=40) }}
+          </label>
+          {% for error in form.codebook.errors %}
+          <small class="error">{{ error }}</small>
+          {% endfor %}
+      {% endif %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-2 columns">
 	  <label for="title" class="right inline">Display</label>
 	</div>
 	<div class="small-10 columns">
@@ -86,41 +130,7 @@
 </div>-->
 
 
-<div class="row">
-	<div class="small-2 columns">
-	  <label for="title" class="right inline">Data.csv</label>
-	</div>
-	<div class="small-10 columns">
-          <label class="error">
-          {{ form.content(size=40) }}
-          </label>
-          {% for error in form.content.errors %}
-          <small class="error">{{ error }}</small>
-          {% endfor %}
-	</div>
-</div>
 
-<div class="row">
-	<div class="small-2 columns">
-	  <label for="title" class="right inline">Codebook.pdf</label>
-	</div>
-	<div class="small-10 columns">
-	  {% if url %}
-	      <p>
-	      <img src="{{ url }}">
-	      <br>
-	      <a href="{{ url_for('admin_dataset_removefile',slug=slug,id=id) }}">remove file</a>
-	      </p>
-      {% else %}
-          <label class="error">
-          {{ form.file(size=40) }}
-          </label>
-          {% for error in form.file.errors %}
-          <small class="error">{{ error }}</small>
-          {% endfor %}
-      {% endif %}
-	</div>
-</div>
 
 
 
