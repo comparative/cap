@@ -7,6 +7,7 @@ from wtforms.widgets import TextArea
 from wtforms.ext.sqlalchemy.orm import model_form
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from models import Country, Category
+from app import app
 
 def countries_factory():
     return Country.query.all()
@@ -62,14 +63,13 @@ class DatasetForm(Form):
     
     def validate(self):
         rv = Form.validate(self)
-        if not rv:
+        if self.fieldnames:
+            required_fieldnames = ['id','year','majortopic','subtopic']
+            for fieldname in required_fieldnames:
+                if fieldname not in self.fieldnames:
+                    self.content.errors.append('The required column "' + fieldname + '" was not found in the data you uploaded.')
+        if len(self.content.errors) > 0:
             return False
-
-        valid_json = True
-        if not valid_json:
-            self.content.errors.append('Cmon make yer json valid already')
-            return False
-
         return True
     
 

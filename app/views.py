@@ -810,17 +810,17 @@ def admin_dataset_item(slug,id):
     country = Country.query.filter_by(slug=slug).first()
     dataset = Dataset() if id == 'add' else Dataset.query.filter_by(id=id).first()
     form = DatasetForm()
+    if 'content' in request.files and request.files['content'].filename != '':
+            datasetfilename = datasetfiles.save(request.files['content'])
+            csvfile = open(datasetfiles.path(datasetfilename), 'r')
+            reader = csv.DictReader(csvfile)
+            form.fieldnames = reader.fieldnames
     if form.validate_on_submit():
-        #app.logger.debug('woah')
         if 'codebook' in request.files and request.files['codebook'].filename != '':
             codebookfilename = codebooks.save(request.files['codebook'])
             dataset.codebookfilename = codebookfilename
         if 'content' in request.files and request.files['content'].filename != '':
-            datasetfilename = datasetfiles.save(request.files['content'])
             dataset.datasetfilename = datasetfilename
-            csvfile = open(datasetfiles.path(datasetfilename), 'r')
-            reader = csv.DictReader(csvfile)
-            app.logger.debug(reader.fieldnames)
             dataset.content = [ row for row in reader ]
         dataset.display = form.display.data
         dataset.short_display = form.short_display.data
@@ -928,6 +928,33 @@ def api_datasets():
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("""SELECT category, short_display as name FROM datasets WHERE controller IS NOT NULL ORDER BY short_display""")
     return dumps(cur.fetchall())
+   
+@app.route('/api/datasets/<dataset>/topic/<topic>/count')
+def api_count(dataset,topic):
+    conn = psycopg2.connect(app.config['CONN_STRING'])
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("""
+    SELECT yc.year::int, yc.cnt::int FROM (
+    select datarow->>'year' AS year, COUNT(datarow->'id') as cnt
+    from (
+      select json_array_elements(content)
+      from dataset WHERE dataset.id = %s
+    ) s(datarow)
+    where datarow->>'subtopic' = %s
+    GROUP BY year) AS yc ORDER by year
+    """,[dataset,topic])
+    d = cur.fetchall()
+    data = []
+    for i in range(2001,2011):
+        found = False
+        for r in d:
+            if (r["year"] == i):
+                data.append(r["cnt"])
+                found = True
+        if (found == False):
+            data.append(0)
+    return dumps(data)
+    #return dumps(cur.fetchall())
     
 @app.route('/api/subtopic/<subtopic>')
 def api(subtopic):

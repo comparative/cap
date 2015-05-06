@@ -67,7 +67,8 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     	
     	console.log(series);
     	
-    	var url = 'http://www.coolbest.net:5000/api/subtopic/' + series.topic.toString();
+    	//var url = 'http://www.coolbest.net:5000/api/subtopic/' + series.topic.toString();
+    	var url = 'http://www.coolbest.net:5000/api/datasets/13/topic/' + series.topic.toString() + '/count';
 		$.getJSON(url, function (retval) {
 			
 			console.log(url);
