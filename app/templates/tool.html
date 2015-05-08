@@ -19,7 +19,7 @@
      	 <div class="row fullWidth">
      	    
      	    <div class="medium-11 columns text-right">
-     	        <a id="save-chart" ng-click="saveChart()" style="margin-bottom:10px;" class="button tiny">Save chart</a>
+     	        <a id="save-chart" ng-click="saveChart()" style="margin-bottom:10px;" class="button tiny">Pin chart</a>
      	    </div>
      	    
      	    <div class="medium-1 columns text-left">
@@ -82,7 +82,7 @@
                 <div class="large-3 medium-3 columns" style="margin-left: 34px;">
 
                 
-                 <label><h5>Type</h5></label><select class="type"><option value="column">Column</option><option selected="selected" value="line">Line</option><option value="spline">Smooth Line</option><option value="scatter">Scatter</option><option value="area">Area</option><option value="areaspline">Smooth Area</option><!--<option value='histogram'>Histogram</option><option value='histogram_stacked'>Histogram Stacked</option>--></select>
+                 <label><h5>Chart type</h5></label><select class="type"><option value="column">Column</option><option selected="selected" value="line">Line</option><option value="spline">Smooth Line</option><option value="scatter">Scatter</option><option value="area">Area</option><option value="areaspline">Smooth Area</option><!--<option value='histogram'>Histogram</option><option value='histogram_stacked'>Histogram Stacked</option>--></select>
                 
 
 
@@ -97,15 +97,15 @@
                 </div>-->
                 
                 <div class="large-3 medium-4 columns">
-                    <label><h5>From</h5></label><select class="from years" name="years_from" style="display: inline-block;"><option>2013</option><option>2012</option><option>2011</option><option>2010</option><option>2009</option><option>2008</option><option>2007</option><option>2006</option><option>2005</option><option>2004</option><option>2003</option><option>2002</option><option>2001</option><option>2000</option><option>1999</option><option>1998</option><option>1997</option><option>1996</option><option>1995</option><option>1994</option><option>1993</option><option>1992</option><option>1991</option><option>1990</option><option>1989</option><option>1988</option><option>1987</option><option>1986</option><option>1985</option><option>1984</option><option>1983</option><option>1982</option><option>1981</option><option>1980</option><option>1979</option><option>1978</option><option>1977</option><option>1976</option><option>1975</option><option>1974</option><option>1973</option><option>1972</option><option>1971</option><option>1970</option><option>1969</option><option>1968</option><option>1967</option><option>1966</option><option>1965</option><option>1964</option><option>1963</option><option>1962</option><option>1961</option><option>1960</option><option>1959</option><option>1958</option><option>1957</option><option>1956</option><option>1955</option><option>1954</option><option>1953</option><option>1952</option> <option>1951</option><option>1950</option><option>1949</option><option>1948</option><option>1947</option><option selected="selected">1946</option></select>
-                    <label><h5>To</h5></label><select class="to years" name="years_to" style="display: inline-block;"><option selected="selected">2013</option><option>2012</option><option>2011</option><option>2010</option><option>2009</option><option>2008</option><option>2007</option><option>2006</option><option>2005</option><option>2004</option><option>2003</option><option>2002</option><option>2001</option><option>2000</option><option>1999</option><option>1998</option><option>1997</option><option>1996</option><option>1995</option><option>1994</option><option>1993</option><option>1992</option><option>1991</option><option>1990</option><option>1989</option><option>1988</option><option>1987</option><option>1986</option><option>1985</option><option>1984</option><option>1983</option><option>1982</option><option>1981</option><option>1980</option><option>1979</option><option>1978</option><option>1977</option><option>1976</option><option>1975</option><option>1974</option><option>1973</option><option>1972</option><option>1971</option><option>1970</option><option>1969</option><option>1968</option><option>1967</option><option>1966</option><option>1965</option><option>1964</option><option>1963</option><option>1962</option><option>1961</option><option>1960</option><option>1959</option><option>1958</option><option>1957</option><option>1956</option><option>1955</option><option>1954</option><option>1953</option><option>1952</option><option>1951</option><option>1950</option><option>1949</option><option>1948</option><option>1947</option><option>1946</option></select>
+                    <label><h5>Dates</h5></label><select class="from years" name="years_from" style="display: inline-block;"><option>2013</option><option>2012</option><option>2011</option><option>2010</option><option>2009</option><option>2008</option><option>2007</option><option>2006</option><option>2005</option><option>2004</option><option>2003</option><option>2002</option><option>2001</option><option>2000</option><option>1999</option><option>1998</option><option>1997</option><option>1996</option><option>1995</option><option>1994</option><option>1993</option><option>1992</option><option>1991</option><option>1990</option><option>1989</option><option>1988</option><option>1987</option><option>1986</option><option>1985</option><option>1984</option><option>1983</option><option>1982</option><option>1981</option><option>1980</option><option>1979</option><option>1978</option><option>1977</option><option>1976</option><option>1975</option><option>1974</option><option>1973</option><option>1972</option><option>1971</option><option>1970</option><option>1969</option><option>1968</option><option>1967</option><option>1966</option><option>1965</option><option>1964</option><option>1963</option><option>1962</option><option>1961</option><option>1960</option><option>1959</option><option>1958</option><option>1957</option><option>1956</option><option>1955</option><option>1954</option><option>1953</option><option>1952</option> <option>1951</option><option>1950</option><option>1949</option><option>1948</option><option>1947</option><option selected="selected">1946</option></select>
+                    <label></label><select class="to years" name="years_to" style="display: inline-block;"><option selected="selected">2013</option><option>2012</option><option>2011</option><option>2010</option><option>2009</option><option>2008</option><option>2007</option><option>2006</option><option>2005</option><option>2004</option><option>2003</option><option>2002</option><option>2001</option><option>2000</option><option>1999</option><option>1998</option><option>1997</option><option>1996</option><option>1995</option><option>1994</option><option>1993</option><option>1992</option><option>1991</option><option>1990</option><option>1989</option><option>1988</option><option>1987</option><option>1986</option><option>1985</option><option>1984</option><option>1983</option><option>1982</option><option>1981</option><option>1980</option><option>1979</option><option>1978</option><option>1977</option><option>1976</option><option>1975</option><option>1974</option><option>1973</option><option>1972</option><option>1971</option><option>1970</option><option>1969</option><option>1968</option><option>1967</option><option>1966</option><option>1965</option><option>1964</option><option>1963</option><option>1962</option><option>1961</option><option>1960</option><option>1959</option><option>1958</option><option>1957</option><option>1956</option><option>1955</option><option>1954</option><option>1953</option><option>1952</option><option>1951</option><option>1950</option><option>1949</option><option>1948</option><option>1947</option><option>1946</option></select>
                 </div>
                 
 
 
 				<div class="large-3 medium-4 columns left">
 					
-					<label><h5>Actions</h5></label>
+					<label><h5>Chart export</h5></label>
 					<select id="chart_actions" class="from years" name="years_from" style="display: inline-block;">
 					<option selected="selected">&nbsp;</option>
 					<!--<option>Save</option>-->
@@ -156,21 +156,21 @@
     
    
     <!--h4>Find datasets</h4>-->
-    <h5 class="picker-label">Countries</h5>
+    <h5 class="picker-label">Select countries</h5>
     <div id="countries" class="picker" style="display:block">
     <div ng-repeat="country in countries">
-    <input type="checkbox" ng-click="surprise()">
-    <label>{@country.name | limitTo : 17@}</label>
+    <input ng-attr-country="{@country.short_name@}" type="checkbox" ng-click="surprise()">
+    <label>{@country.name | limitTo : 27@}</label>
     </div>
     </div>
    
 
 
-	<h5 class="picker-label">Categories</h5>
+	<h5 class="picker-label">Select dataset type</h5>
     <div id="categories" class="picker">
     <div ng-repeat="category in categories">
     <input ng-attr-catid="{@category.category_id@}" type="checkbox" ng-click="surprise()">
-    <label>{@category.name | limitTo : 17@}</label>
+    <label>{@category.name | limitTo : 27@}</label>
     </div>
     </div>
    
@@ -178,17 +178,21 @@
 
 
 
-    <h5 class="picker-label">Policy topics</h5>
+    <h5 class="picker-label">Select policy topics</h5>
     <div id="topics" class="picker">
-    
-    
 
-    
-
-    
-    <ul class="mtree">
-    
-        <li><a href="#">Macroeconomics</a>
+        <ul class="mtree">
+        
+            <!--<li ng-repeat="topic in topics"><a href="#">{@topic.topic@}</a>
+                <ul>
+                    <li ng-repeat="subtopic in topic.subtopics">
+                    <input type="checkbox" subtopic="103" ng-click="surprise()"><span>wow</span>
+                    </li>
+                </ul>
+            </li>-->
+            
+            
+          <li><a href="#">Macroeconomics</a>
               <ul>
                 <li><input type="checkbox" subtopic="105" ng-click="surprise()"><span>Inflation</span></li>
                 <li><input type="checkbox" subtopic="107" ng-click="surprise()"><span>Unemployment</span></li>
@@ -215,9 +219,27 @@
                 <li><input type="checkbox" subtopic="1921" ng-click="surprise()"><span>Research</span></li>-->
               </ul>
           </li>
-          <!-- <li><a href="#">Agriculture</a></li>
-          <li><a href="#">Employment</a></li> -->
-    </ul>
+          
+          
+          
+          <!-- <li><a href="#">Agriculture</a></li>-->
+          <li><a href="#">Employment</a>
+            <ul>
+            <li><input type="checkbox" subtopic="500" ng-click="surprise()"><span>General Labor</span></li>
+            <li><input type="checkbox" subtopic="501" ng-click="surprise()"><span>Worker Safety and Protection</span></li>
+            <li><input type="checkbox" subtopic="502" ng-click="surprise()"><span>Employment Training</span></li>
+            <li><input type="checkbox" subtopic="503" ng-click="surprise()"><span>Employee Benefits</span></li>
+            <li><input type="checkbox" subtopic="504" ng-click="surprise()"><span>Labor Unions</span></li>
+            <li><input type="checkbox" subtopic="505" ng-click="surprise()"><span>Fair Labor Standards</span></li>
+            <li><input type="checkbox" subtopic="506" ng-click="surprise()"><span>Youth Employment and Child Labor</span></li>
+            <li><input type="checkbox" subtopic="508" ng-click="surprise()"><span>Parental Leave and Child Care</span></li>
+            <li><input type="checkbox" subtopic="529" ng-click="surprise()"><span>Migrant and Seasonal workers</span></li>
+            <li><input type="checkbox" subtopic="599" ng-click="surprise()"><span>Other [Labor]</span></li>
+            </ul>
+          </li>
+            
+            
+        </ul>
     
     </div>
    
@@ -239,7 +261,7 @@
   
   <div class="content" id="panel2">
   
-   <h5>Saved Charts</h5>
+   <h5>Pinned</h5>
    <div style="overflow: auto; height: 360px; border: 2px solid #dadada;">
    <img class="thumb" ng-click="savedMenu($index)" ng-repeat="thumb in saved | orderBy: 'id':true" ng-src="{@thumb.url@}">
    </div>
@@ -253,7 +275,7 @@ overflow-x: hidden;
 overflow-y: auto;
 border: 2px solid #dadada;-->
     	
-     <h5>Recent Charts</h5>
+     <h5>Recent</h5>
      <div style="overflow: auto; height: 180px; border: 2px solid #dadada;">
      
      <img class="thumb" ng-click="thumbMenu($index)" ng-repeat="thumb in recent | orderBy: 'id':true" ng-src="{@thumb.url@}">
@@ -292,7 +314,7 @@ border: 2px solid #dadada;-->
       
     <div id="lineoptions" class="reveal-modal small" data-reveal>
         
-        <div id="bills_topic_1" class="active_controls"><label> Measures: </label><select class="measures"><option value="count">Count</option><option value="percent_total">Percent Total</option><option value="percent_change">Percent Change</option><option value="percent_percent_change">Percent Percent Change</option></select><label> Type: </label><select class="type"><option value="column">Column</option><option selected="selected" value="line">Line</option><option value="spline">Smooth Line</option><option value="scatter">Scatter</option><option value="area">Area</option><option value="areaspline">Smooth Area</option><!--<option value='histogram'>Histogram</option><option value='histogram_stacked'>Histogram Stacked</option>--></select><label>Y-axis: </label><select class="yaxis"><option value="0">none</option><option value="1" selected="selected">primary</option><option value="2">secondary</option></select></div>
+        <div id="bills_topic_1" class="active_controls"><label> Measures: </label><select class="measures"><option value="count">Count</option><option value="percent_total">Percent Total</option><option value="percent_change">Percent Change</option><option value="percent_percent_change">Percent Percent Change</option></select><label>Type:</label><select class="type"><option value="column">Column</option><option selected="selected" value="line">Line</option><option value="spline">Smooth Line</option><option value="scatter">Scatter</option><option value="area">Area</option><option value="areaspline">Smooth Area</option><!--<option value='histogram'>Histogram</option><option value='histogram_stacked'>Histogram Stacked</option>--></select><label>Y-axis: </label><select class="yaxis"><option value="0">none</option><option value="1" selected="selected">primary</option><option value="2">secondary</option></select></div>
         
         <div class="parent_list"><table class="filters sublist"><tbody><tr class="sublist_header"><th>Include&nbsp;</th><th>Exclude&nbsp;</th><th>Filter</th></tr><tr><td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[lm]" value="yes"></td><td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[lm]" value="no"></td><td><label>Referral Hearing</label><a href="" title="Hearing that mentions a bill number or name (as in, &quot;a hearing to consider S 2137, the...&quot;), excluding hearings on draft legislation (such as appropriations bills or defense and intelligence authorization bills)." class="description_link subfilter">?</a></td></tr><tr><td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[ba]" value="yes"></td><td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[ba]" value="no"></td><td><label>Budget Appropriations</label><a href="" title="The hearing considered, authorized, made or reauthorized appropriations or budgets." class="description_link subfilter">?</a></td></tr><tr><td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[ac]" value="yes"></td><td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[ac]" value="no"></td><td><label>Agency Creation</label><a href="" title="The hearings involved the creation of a new government agency." class="description_link subfilter">?</a></td></tr><tr><td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[pc]" value="yes"></td><td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[pc]" value="no"></td><td><label>Program Creation</label><a href="" title="The hearing involved the proposal for a new program, independent of the new agency filter." class="description_link subfilter">?</a></td></tr><tr><td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[pp]" value="yes"></td><td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[pp]" value="no"></td><td><label>Issue proposed by the President</label><a href="" title="The hearing involved issues or legislation proposed by the administration of the President, independent of all other filters." class="description_link subfilter">?</a></td></tr></tbody></table></div>
         

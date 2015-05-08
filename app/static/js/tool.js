@@ -49,13 +49,15 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         angular.forEach($scope.datasets, function (dataset, index) {
             if (cats.indexOf(dataset.category.toString()) > -1) {
                 angular.element('#countries input:checked').each(function () {
-                    var country = $(this).next('label').text();
+                    var country = $(this).attr('country');
                     angular.element('#topics input:checked').each(function () {
                        var $this = $(this);
                        if ($this.length) {
                         var selText = $this.next('span').text();
                         var subtopic = $this.attr('subtopic');
-                        $scope.results.push({"topic":subtopic,"name":country + ': ' + dataset.name + ' #' + selText});
+                        if (country == dataset.country) {
+                            $scope.results.push({"dataset":dataset.id,"topic":subtopic,"name":dataset.country + ': ' + dataset.name + ' #' + selText});
+                        }
                        }
                     });
                 });
@@ -68,7 +70,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     	console.log(series);
     	
     	//var url = 'http://www.coolbest.net:5000/api/subtopic/' + series.topic.toString();
-    	var url = 'http://www.coolbest.net:5000/api/datasets/13/topic/' + series.topic.toString() + '/count';
+    	var url = 'http://www.coolbest.net:5000/api/datasets/' + series.dataset.toString() + '/topic/' + series.topic.toString() + '/count';
 		$.getJSON(url, function (retval) {
 			
 			console.log(url);

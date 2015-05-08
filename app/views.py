@@ -810,10 +810,12 @@ def admin_dataset_item(slug,id):
     country = Country.query.filter_by(slug=slug).first()
     dataset = Dataset() if id == 'add' else Dataset.query.filter_by(id=id).first()
     form = DatasetForm()
+    form.fieldnames=[]
     if 'content' in request.files and request.files['content'].filename != '':
             datasetfilename = datasetfiles.save(request.files['content'])
-            csvfile = open(datasetfiles.path(datasetfilename), 'r')
+            csvfile = open(datasetfiles.path(datasetfilename), 'rU')
             reader = csv.DictReader(csvfile)
+            reader.fieldnames = [item.lower() for item in reader.fieldnames]
             form.fieldnames = reader.fieldnames
     if form.validate_on_submit():
         if 'codebook' in request.files and request.files['codebook'].filename != '':
@@ -919,14 +921,28 @@ def api_categories():
 def api_topics():
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""SELECT CONCAT(TRIM(to_char(m.majortopic,'999')),'_',m.shortname) as topic, array_agg(CONCAT(TRIM(to_char(t.id,'9999')),'_',t.shortdescription)) as subtopics FROM major_topics m JOIN topics t ON m.MajorTopic = t.MajorTopic GROUP by m.SHORTNAME,m.majortopic ORDER BY m.SHORTNAME""")
+    cur.execute("""
+    SELECT Concat(Trim(To_char(m.majortopic, '999')), '_', m.shortname) 
+       AS topic
+       , 
+       Array_agg( 
+       Concat(Trim(To_char(t.id, '9999')), '_', t.shortdescription)) AS 
+       subtopics 
+    FROM   major_topics m 
+           JOIN topics t 
+             ON m.majortopic = t.majortopic 
+    GROUP  BY m.shortname, 
+              m.majortopic 
+    ORDER  BY m.shortname
+    """)
     return dumps(cur.fetchall())
 
 @app.route('/api/datasets')
 def api_datasets():
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""SELECT category, short_display as name FROM datasets WHERE controller IS NOT NULL ORDER BY short_display""")
+    #cur.execute("""SELECT category, short_display as name FROM datasets WHERE controller IS NOT NULL ORDER BY short_display""")
+    cur.execute("""SELECT d.id, d.category_id AS category, d.short_display as name, c.short_name as country FROM dataset d INNER join country c ON d.country_id = c.id ORDER BY d.short_display""")
     return dumps(cur.fetchall())
    
 @app.route('/api/datasets/<dataset>/topic/<topic>/count')

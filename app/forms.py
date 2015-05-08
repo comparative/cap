@@ -65,9 +65,9 @@ class DatasetForm(Form):
         rv = Form.validate(self)
         if self.fieldnames:
             required_fieldnames = ['id','year','majortopic','subtopic']
-            for fieldname in required_fieldnames:
-                if fieldname not in self.fieldnames:
-                    self.content.errors.append('The required column "' + fieldname + '" was not found in the data you uploaded.')
+            for required_fieldname in required_fieldnames:
+                if required_fieldname not in self.fieldnames:
+                    self.content.errors.append('The required column "' + required_fieldname + '" was not found in the data you uploaded.')
         if len(self.content.errors) > 0:
             return False
         return True
