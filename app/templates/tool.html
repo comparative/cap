@@ -1,8 +1,12 @@
 {% extends "base.html" %}
 
+
+
 {% block head %}
 
+<link href="/static/css/menutree.css" rel="stylesheet">
 <link href="/static/css/tool.css" rel="stylesheet">
+
 
 {% endblock %}
 
@@ -175,75 +179,25 @@
     </div>
    
 
-
-
-
     <h5 class="picker-label">Select policy topics</h5>
     <div id="topics" class="picker">
 
-        <ul class="mtree">
+        <ol id="menutree">
         
-            <!--<li ng-repeat="topic in topics"><a href="#">{@topic.topic@}</a>
-                <ul>
+            <li ng-repeat="topic in topics">
+            <label class="menu_label" for="t{@topic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@topic.id@}" ng-click="surprise()"><span class="major_topic">{@topic.name@}</span></label>
+            <input type="checkbox" id="t{@topic.id@}"/>
+                <ol>
                     <li ng-repeat="subtopic in topic.subtopics">
-                    <input type="checkbox" subtopic="103" ng-click="surprise()"><span>wow</span>
+                    <label class="menu_label" for="s{@subtopic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@subtopic.id@}" ng-click="surprise()"><span>{@subtopic.name@}</span></label>
+                    <input type="checkbox" id="s{@subtopic.id@}"/>
                     </li>
-                </ul>
-            </li>-->
-            
-            
-          <li><a href="#">Macroeconomics</a>
-              <ul>
-                <li><input type="checkbox" subtopic="105" ng-click="surprise()"><span>Inflation</span></li>
-                <li><input type="checkbox" subtopic="107" ng-click="surprise()"><span>Unemployment</span></li>
-                <!--<li><input type="checkbox" subtopic="108" ng-click="surprise()"><span>Monetary Supply</span></li>
-                <li><input type="checkbox" subtopic="104" ng-click="surprise()"><span>Taxation</span></li>-->
-                <li><input type="checkbox" subtopic="100" ng-click="surprise()"><span>Industrial Policy</span></li>
-              </ul>
-          </li>
-          <li><a href="#">Civil Rights</a>
-              <ul>
-              <!--  <li><input type="checkbox" subtopic="104" ng-click="surprise()"><span>Ethnic</span></li> -->
-                <li><input type="checkbox" subtopic="103" ng-click="surprise()"><span>Gender</span></li>
-               <!-- <li><input type="checkbox" subtopic="2102" ng-click="surprise()"><span>Age</span></li>
-                <li><input type="checkbox" subtopic="1615" ng-click="surprise()"><span>Handicap</span></li>
-                <li><input type="checkbox" subtopic="1609" ng-click="surprise()"><span>Privacy</span></li> -->
-              </ul>
-          </li>
-         <li><a href="#">Health</a>
-                <ul>
-                <li><input type="checkbox" subtopic="104" ng-click="surprise()"><span>Insurance</span></li>
-                <li><input type="checkbox" subtopic="108" ng-click="surprise()"><span>Liability</span></li>
-                <!--<li><input type="checkbox" subtopic="1600" ng-click="surprise()"><span>Infants</span></li>
-                <li><input type="checkbox" subtopic="1501" ng-click="surprise()"><span>Alcohol</span></li>
-                <li><input type="checkbox" subtopic="1921" ng-click="surprise()"><span>Research</span></li>-->
-              </ul>
-          </li>
-          
-          
-          
-          <!-- <li><a href="#">Agriculture</a></li>-->
-          <li><a href="#">Employment</a>
-            <ul>
-            <li><input type="checkbox" subtopic="500" ng-click="surprise()"><span>General Labor</span></li>
-            <li><input type="checkbox" subtopic="501" ng-click="surprise()"><span>Worker Safety and Protection</span></li>
-            <li><input type="checkbox" subtopic="502" ng-click="surprise()"><span>Employment Training</span></li>
-            <li><input type="checkbox" subtopic="503" ng-click="surprise()"><span>Employee Benefits</span></li>
-            <li><input type="checkbox" subtopic="504" ng-click="surprise()"><span>Labor Unions</span></li>
-            <li><input type="checkbox" subtopic="505" ng-click="surprise()"><span>Fair Labor Standards</span></li>
-            <li><input type="checkbox" subtopic="506" ng-click="surprise()"><span>Youth Employment and Child Labor</span></li>
-            <li><input type="checkbox" subtopic="508" ng-click="surprise()"><span>Parental Leave and Child Care</span></li>
-            <li><input type="checkbox" subtopic="529" ng-click="surprise()"><span>Migrant and Seasonal workers</span></li>
-            <li><input type="checkbox" subtopic="599" ng-click="surprise()"><span>Other [Labor]</span></li>
-            </ul>
-          </li>
-            
-            
-        </ul>
+                </ol>
+            </li>
+                        
+        </ol>
     
     </div>
-   
-
    
 
     <div ng-repeat="series in results" class="dataset">

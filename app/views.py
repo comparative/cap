@@ -967,16 +967,29 @@ def api_datasets():
 def api_count(dataset,topic):
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""
-    SELECT yc.year::int, yc.cnt::int FROM (
-    select datarow->>'year' AS year, COUNT(datarow->'id') as cnt
-    from (
-      select json_array_elements(content)
-      from dataset WHERE dataset.id = %s
-    ) s(datarow)
-    where datarow->>'subtopic' = %s
-    GROUP BY year) AS yc ORDER by year
-    """,[dataset,topic])
+    if int(topic) < 100:
+        sql = """
+        SELECT yc.year::int, yc.cnt::int FROM (
+        select datarow->>'year' AS year, COUNT(datarow->'id') as cnt
+        from (
+          select json_array_elements(content)
+          from dataset WHERE dataset.id = %s
+        ) s(datarow)
+        where datarow->>'majortopic' = %s
+        GROUP BY year) AS yc ORDER by year
+        """
+    else:
+        sql = """
+        SELECT yc.year::int, yc.cnt::int FROM (
+        select datarow->>'year' AS year, COUNT(datarow->'id') as cnt
+        from (
+          select json_array_elements(content)
+          from dataset WHERE dataset.id = %s
+        ) s(datarow)
+        where datarow->>'subtopic' = %s
+        GROUP BY year) AS yc ORDER by year
+        """
+    cur.execute(sql,[dataset,topic])
     d = cur.fetchall()
     data = []
     for i in range(2001,2011):
@@ -989,20 +1002,3 @@ def api_count(dataset,topic):
             data.append(0)
     return dumps(data)
     #return dumps(cur.fetchall())
-    
-@app.route('/api/subtopic/<subtopic>')
-def api(subtopic):
-    conn = psycopg2.connect(app.config['CONN_STRING'])
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""SELECT year::integer, count(keyid) AS CNT FROM congressional_hearings WHERE capsubtopic =%s GROUP BY year ORDER by year""",[subtopic])
-    d = cur.fetchall()
-    data = []
-    for i in range(2001,2011):
-        found = False
-        for r in d:
-            if (r["year"] == i):
-                data.append(r["cnt"])
-                found = True
-        if (found == False):
-            data.append(0)
-    return dumps(data)

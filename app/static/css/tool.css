@@ -1,3 +1,15 @@
+input[type="checkbox"]+label {
+    vertical-align:middle;
+}
+
+ol {
+  margin-left: 0rem;
+}
+
+label {
+    cursor:default;
+}
+
 .tool-help {
 font-weight:bold;
 }
