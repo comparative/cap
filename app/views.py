@@ -822,8 +822,15 @@ def admin_dataset_item(slug,id):
             codebookfilename = codebooks.save(request.files['codebook'])
             dataset.codebookfilename = codebookfilename
         if 'content' in request.files and request.files['content'].filename != '':
+            filters = []
+            for fieldname in reader.fieldnames:
+                if fieldname.split('_')[0] == 'filter':
+                    #filtername = fieldname[7:].replace("_"," ")
+                    filters.append(fieldname)
+            dataset.filters = filters
             dataset.datasetfilename = datasetfilename
             dataset.content = [ row for row in reader ]
+            dataset.ready = True
         dataset.display = form.display.data
         dataset.short_display = form.short_display.data
         dataset.description = form.description.data
@@ -854,6 +861,7 @@ def admin_dataset_item(slug,id):
                            id=dataset.id,
                            country=country,
                            slug=slug,
+                           ready=dataset.ready,
                            dataseturl=dataseturl,
                            datasetfilename=dataset.datasetfilename,
                            codebookurl=codebookurl,
@@ -877,20 +885,30 @@ def admin_dataset_delete(slug,id):
 @app.route('/admin/countries/<slug>/dataset/remove/<id>')
 @login_required
 def admin_dataset_removecontent(slug,id):
-    #dataset = Dataset.query.filter_by(id=id).first()
-    #if dataset is not None:
-    #    path = datasetimages.path(dataset.filename)
-    #    if os.path.isfile(path):
-    #        os.remove(path)
-    #    dataset.filename = None
-    #    db.session.commit()
-    #    return redirect(url_for('admin_dataset_item',slug=slug,id=id))
-    #flash('Dataset not found!')
+    dataset = Dataset.query.filter_by(id=id).first()
+    if dataset is not None:
+        #path = datasetimages.path(dataset.filename)
+        #if os.path.isfile(path):
+        #    os.remove(path)
+        #dataset.filename = None
+        dataset.ready = False
+        db.session.commit()
+        return redirect(url_for('admin_dataset_item',slug=slug,id=id))
+    flash('Dataset not found!')
     return redirect(url_for('admin')) 
 
 @app.route('/admin/countries/<slug>/codebook/remove/<id>')
 @login_required
 def admin_dataset_removecodebook(slug,id):
+    dataset = Dataset.query.filter_by(id=id).first()
+    if dataset is not None:
+        path = codebookfiles.path(dataset.codebookfilename)
+        if os.path.isfile(path):
+            os.remove(path)
+        dataset.codebookfilename = None
+        db.session.commit()
+        return redirect(url_for('admin_dataset_item',slug=slug,id=id))
+    flash('Dataset not found!')
     return redirect(url_for('admin'))
     
 
@@ -942,7 +960,7 @@ def api_datasets():
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
     #cur.execute("""SELECT category, short_display as name FROM datasets WHERE controller IS NOT NULL ORDER BY short_display""")
-    cur.execute("""SELECT d.id, d.category_id AS category, d.short_display as name, c.short_name as country FROM dataset d INNER join country c ON d.country_id = c.id ORDER BY d.short_display""")
+    cur.execute("""SELECT d.id, d.category_id AS category, d.short_display as name, c.short_name as country FROM dataset d INNER join country c ON d.country_id = c.id WHERE d.ready=true ORDER BY d.short_display""")
     return dumps(cur.fetchall())
    
 @app.route('/api/datasets/<dataset>/topic/<topic>/count')

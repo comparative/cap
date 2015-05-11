@@ -18,7 +18,7 @@
 	  <label for="title" class="right inline">Data [.csv]</label>
 	</div>
 	<div class="small-10 columns">
-	    {% if dataseturl %}
+	  {% if ready %}
 	      <p>
 	      <a href="{{ dataseturl }}" target="_new">{{ datasetfilename }}</a>
 	      <br>
@@ -44,7 +44,7 @@
 	      <p>
 	      <a href="{{ codebookurl }}" target="_new">{{ codebookfilename }}</a>
 	      <br>
-	      <a href="{{ url_for('admin_dataset_removecodebook',slug=slug,id=id) }}">update</a>
+	      <a href="{{ url_for('admin_dataset_removecodebook',slug=slug,id=id) }}">remove</a>
 	      </p>
       {% else %}
           <label class="error">

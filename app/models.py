@@ -52,6 +52,9 @@ class Dataset(db.Model):
     saved_date = db.Column(db.DateTime)
     codebookfilename = db.Column(db.String(200))
     datasetfilename = db.Column(db.String(200))
+    filters = db.Column(JSON)
+    ready = db.Column(db.Boolean())
+    
     
 class Country(db.Model):
 
