@@ -1,3 +1,14 @@
+span.selection_count {
+  background-color: #000;
+  padding: 0px 3px;
+  color: white;
+  position: relative;
+  font-size: 8pt;
+  margin-left: 6px;
+  vertical-align: middle;
+  moz-border-radius: 6px;
+  -webkit-border-radius: 6px;
+}
 input[type="checkbox"]+label {
     vertical-align:middle;
 }

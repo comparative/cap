@@ -992,7 +992,7 @@ def api_count(dataset,topic):
     cur.execute(sql,[dataset,topic])
     d = cur.fetchall()
     data = []
-    for i in range(2001,2011):
+    for i in range(1988,2013):
         found = False
         for r in d:
             if (r["year"] == i):

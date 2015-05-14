@@ -14,7 +14,7 @@
 
 <div ng-app="toolApp">
 
-<div ng-controller="ToolController">
+<div id="toolcontroller" ng-controller="ToolController">
 
 <div id="bluestripe">
      
@@ -24,6 +24,7 @@
      	    
      	    <div class="medium-11 columns text-right">
      	        <a id="save-chart" ng-click="saveChart()" style="margin-bottom:10px;" class="button tiny">Pin chart</a>
+     	        <a id="clear-chart" ng-click="clearChart()" style="margin-bottom:10px;" class="button tiny">Clear chart</a>
      	    </div>
      	    
      	    <div class="medium-1 columns text-left">
@@ -37,7 +38,7 @@
 </div> 
 
 
-<div id="app-container" ng-app="toolApp">
+<div id="app-container">
 
 <div ngclass="row fullWidth">    
 
@@ -160,7 +161,7 @@
     
    
     <!--h4>Find datasets</h4>-->
-    <h5 class="picker-label">Select countries</h5>
+    <h5 class="picker-label">Select countries<span ng-show="countryCount() > 0" class="selection_count">{@countryCount()@}</span></h5>
     <div id="countries" class="picker" style="display:block">
     <div ng-repeat="country in countries">
     <input ng-attr-country="{@country.short_name@}" type="checkbox" ng-click="surprise()">
@@ -170,7 +171,7 @@
    
 
 
-	<h5 class="picker-label">Select dataset type</h5>
+	<h5 class="picker-label">Select dataset types<span ng-show="categoryCount() > 0" class="selection_count">{@categoryCount()@}</span></h5>
     <div id="categories" class="picker">
     <div ng-repeat="category in categories">
     <input ng-attr-catid="{@category.category_id@}" type="checkbox" ng-click="surprise()">
@@ -179,7 +180,7 @@
     </div>
    
 
-    <h5 class="picker-label">Select policy topics</h5>
+    <h5 class="picker-label">Select policy topics<span ng-show="topicCount() > 0" class="selection_count">{@topicCount()@}</span></h5>
     <div id="topics" class="picker">
 
         <ol id="menutree">
@@ -199,7 +200,9 @@
     
     </div>
    
-
+    <h5 ng-show="results.length" class="picker-label">Add series to chart</h5>
+    <p ng-show="noResults()">No available series matching selections.</p>
+    
     <div ng-repeat="series in results" class="dataset">
     
     <p ng-hide="isSelected(series.name)" ng-click="addToChart(series)" class="panel series data-equalizer">
@@ -270,7 +273,44 @@ border: 2px solid #dadada;-->
         
         <div id="bills_topic_1" class="active_controls"><label> Measures: </label><select class="measures"><option value="count">Count</option><option value="percent_total">Percent Total</option><option value="percent_change">Percent Change</option><option value="percent_percent_change">Percent Percent Change</option></select><label>Type:</label><select class="type"><option value="column">Column</option><option selected="selected" value="line">Line</option><option value="spline">Smooth Line</option><option value="scatter">Scatter</option><option value="area">Area</option><option value="areaspline">Smooth Area</option><!--<option value='histogram'>Histogram</option><option value='histogram_stacked'>Histogram Stacked</option>--></select><label>Y-axis: </label><select class="yaxis"><option value="0">none</option><option value="1" selected="selected">primary</option><option value="2">secondary</option></select></div>
         
-        <div class="parent_list"><table class="filters sublist"><tbody><tr class="sublist_header"><th>Include&nbsp;</th><th>Exclude&nbsp;</th><th>Filter</th></tr><tr><td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[lm]" value="yes"></td><td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[lm]" value="no"></td><td><label>Referral Hearing</label><a href="" title="Hearing that mentions a bill number or name (as in, &quot;a hearing to consider S 2137, the...&quot;), excluding hearings on draft legislation (such as appropriations bills or defense and intelligence authorization bills)." class="description_link subfilter">?</a></td></tr><tr><td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[ba]" value="yes"></td><td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[ba]" value="no"></td><td><label>Budget Appropriations</label><a href="" title="The hearing considered, authorized, made or reauthorized appropriations or budgets." class="description_link subfilter">?</a></td></tr><tr><td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[ac]" value="yes"></td><td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[ac]" value="no"></td><td><label>Agency Creation</label><a href="" title="The hearings involved the creation of a new government agency." class="description_link subfilter">?</a></td></tr><tr><td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[pc]" value="yes"></td><td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[pc]" value="no"></td><td><label>Program Creation</label><a href="" title="The hearing involved the proposal for a new program, independent of the new agency filter." class="description_link subfilter">?</a></td></tr><tr><td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[pp]" value="yes"></td><td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[pp]" value="no"></td><td><label>Issue proposed by the President</label><a href="" title="The hearing involved issues or legislation proposed by the administration of the President, independent of all other filters." class="description_link subfilter">?</a></td></tr></tbody></table></div>
+        <div class="parent_list">
+            
+<table class="filters sublist">
+   <tbody>
+      <tr class="sublist_header">
+         <th>Include&nbsp;</th>
+         <th>Exclude&nbsp;</th>
+         <th>Filter</th>
+      </tr>
+      <tr ng-repeat="filter in filters">
+         <td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[lm]" value="yes"></td>
+         <td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[lm]" value="no"></td>
+         <td><label>{@filter@}</label><a href="" title="blah blah blah do we need this" class="description_link subfilter">?</a></td>
+      </tr>
+     <!-- <tr>
+         <td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[ba]" value="yes"></td>
+         <td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[ba]" value="no"></td>
+         <td><label>Budget Appropriations</label><a href="" title="The hearing considered, authorized, made or reauthorized appropriations or budgets." class="description_link subfilter">?</a></td>
+      </tr>
+      <tr>
+         <td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[ac]" value="yes"></td>
+         <td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[ac]" value="no"></td>
+         <td><label>Agency Creation</label><a href="" title="The hearings involved the creation of a new government agency." class="description_link subfilter">?</a></td>
+      </tr>
+      <tr>
+         <td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[pc]" value="yes"></td>
+         <td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[pc]" value="no"></td>
+         <td><label>Program Creation</label><a href="" title="The hearing involved the proposal for a new program, independent of the new agency filter." class="description_link subfilter">?</a></td>
+      </tr>
+      <tr>
+         <td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[pp]" value="yes"></td>
+         <td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[pp]" value="no"></td>
+         <td><label>Issue proposed by the President</label><a href="" title="The hearing involved issues or legislation proposed by the administration of the President, independent of all other filters." class="description_link subfilter">?</a></td>
+      </tr> -->
+   </tbody>
+</table>
+
+        </div>
         
         <a class="close-reveal-modal">&#215;</a>
     
@@ -322,112 +362,14 @@ border: 2px solid #dadada;-->
 {% endblock %}
 
      {% block scripts %}
-      
+          
+      <script src="/static/js/highcharts.js"></script>
+      <script src="http://code.highcharts.com/modules/exporting.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
+      <script src="/static/js/tool.js"></script>
+      <script src="/static/js/mtree.js"></script>
+        
       <script>
-        
-        {% if options %}
-        
-        var options = {{ options | safe }};
-        
-        {% else %}
-        
-        var options = {
-        
-        chart: {
-            renderTo: 'chart',
-            ignoreHiddenSeries : false
-        },
-        
-        title: {
-            text: ''
-        },
-		
-		tooltip: { enabled: false },
-		credits: { enabled: false },
-		
-		xAxis: {
-        	title : {
-        		text: 'Year'
-        	},
-        	
-            categories: ['2001', '2002', '2003', '2004', '2005', '2006',
-                '2007', '2008', '2009', '2010',]
-        },
-             
-        yAxis: {
-
-            title: {
-                text: 'Count'
-            },
-            plotLines: [{
-                value: 0,
-                width: 1,
-                color: '#808080'
-            }]
-        },
-        
-        plotOptions:{
-            line: {
-                dataLabels: {
-                    enabled: false 
-                }
-            },
-            column:{
-                borderWidth: 0.2
-            },
-            series:{
-                point: {
-                    events: {
-                        'click': function(event){
-                        
-                            if ( $('a[href="#data-view"]').attr('aria-selected') == "true" ) { 
-                                
-                                $('#datapoints').foundation('reveal', 'open');
-                                
-                            } else {
-                                
-                                $('#lineoptions').foundation('reveal', 'open');
-                                
-                            }
-                        }
-                    }
-               },
-               
-               states: {
-                hover: {
-                 halo: false
-                }
-               },
-               
-               shadow: false,
-               animation: false,
-               cursor: 'pointer'
-           }
-        },
-        
-        legend:{
-            enabled: false
-        },
-        
-        exporting:{
-            buttons:{
-                contextButton:{
-                    enabled: false
-                }	 
-            },
-            url: 'http://104.237.136.8:8080/highcharts-export-web/',
-            width: '960'
-        },
-        
-        series: [],
-    	
-    
-    	colors: ['#7cb5ec', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#8085e8', '#8d4653', '#91e8e1']
-
-    	
-        };
-      
-      {% endif %}
       
         $(document).ready(function() {
     
@@ -446,7 +388,6 @@ border: 2px solid #dadada;-->
                 $('div.picker:visible').slideToggle('fast','linear');
                 $(this).next('div').slideToggle('fast','linear');
             });
-            
             
             $('#pushme').click(function(e) {
         
@@ -537,16 +478,162 @@ border: 2px solid #dadada;-->
                 }
         
             });
+            
+            theScope = angular.element(document.getElementById('toolcontroller')).scope();
+            options = getOptions();
+            //console.log(options);
+            theChart = new Highcharts.Chart(options);
     
         });
       
-      </script>
       
-      
-      <script src="/static/js/highcharts.js"></script>
-      <script src="http://code.highcharts.com/modules/exporting.js"></script>
-      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
-      <script src="/static/js/tool.js"></script>
-      <script src="/static/js/mtree.js"></script>
+        function getOptions() {
+            
+            
+            var year_list = [];
+            for (i=1988; i < 2014; i++) {
+                year_list.push(i.toString());            
+            }
+            
+            console.log(year_list);
+            
+            {% if options %}
+        
+                var retval = {{ options | safe }};
+        
+            {% else %}
+        
+                var retval = {
+        
+                chart: {
+                    renderTo: 'chart',
+                    ignoreHiddenSeries : false
+                },
+        
+                title: {
+                    text: ''
+                },
+        
+                tooltip: { enabled: false },
+                credits: { enabled: false },
+        
+                xAxis: {
+                    title : {
+                        text: 'Year'
+                    },
+                    
+                    categories: year_list,
+                    
+			        labels : {
+							rotation: -90
+			        },
+			        
+			        tickPosition: 'outside',
+					tickWidth: 0,
+					lineWidth: 1,
+					lineColor: '#FFFFFF'
+                    
+                },
+             
+                yAxis: {
 
+                    title: {
+                        text: 'Count'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+        
+                plotOptions:{
+                    line: {
+                        dataLabels: {
+                            enabled: false 
+                        }
+                    },
+                    column:{
+                        borderWidth: 0.2
+                    },
+                    series:{
+                        point: {
+                            events: {
+                                'click': function(event){
+                        
+                                    if ( $('a[href="#data-view"]').attr('aria-selected') == "true" ) { 
+                                
+                                        $('#datapoints').foundation('reveal', 'open');
+                                
+                                    } else {
+                                
+                                        $('#lineoptions').foundation('reveal', 'open');
+                                
+                                    }
+                                }
+                            }
+                       },
+               
+                       states: {
+                        hover: {
+                         halo: false
+                        }
+                       },
+               
+                       shadow: false,
+                       animation: false,
+                       cursor: 'pointer'
+                   }
+                },
+        
+                legend:{
+                    enabled: false
+                },
+        
+                exporting:{
+                    buttons:{
+                        contextButton:{
+                            enabled: false
+                        }	 
+                    },
+                    url: 'http://104.237.136.8:8080/highcharts-export-web/',
+                    width: '960'
+                },
+        
+                series: [],
+        
+    
+                colors: hex_colors,
+
+        
+                };
+      
+            {% endif %}
+            
+            var selected = []
+            for (var i = 0; i < retval.series.length; i++) {
+                
+                var series = retval.series[i]; 
+                selected.push({dataset: series.dataset, topic: series.topic, name: series.name, color: rgba_colors[hex_colors.indexOf(series.color)]});
+            
+            }
+            
+            //console.log(selected);
+            
+            /*
+            theScope.selected = [
+            {dataset: 26, topic: "39", name: "Belgium: Bills #Agricultural Trade", color:"{'background':'rgba(124, 181, 236,0.5)'}"},
+            {dataset: 26, topic: "4", name: "Belgium: Bills #Agriculture", color:"{'background':'rgba(144, 237, 125,0.5)'}"}
+            ];
+            */
+            
+            theScope.selected = selected;
+            
+            return retval;
+            
+        }
+        
+      
+      </script>
+        
     {% endblock %}
