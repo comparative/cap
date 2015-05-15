@@ -140,21 +140,17 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     $scope.topicCount = function() {
         
-        return angular.element('#topics input[type="checkbox"]:checked').length;
+        return angular.element('#topics input.choose_topic:checked').length;
         
     }
     
     
     $scope.addToChart = function(series) {
     	
-    	//console.log(series);
+    	$scope.selected.push({"name":series.name,"color":$scope.getRgbaColor()});
     	
-    	//var url = 'http://www.coolbest.net:5000/api/subtopic/' + series.topic.toString();
     	var url = 'http://www.coolbest.net:5000/api/datasets/' + series.dataset.toString() + '/topic/' + series.topic.toString() + '/count';
 		$.getJSON(url, function (retval) {
-			
-			//console.log(url);
-			//console.log(retval);
 			
 			s = {
 			    topic: series.topic,
@@ -164,74 +160,59 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
 				color: $scope.getHexColor(),
 				_symbolIndex: ($scope.selected.length - 1) % 5
 			}
+			options.series.push(s);
 			
-			theChart.addSeries(s);
-			theChart.options.series.push(s);
-			
-            var obj = {},
-            exportUrl = 'http://104.237.136.8:8080/highcharts-export-web/';
-            obj.options = JSON.stringify(theChart.options);
-            obj.type = 'image/png';
-            obj.async = true;
+			$scope.redrawChart(); 
             
-            // GET THUMBNAIL
-            $.ajax({
-                type: 'post',
-                url: exportUrl,
-                data: obj,
-                success: function (data) {
-                    
-                    slug = data.substr(6,8) // slug is between 'files/' & '.png' in return value
-                    $scope.slug = slug;
-                    $("#slug").val(slug);
-                    
-                    // SAVE CHART
-                   /* resp = $.ajax({
-                        type: 'POST',
-                        url: '/charts/save/' + $("#user").val() + '/' + slug ,
-                        data: obj.options
-                    });
-                    */
-                    
-                    
-                    // ADD THUMBNAIL TO RECENT
-                    $scope.recent.unshift({"url": exportUrl + data, "options": obj.options });
-                    $scope.$apply();
-                    
-                }
-            });
-			
 		});
-		
-		// ADD BAR TO BENEATH GRAPH
-		$scope.selected.push({"name":series.name,"color":$scope.getRgbaColor()});
-		//console.log($scope.selected);
     	
+    }
+    
+    $scope.removeFromChart = function(index) {
+        
+        $scope.selected.splice(index,1);        
+    	options.series.splice(index,1);
+
+    	$scope.redrawChart();    	
+    	
+    }
+    
+    $scope.redrawChart = function() {
+        
+        theChart.destroy();
+		theChart = new Highcharts.Chart(options);
+		
+        var obj = {},
+        exportUrl = 'http://104.237.136.8:8080/highcharts-export-web/';
+        obj.options = JSON.stringify(theChart.options);
+        obj.type = 'image/png';
+        obj.async = true;
+        
+        // GET THUMBNAIL (& SLUG, from export server)
+        $.ajax({
+            type: 'post',
+            url: exportUrl,
+            data: obj,
+            success: function (data) {
+                
+                slug = data.substr(6,8) // slug is between 'files/' & '.png' in return value
+                $scope.slug = slug;
+                $("#slug").val(slug);
+                                
+                // ADD THUMBNAIL TO RECENT
+                $scope.recent.unshift({"url": exportUrl + data, "options": obj.options });
+                $scope.$apply();
+                
+            }
+        });
+	
     }
     
     
     $scope.getHexColor = function() {
+    
+        return hex_colors[rgba_colors.indexOf($scope.selected[$scope.selected.length-1].color)];
         
-        //construct array of all colors in scope.selected
-        //var colors = [];
-        //for (var i = 0; i < $scope.selected.length; i++) {
-            return hex_colors[rgba_colors.indexOf($scope.selected[$scope.selected.length-1].color)];
-        //}
-        
-        
-        
-        //remove existing colors, reset queue to handle dupes
-        //var hex_q = angular.copy(hex_colors);  
-        //for (var i = 0; i < colors.length; i++) {
-         //   hex_q.remove(colors[i]);
-          //  if (hex_q.length == 0) {
-           //     hex_q = angular.copy(rgba_colors);   
-            //}
-        //}
-        
-        //return next color in line
-        //return hex_q[0];
-                
     }
     
     $scope.getRgbaColor = function() {
@@ -279,15 +260,6 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         
     }
     
-    $scope.removeFromChart = function(index) {
-    	
-    	//alert(index);
-    	
-    	$scope.selected.splice(index,1);
-    	theChart.series[index].remove();
-    	
-    }
-    
     $scope.savedMenu = function(index) {
         
         //alert(index);
@@ -301,7 +273,6 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         
     }
     
-    
     $scope.thumbMenu = function(index) {
         
         /*reverse_index = $scope.saved.length - 1 - index;    
@@ -311,7 +282,6 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     }
     
     $scope.actions = function(index) {
-        
         
         alert(index);
         

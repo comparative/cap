@@ -186,11 +186,11 @@
         <ol id="menutree">
         
             <li ng-repeat="topic in topics">
-            <label class="menu_label" for="t{@topic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@topic.id@}" ng-click="surprise()"><span class="major_topic">{@topic.name@}</span></label>
-            <input type="checkbox" id="t{@topic.id@}"/>
+            <label class="menu_label" for="t{@topic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@topic.id@}" ng-click="surprise()"><span class="major_topic">{@topic.name | limitTo:33 @}</span><span style="float:right;"><i ng-hide="isOpen" class="fi-arrow-down"></i><i ng-show="isOpen" class="fi-arrow-up"></i></span></label>
+            <input ng-click="isOpen = ! isOpen" type="checkbox" id="t{@topic.id@}"/>
                 <ol>
                     <li ng-repeat="subtopic in topic.subtopics">
-                    <label class="menu_label" for="s{@subtopic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@subtopic.id@}" ng-click="surprise()"><span>{@subtopic.name@}</span></label>
+                    <label class="menu_label" for="s{@subtopic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@subtopic.id@}" ng-click="surprise()"><span>{@subtopic.name | limitTo:33 @}</span></label>
                     <input type="checkbox" id="s{@subtopic.id@}"/>
                     </li>
                 </ol>
@@ -200,13 +200,13 @@
     
     </div>
    
-    <h5 ng-show="results.length" class="picker-label">Add series to chart</h5>
-    <p ng-show="noResults()">No available series matching selections.</p>
+    <h5 ng-show="countryCount() > 0 && categoryCount() > 0 && topicCount() > 0" class="picker-label">Add series to chart</h5>
+    <p class="no_results" ng-show="noResults()">No available series matching your selections.</p>
     
     <div ng-repeat="series in results" class="dataset">
     
     <p ng-hide="isSelected(series.name)" ng-click="addToChart(series)" class="panel series data-equalizer">
-    <span class="data-equalizer-watch">{@series.name@}</span><span class="addseries data-equalizer-watch">
+    <span class="data-equalizer-watch">{@series.name | limitTo:33@}</span><span class="addseries data-equalizer-watch">
     <span style="float:right"><i class="fi-plus"></i></span>
     </span>
     </p>
@@ -481,7 +481,6 @@ border: 2px solid #dadada;-->
             
             theScope = angular.element(document.getElementById('toolcontroller')).scope();
             options = getOptions();
-            //console.log(options);
             theChart = new Highcharts.Chart(options);
     
         });

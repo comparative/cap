@@ -33,6 +33,11 @@
     }                         
 */
 
+#menutree li .menu_label + input[type=checkbox] input.choose_topic + span + span
+         {
+            background-color: red;
+         }
+
 #menutree li .menu_label + input[type=checkbox] + ol > li
          {
             display: none;    /* prevents sublists below unchecked labels from displaying */
