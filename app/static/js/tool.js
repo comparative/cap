@@ -13,6 +13,12 @@ var rgba_colors = [
 
 var hex_colors = ['#7cb5ec', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#8d4653', '#91e8e1'];
 
+var year_list = [];
+for (i=1988; i < 2014; i++) {
+    year_list.push(i.toString());            
+}
+
+//console.log(year_list);
 
 theChart = {}
 var toolApp = angular.module('toolApp', []);
@@ -20,9 +26,12 @@ var toolApp = angular.module('toolApp', []);
 toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
 {
     
-    $scope.chart = {};
+    $scope.years = year_list;
     
-	$scope.selected = [];
+    $scope.chart = {};
+	$scope.chart.series = [];
+    $scope.chart.yearFrom = $scope.years[0];
+    $scope.chart.yearTo = $scope.years[$scope.years.length - 1];
     
     $scope.recent = [];
     
@@ -71,7 +80,8 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         $scope.datasets = data;
     });
     
-    $scope.surprise = function() { 
+    $scope.doFacets = function() { 
+        
         $scope.results = [];
         
         var cats = [];
@@ -106,7 +116,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         var unhidden_results = [];
         angular.forEach($scope.results, function (result, index) {
             var add = true;
-            angular.forEach($scope.selected, function (selected, index2) { 
+            angular.forEach($scope.chart.series, function (selected, index2) { 
                 if (result.name == selected.name) {
                     add = false;
                 }
@@ -147,21 +157,12 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     $scope.addToChart = function(series) {
     	
-    	$scope.selected.push({"name":series.name,"color":$scope.getRgbaColor()});
+    	$scope.chart.series.push({"name":series.name,"color":$scope.getRgbaColor()});
     	
     	var url = 'http://www.coolbest.net:5000/api/datasets/' + series.dataset.toString() + '/topic/' + series.topic.toString() + '/count';
 		$.getJSON(url, function (retval) {
 			
-			s = {
-			    topic: series.topic,
-			    dataset: series.dataset,
-				name: series.name,
-				data: retval,
-				color: $scope.getHexColor(),
-				_symbolIndex: ($scope.selected.length - 1) % 5
-			}
-			options.series.push(s);
-			
+			$scope.chart.series[$scope.chart.series.length - 1].data = retval;
 			$scope.redrawChart(); 
             
 		});
@@ -170,14 +171,49 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     $scope.removeFromChart = function(index) {
         
-        $scope.selected.splice(index,1);        
-    	options.series.splice(index,1);
-
+        $scope.chart.series.splice(index,1);
     	$scope.redrawChart();    	
     	
     }
     
     $scope.redrawChart = function() {
+        
+       // console.log(options);
+        
+        /*
+        angular.forEach(options.series, function (series, index) {
+            
+            
+            
+        });
+        */
+        
+        
+
+        
+        
+        options.series = [];
+        
+        angular.forEach($scope.chart.series, function (series, index) {
+            
+            dataslice = series.data.slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
+            
+            var s = {
+			    topic: series.topic,
+			    dataset: series.dataset,
+				name: series.name,
+				data: dataslice,
+				color: hex_colors[rgba_colors.indexOf(series.color)]
+			}
+			
+			options.series.push(s);
+            
+        });
+        
+        yearslice = year_list.slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
+        options.xAxis.categories = yearslice;
+        
+        console.log(options);
         
         theChart.destroy();
 		theChart = new Highcharts.Chart(options);
@@ -211,7 +247,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     $scope.getHexColor = function() {
     
-        return hex_colors[rgba_colors.indexOf($scope.selected[$scope.selected.length-1].color)];
+        return ;
         
     }
     
@@ -219,8 +255,8 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         
         //construct array of all colors in scope.selected
         var colors = [];
-        for (var i = 0; i < $scope.selected.length; i++) {
-            colors.push($scope.selected[i].color);
+        for (var i = 0; i < $scope.chart.series.length; i++) {
+            colors.push($scope.chart.series[i].color);
         }
         
         //remove existing colors, reset queue to handle dupes
@@ -300,9 +336,9 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                
     $scope.isSelected = function (thisname) {
     	
-    	var l = $scope.selected.length;
+    	var l = $scope.chart.series.length;
 		for (var i = 0; i < l; i++) {
-			if ($scope.selected[i].name == thisname) return true;
+			if ($scope.chart.series[i].name == thisname) return true;
 		}
     	return false;
     	
