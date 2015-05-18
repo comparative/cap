@@ -14,11 +14,9 @@ var rgba_colors = [
 var hex_colors = ['#7cb5ec', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#8d4653', '#91e8e1'];
 
 var year_list = [];
-for (i=1988; i < 2014; i++) {
+for (i=1946; i < 2016; i++) {
     year_list.push(i.toString());            
 }
-
-//console.log(year_list);
 
 theChart = {}
 var toolApp = angular.module('toolApp', []);
@@ -27,6 +25,14 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
 {
     
     $scope.years = year_list;
+    $scope.chart_types = [
+        {"type":"line","display":"Line"},
+        {"type":"spline","display":"Smooth Line"},
+        {"type":"column","display":"Column"},
+        {"type":"scatter","display":"Scatter"},
+        {"type":"area","display":"Area"},
+        {"type":"areaspline","display":"Smooth Area"}
+    ];
     
     $scope.chart = {};
 	$scope.chart.series = [];
@@ -162,6 +168,10 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     	var url = 'http://www.coolbest.net:5000/api/datasets/' + series.dataset.toString() + '/topic/' + series.topic.toString() + '/count';
 		$.getJSON(url, function (retval) {
 			
+			//console.log(retval);
+			
+			$scope.chart.series[$scope.chart.series.length - 1].dataset = series.dataset;
+			$scope.chart.series[$scope.chart.series.length - 1].topic = series.topic;
 			$scope.chart.series[$scope.chart.series.length - 1].data = retval;
 			$scope.redrawChart(); 
             
@@ -176,29 +186,29 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     	
     }
     
+    
+    $scope.allSeriesSameType = function() {
+        
+         angular.forEach($scope.chart.series, function (series, index) {
+            series.type = $scope.chart.chartType;
+         });
+         
+         $scope.redrawChart();
+        
+    }
+    
     $scope.redrawChart = function() {
-        
-       // console.log(options);
-        
-        /*
-        angular.forEach(options.series, function (series, index) {
-            
-            
-            
-        });
-        */
-        
-        
-
-        
-        
+    
         options.series = [];
         
         angular.forEach($scope.chart.series, function (series, index) {
             
             dataslice = series.data.slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
             
+            //console.log($scope.chart.bs);
+            
             var s = {
+                type: series.type,
 			    topic: series.topic,
 			    dataset: series.dataset,
 				name: series.name,
@@ -206,14 +216,20 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
 				color: hex_colors[rgba_colors.indexOf(series.color)]
 			}
 			
+			//console.log(s);
+			
 			options.series.push(s);
             
         });
         
-        yearslice = year_list.slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
-        options.xAxis.categories = yearslice;
         
-        console.log(options);
+        
+        
+
+        $scope.yearslice = year_list.slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
+        options.xAxis.categories = $scope.yearslice;
+        
+        //options.chart.type = $scope.chart.chartType;
         
         theChart.destroy();
 		theChart = new Highcharts.Chart(options);
@@ -242,13 +258,6 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
             }
         });
 	
-    }
-    
-    
-    $scope.getHexColor = function() {
-    
-        return ;
-        
     }
     
     $scope.getRgbaColor = function() {
@@ -298,12 +307,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     $scope.savedMenu = function(index) {
         
-        //alert(index);
-        
-        reverse_index = $scope.saved.length - 1 - index; 
-        
-        //alert(reverse_index);
-          
+        reverse_index = $scope.saved.length - 1 - index;           
         url = $scope.saved[index].url;        
         window.location = 'http://www.coolbest.net:5000/tool/' + url.split('charts/')[1];
         

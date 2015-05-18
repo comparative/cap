@@ -1,12 +1,9 @@
 {% extends "base.html" %}
 
-
-
 {% block head %}
 
 <link href="/static/css/menutree.css" rel="stylesheet">
 <link href="/static/css/tool.css" rel="stylesheet">
-
 
 {% endblock %}
 
@@ -47,13 +44,8 @@
 
 <div class="large-9 medium-9 push-3 columns">
          
-         
-
-            
-            
         <div class="row">
             
-             
             <dl class="tabs" data-tab>
               <dd class="active"><a href="#graph-view"><strong>Edit</strong></a></dd>
               <dd><a href="#data-view"><strong>Explore</strong></a></dd>
@@ -82,29 +74,20 @@
             </div>
             
             <div class="tabs-content">
+            
                 <div class="content active clearfix" id="graph-view">
                 
                 <div class="large-3 medium-3 columns" style="margin-left: 34px;">
 
+                 <label><h5>Chart type</h5></label>
+                 <select class="type" ng-change="allSeriesSameType()" ng-model="chart.chartType" ng-options="type.type as type.display for type in chart_types"></select>
                 
-                 <label><h5>Chart type</h5></label><select class="type"><option value="column">Column</option><option selected="selected" value="line">Line</option><option value="spline">Smooth Line</option><option value="scatter">Scatter</option><option value="area">Area</option><option value="areaspline">Smooth Area</option><!--<option value='histogram'>Histogram</option><option value='histogram_stacked'>Histogram Stacked</option>--></select>
-                
-
-
                </div>
-                
-                <!--<div class="large-3 medium-4 columns">
-                <h5>Statistics</h5>
-                <ul>
-                    <li><input type="checkbox">&nbsp;Correlation</li>
-                    <li><input type="checkbox">&nbsp;Histogram</li>
-                </ul>
-                </div>-->
                 
                 <div class="large-3 medium-4 columns">
                 
                    <label><h5>Dates</h5></label>
-                    <select ng-change="redrawChart()" ng-model="chart.yearFrom" ng-options="year for year in years" class="from years" name="years_from" style="display: inline-block;"></select>
+                   <select ng-change="redrawChart()" ng-model="chart.yearFrom" ng-options="year for year in years" class="from years" name="years_from" style="display: inline-block;"></select>
                    <select ng-change="redrawChart()" ng-model="chart.yearTo" ng-options="year for year in years" class="to years" name="years_to" style="display: inline-block;"></select>
                     
                 </div>
@@ -115,37 +98,42 @@
 					<label><h5>Chart export</h5></label>
 					<select id="chart_actions" class="from years" name="years_from" style="display: inline-block;">
 					<option selected="selected">&nbsp;</option>
-					<!--<option>Save</option>-->
 					<option value="download">Download Image</option>
 					<option value="copy">Copy URL</option>
 					<option value="embed">Embed</option>
 					</select>
-                   
-					<!--<input id="pushme" class="left" type="button" value="save">-->
-					
-					<!--<br/>
-					<br/>
-					<br/>
-					
-					<a href="#">download data</a></p>-->
 					
 				</div>
                  
-                
                 </div>
-                
                 
                 <div style="margin-left:54px" class="content" id="data-view">
                 
-                
-                
-                <table class="drilldown"><tbody><tr><th></th><th><h3>Belgium: Hearings #Inflation</h3><br></th><th><h3>Belgium: Hearings #Taxation</h3><br></th></tr><tr><td>2000</td><td><a class="Source Description" name="Hearings: Macroeconomics: National Budget, Debt" href="/papgraph/drilldown?dataset=ch&amp;from_year=2000&amp;to_year=2000&amp;topic=105&amp;xaxis=years">3 </a></td><td><a class="Source Description" name="Hearings: Macroeconomics: Tax Policy, Reform" href="/papgraph/drilldown?dataset=ch&amp;from_year=2000&amp;to_year=2000&amp;topic=107&amp;xaxis=years">11 </a></td></tr><tr><td>2001</td><td><a class="Source Description" name="Hearings: Macroeconomics: National Budget, Debt" href="/papgraph/drilldown?dataset=ch&amp;from_year=2001&amp;to_year=2001&amp;topic=105&amp;xaxis=years">12 </a></td><td><a class="Source Description" name="Hearings: Macroeconomics: Tax Policy, Reform" href="/papgraph/drilldown?dataset=ch&amp;from_year=2001&amp;to_year=2001&amp;topic=107&amp;xaxis=years">8 </a></td></tr><tr><td>2002</td><td><a class="Source Description" name="Hearings: Macroeconomics: National Budget, Debt" href="/papgraph/drilldown?dataset=ch&amp;from_year=2002&amp;to_year=2002&amp;topic=105&amp;xaxis=years">15 </a></td><td><a class="Source Description" name="Hearings: Macroeconomics: Tax Policy, Reform" href="/papgraph/drilldown?dataset=ch&amp;from_year=2002&amp;to_year=2002&amp;topic=107&amp;xaxis=years">8 </a></td></tr><tr><td>2003</td><td><a class="Source Description" name="Hearings: Macroeconomics: National Budget, Debt" href="/papgraph/drilldown?dataset=ch&amp;from_year=2003&amp;to_year=2003&amp;topic=105&amp;xaxis=years">9 </a></td><td><a class="Source Description" name="Hearings: Macroeconomics: Tax Policy, Reform" href="/papgraph/drilldown?dataset=ch&amp;from_year=2003&amp;to_year=2003&amp;topic=107&amp;xaxis=years">22 </a></td></tr><tr><td>2004</td><td><a class="Source Description" name="Hearings: Macroeconomics: National Budget, Debt" href="/papgraph/drilldown?dataset=ch&amp;from_year=2004&amp;to_year=2004&amp;topic=105&amp;xaxis=years">16 </a></td><td><a class="Source Description" name="Hearings: Macroeconomics: Tax Policy, Reform" href="/papgraph/drilldown?dataset=ch&amp;from_year=2004&amp;to_year=2004&amp;topic=107&amp;xaxis=years">11 </a></td></tr><tr><td>2005</td><td><a class="Source Description" name="Hearings: Macroeconomics: National Budget, Debt" href="/papgraph/drilldown?dataset=ch&amp;from_year=2005&amp;to_year=2005&amp;topic=105&amp;xaxis=years">20 </a></td><td><a class="Source Description" name="Hearings: Macroeconomics: Tax Policy, Reform" href="/papgraph/drilldown?dataset=ch&amp;from_year=2005&amp;to_year=2005&amp;topic=107&amp;xaxis=years">17 </a></td></tr><tr><td>2006</td><td><a class="Source Description" name="Hearings: Macroeconomics: National Budget, Debt" href="/papgraph/drilldown?dataset=ch&amp;from_year=2006&amp;to_year=2006&amp;topic=105&amp;xaxis=years">11 </a></td><td><a class="Source Description" name="Hearings: Macroeconomics: Tax Policy, Reform" href="/papgraph/drilldown?dataset=ch&amp;from_year=2006&amp;to_year=2006&amp;topic=107&amp;xaxis=years">20 </a></td></tr><tr><td>2007</td><td><a class="Source Description" name="Hearings: Macroeconomics: National Budget, Debt" href="/papgraph/drilldown?dataset=ch&amp;from_year=2007&amp;to_year=2007&amp;topic=105&amp;xaxis=years">11 </a></td><td><a class="Source Description" name="Hearings: Macroeconomics: Tax Policy, Reform" href="/papgraph/drilldown?dataset=ch&amp;from_year=2007&amp;to_year=2007&amp;topic=107&amp;xaxis=years">19 </a></td></tr><tr><td>2008</td><td><a class="Source Description" name="Hearings: Macroeconomics: National Budget, Debt" href="/papgraph/drilldown?dataset=ch&amp;from_year=2008&amp;to_year=2008&amp;topic=105&amp;xaxis=years">11 </a></td><td><a class="Source Description" name="Hearings: Macroeconomics: Tax Policy, Reform" href="/papgraph/drilldown?dataset=ch&amp;from_year=2008&amp;to_year=2008&amp;topic=107&amp;xaxis=years">8 </a></td></tr><tr><td>2009</td><td><a class="Source Description" name="Hearings: Macroeconomics: National Budget, Debt" href="/papgraph/drilldown?dataset=ch&amp;from_year=2009&amp;to_year=2009&amp;topic=105&amp;xaxis=years">7 </a></td><td><a class="Source Description" name="Hearings: Macroeconomics: Tax Policy, Reform" href="/papgraph/drilldown?dataset=ch&amp;from_year=2009&amp;to_year=2009&amp;topic=107&amp;xaxis=years">6 </a></td></tr><tr><td>2010</td><td><a class="Source Description" name="Hearings: Macroeconomics: National Budget, Debt" href="/papgraph/drilldown?dataset=ch&amp;from_year=2010&amp;to_year=2010&amp;topic=105&amp;xaxis=years">14 </a></td><td><a class="Source Description" name="Hearings: Macroeconomics: Tax Policy, Reform" href="/papgraph/drilldown?dataset=ch&amp;from_year=2010&amp;to_year=2010&amp;topic=107&amp;xaxis=years">4 </a></td></tr></tbody></table>
-                
+<table class="drilldown">
+   <tbody>
+      <tr>
+         <th></th>
+         <th ng-repeat="series in chart.series">
+            <h3>{@series.name@}</h3>
+            <br>
+         </th>
+         
+      </tr>
+      <tr ng-repeat="year in yearslice">
+         <td>{@ year @}</td>
+         <td ng-repeat="series in chart.series">
+         <a>{@ series.data[$parent.$index] @}</a>
+         </td>
+      </tr>
+   </tbody>
+</table>
+
+
                 <a href="#">Copy this table</a><br/>
                 <a href="#">Download all data</a>
                 
-                
                 </div>
+                
             </div>
             
         </div>
@@ -217,31 +205,20 @@
 
   </div>
 
-  
   <div class="content" id="panel2">
   
-   <h5>Pinned</h5>
-   <div style="overflow: auto; height: 360px; border: 2px solid #dadada;">
-   <img class="thumb" ng-click="savedMenu($index)" ng-repeat="thumb in saved | orderBy: 'id':true" ng-src="{@thumb.url@}">
-   </div>
+    <h5>Pinned</h5>
+    <div style="overflow: auto; height: 360px; border: 2px solid #dadada;">
+    <img class="thumb" ng-click="savedMenu($index)" ng-repeat="thumb in saved | orderBy: 'id':true" ng-src="{@thumb.url@}">
+    </div>
     	
-<!--   	
-max-height: 175px;
-min-height: 50px;
-margin: 0;
-padding: 7px 0;
-overflow-x: hidden;
-overflow-y: auto;
-border: 2px solid #dadada;-->
-    	
-     <h5>Recent</h5>
-     <div style="overflow: auto; height: 180px; border: 2px solid #dadada;">
-     
-     <img class="thumb" ng-click="thumbMenu($index)" ng-repeat="thumb in recent | orderBy: 'id':true" ng-src="{@thumb.url@}">
-     
-	 </div>
+    <h5>Recent</h5>
+    <div style="overflow: auto; height: 180px; border: 2px solid #dadada;">
+    <img class="thumb" ng-click="thumbMenu($index)" ng-repeat="thumb in recent | orderBy: 'id':true" ng-src="{@thumb.url@}">
+    </div>
     
   </div>
+  
 </div>
          
             
@@ -271,46 +248,45 @@ border: 2px solid #dadada;-->
     
     
       
-    <div id="lineoptions" class="reveal-modal small" data-reveal>
+    <div ng-repeat="series in chart.series" id="lineoptions-{@series.dataset@}-{@series.topic@}" class="reveal-modal small" data-reveal>
         
-        <div id="bills_topic_1" class="active_controls"><label> Measures: </label><select class="measures"><option value="count">Count</option><option value="percent_total">Percent Total</option><option value="percent_change">Percent Change</option><option value="percent_percent_change">Percent Percent Change</option></select><label>Type:</label><select class="type"><option value="column">Column</option><option selected="selected" value="line">Line</option><option value="spline">Smooth Line</option><option value="scatter">Scatter</option><option value="area">Area</option><option value="areaspline">Smooth Area</option><!--<option value='histogram'>Histogram</option><option value='histogram_stacked'>Histogram Stacked</option>--></select><label>Y-axis: </label><select class="yaxis"><option value="0">none</option><option value="1" selected="selected">primary</option><option value="2">secondary</option></select></div>
+        <div id="bills_topic_1" class="active_controls">
+            
+            <h6>{@series.name@}</h6>
+            
+            <label> Measures: </label>
+            <select class="measures">
+               <option value="count">Count</option>
+               <option value="percent_total">Percent Total</option>
+               <option value="percent_change">Percent Change</option>
+            </select>
+            <label>Type:</label>
+            <select class="type" ng-change="redrawChart()" ng-model="series.type" ng-options="type.type as type.display for type in chart_types"></select>
+            <label>Y-axis: </label>
+            <select class="yaxis">
+               <option value="0">none</option>
+               <option value="1" selected="selected">primary</option>
+               <option value="2">secondary</option>
+            </select>
+        
+        </div>
         
         <div class="parent_list">
             
-<table class="filters sublist">
-   <tbody>
-      <tr class="sublist_header">
-         <th>Include&nbsp;</th>
-         <th>Exclude&nbsp;</th>
-         <th>Filter</th>
-      </tr>
-      <tr ng-repeat="filter in filters">
-         <td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[lm]" value="yes"></td>
-         <td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[lm]" value="no"></td>
-         <td><label>{@filter@}</label><a href="" title="blah blah blah do we need this" class="description_link subfilter">?</a></td>
-      </tr>
-     <!-- <tr>
-         <td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[ba]" value="yes"></td>
-         <td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[ba]" value="no"></td>
-         <td><label>Budget Appropriations</label><a href="" title="The hearing considered, authorized, made or reauthorized appropriations or budgets." class="description_link subfilter">?</a></td>
-      </tr>
-      <tr>
-         <td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[ac]" value="yes"></td>
-         <td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[ac]" value="no"></td>
-         <td><label>Agency Creation</label><a href="" title="The hearings involved the creation of a new government agency." class="description_link subfilter">?</a></td>
-      </tr>
-      <tr>
-         <td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[pc]" value="yes"></td>
-         <td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[pc]" value="no"></td>
-         <td><label>Program Creation</label><a href="" title="The hearing involved the proposal for a new program, independent of the new agency filter." class="description_link subfilter">?</a></td>
-      </tr>
-      <tr>
-         <td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[pp]" value="yes"></td>
-         <td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[pp]" value="no"></td>
-         <td><label>Issue proposed by the President</label><a href="" title="The hearing involved issues or legislation proposed by the administration of the President, independent of all other filters." class="description_link subfilter">?</a></td>
-      </tr> -->
-   </tbody>
-</table>
+            <table class="filters sublist">
+               <tbody>
+                  <tr class="sublist_header">
+                     <th>Include&nbsp;</th>
+                     <th>Exclude&nbsp;</th>
+                     <th>Filter</th>
+                  </tr>
+                  <tr ng-repeat="filter in filters">
+                     <td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[lm]" value="yes"></td>
+                     <td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[lm]" value="no"></td>
+                     <td><label>{@filter@}</label></td>
+                  </tr>
+               </tbody>
+            </table>
 
         </div>
         
@@ -318,6 +294,10 @@ border: 2px solid #dadada;-->
     
     
     </div>   
+      
+      
+      
+      
       
     <div id="datapoints" class="reveal-modal small" data-reveal>
         
@@ -490,14 +470,6 @@ border: 2px solid #dadada;-->
       
         function getOptions() {
             
-            
-            //var year_list = [];
-            //for (i=1988; i < 2014; i++) {
-            //    year_list.push(i.toString());            
-            //}
-            
-            //console.log(year_list);
-            
             {% if options %}
         
                 var retval = {{ options | safe }};
@@ -561,14 +533,16 @@ border: 2px solid #dadada;-->
                         point: {
                             events: {
                                 'click': function(event){
-                        
+                                    
+                                    //console.log(this);
+                                    
                                     if ( $('a[href="#data-view"]').attr('aria-selected') == "true" ) { 
                                 
                                         $('#datapoints').foundation('reveal', 'open');
                                 
                                     } else {
                                 
-                                        $('#lineoptions').foundation('reveal', 'open');
+                                        $('#lineoptions-'+ this.series.userOptions.dataset + '-' + this.series.userOptions.topic).foundation('reveal', 'open');
                                 
                                     }
                                 }
@@ -603,33 +577,26 @@ border: 2px solid #dadada;-->
         
                 series: [],
         
-    
                 colors: hex_colors,
 
-        
                 };
       
             {% endif %}
+            
+            
+            //theScope.chart.yearFrom = retval.xAxis[0].categories[0];
+            //theScope.chart.yearTo = retval.xAxis[0].categories[retval.xAxis[0].categories.length - 1];
             
             var selected = []
             for (var i = 0; i < retval.series.length; i++) {
                 
                 var series = retval.series[i]; 
-                selected.push({dataset: series.dataset, topic: series.topic, name: series.name, color: rgba_colors[hex_colors.indexOf(series.color)]});
+                selected.push({dataset: series.dataset, topic: series.topic, name: series.name, color: rgba_colors[hex_colors.indexOf(series.color)],data:series.data});
             
             }
             
-            //console.log(selected);
-            
-            /*
-            theScope.selected = [
-            {dataset: 26, topic: "39", name: "Belgium: Bills #Agricultural Trade", color:"{'background':'rgba(124, 181, 236,0.5)'}"},
-            {dataset: 26, topic: "4", name: "Belgium: Bills #Agriculture", color:"{'background':'rgba(144, 237, 125,0.5)'}"}
-            ];
-            */
-            
             theScope.chart.series = selected;
-            
+                    
             return retval;
             
         }
