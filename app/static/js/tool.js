@@ -25,6 +25,13 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
 {
     
     $scope.years = year_list;
+    
+    $scope.measures = [
+        {"measure":"count","display":"Count"},
+        {"measure":"percent_total","display":"Percent Total"},
+        {"measure":"percent_change","display":"Percent Change"},
+    ];
+    
     $scope.chart_types = [
         {"type":"line","display":"Line"},
         {"type":"spline","display":"Smooth Line"},
@@ -34,6 +41,36 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         {"type":"areaspline","display":"Smooth Area"}
     ];
     
+    
+   /* $scope.chart = {
+        series:[
+    
+            {data: [count:[],percent_total:[],percent_change[]],
+            filters: [],
+            topic: ,
+            dataset: ,
+            name: ,
+            color: 
+            },
+        
+            {data: [count:[],percent_total:[],percent_change[]],
+            filters: [],
+            topic: ,
+            dataset: ,
+            name: ,
+            color: 
+            },
+
+        ],
+    
+        yearFrom: "1946",
+    
+        yearTo: "2015"    
+    
+    } */
+    
+    
+    
     $scope.chart = {};
 	$scope.chart.series = [];
     $scope.chart.yearFrom = $scope.years[0];
@@ -41,10 +78,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     $scope.recent = [];
     
-    $scope.filters=[
-    "Referral Hearing",
-    "Budget Appropriations"
-    ];
+
     
     $http.get('http://www.coolbest.net:5000/api/charts/' + $("#user").val() ).success(function(data){
         $scope.saved = data;
@@ -83,6 +117,9 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     });
     
     $http.get('http://www.coolbest.net:5000/api/datasets').success(function(data){
+        
+       // console.log(data);
+        
         $scope.datasets = data;
     });
     
@@ -107,7 +144,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                         var subtopic = $this.attr('subtopic');
                         if (country == dataset.country) {
                             dataset_name = dataset.country + ': ' + dataset.name + ' #' + selText;
-                            $scope.results.push({"dataset":dataset.id,"topic":subtopic,"name":dataset_name});                      
+                            $scope.results.push({"dataset":dataset.id,"topic":subtopic,"name":dataset_name,"filters":JSON.parse(dataset.filters)});                      
                         }
                        }
                     });
@@ -161,18 +198,46 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     }
     
     
-    $scope.addToChart = function(series) {
+    $scope.addToChart = function(result) {
     	
-    	$scope.chart.series.push({"name":series.name,"color":$scope.getRgbaColor()});
+    	//console.log(series.filters);
     	
-    	var url = 'http://www.coolbest.net:5000/api/datasets/' + series.dataset.toString() + '/topic/' + series.topic.toString() + '/count';
+    	filters = [];
+    	angular.forEach(result.filters, function (f, index) {
+    	    filter = {};
+    	    filter.name = f
+    	    filter.display = f.replace('filter_','').replace(/_/g,' ').replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+            filter.include = false;
+            filter.exclude = false;
+            filters.push(filter);
+         });
+    	
+    	
+    	$scope.chart.series.push(
+    	{
+    	"name":result.name,
+    	"color":$scope.getRgbaColor(),
+    	"dataset": result.dataset,
+    	"topic": result.topic,
+    	"filters": filters,
+    	"measure": "count",
+    	"type": "line"
+    	});
+    	
+    	//console.log($scope.chart.series);
+    	
+    	
+    	var url = 'http://www.coolbest.net:5000/api/datasets/' + result.dataset.toString() + '/topic/' + result.topic.toString() + '/count';
 		$.getJSON(url, function (retval) {
+			
+			console.log(url);
 			
 			//console.log(retval);
 			
-			$scope.chart.series[$scope.chart.series.length - 1].dataset = series.dataset;
-			$scope.chart.series[$scope.chart.series.length - 1].topic = series.topic;
-			$scope.chart.series[$scope.chart.series.length - 1].data = retval;
+			//$scope.chart.series[$scope.chart.series.length - 1].dataset = series.dataset;
+			//$scope.chart.series[$scope.chart.series.length - 1].topic = series.topic;
+			
+			$scope.chart.series[$scope.chart.series.length - 1].data = retval; //DANGER! DANGER!
 			$scope.redrawChart(); 
             
 		});
@@ -198,6 +263,8 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     }
     
     $scope.redrawChart = function() {
+    
+       // console.log($scope.chart);
     
         options.series = [];
         
@@ -304,6 +371,19 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         });
         
     }
+    
+    $scope.applySeriesOptions = function(series) {
+        
+        $scope.closeSeriesOptions(series);
+        $scope.redrawChart();
+        
+    };
+    
+    $scope.closeSeriesOptions = function(series) {
+        
+        angular.element('#seriesoptions-'+ series.dataset + '-' + series.topic).foundation('reveal','close');
+        
+    };
     
     $scope.savedMenu = function(index) {
         

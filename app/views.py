@@ -960,7 +960,7 @@ def api_datasets():
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
     #cur.execute("""SELECT category, short_display as name FROM datasets WHERE controller IS NOT NULL ORDER BY short_display""")
-    cur.execute("""SELECT d.id, d.category_id AS category, d.short_display as name, c.short_name as country FROM dataset d INNER join country c ON d.country_id = c.id WHERE d.ready=true ORDER BY d.short_display""")
+    cur.execute("""SELECT d.id, d.category_id AS category, d.short_display as name, c.short_name as country, d.filters as filters FROM dataset d INNER join country c ON d.country_id = c.id WHERE d.ready=true ORDER BY d.short_display""")
     return dumps(cur.fetchall())
    
 @app.route('/api/datasets/<dataset>/topic/<topic>/count')

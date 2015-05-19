@@ -193,10 +193,9 @@
     <h5 ng-show="countryCount() > 0 && categoryCount() > 0 && topicCount() > 0" class="picker-label">Add series to chart</h5>
     <p class="no_results" ng-show="noResults()">No available series matching your selections.</p>
     
-    <div ng-repeat="series in results" class="dataset">
-    
-    <p ng-hide="isSelected(series.name)" ng-click="addToChart(series)" class="panel series data-equalizer">
-    <span class="data-equalizer-watch">{@series.name | limitTo:33@}</span><span class="addseries data-equalizer-watch">
+    <div ng-repeat="result in results" class="dataset">
+    <p ng-hide="isSelected(result.name)" ng-click="addToChart(result)" class="panel series data-equalizer">
+    <span class="data-equalizer-watch">{@result.name | limitTo:33@}</span><span class="addseries data-equalizer-watch">
     <span style="float:right"><i class="fi-plus"></i></span>
     </span>
     </p>
@@ -248,22 +247,18 @@
     
     
       
-    <div ng-repeat="series in chart.series" id="lineoptions-{@series.dataset@}-{@series.topic@}" class="reveal-modal small" data-reveal>
+    <div ng-repeat="series in chart.series" id="seriesoptions-{@series.dataset@}-{@series.topic@}" class="reveal-modal small" data-reveal>
         
         <div id="bills_topic_1" class="active_controls">
             
             <h6>{@series.name@}</h6>
             
-            <label> Measures: </label>
-            <select class="measures">
-               <option value="count">Count</option>
-               <option value="percent_total">Percent Total</option>
-               <option value="percent_change">Percent Change</option>
-            </select>
+            <label> Measure: </label>
+            <select ng-model="series.measure" ng-options="measure.measure as measure.display for measure in measures"></select>
             <label>Type:</label>
-            <select class="type" ng-change="redrawChart()" ng-model="series.type" ng-options="type.type as type.display for type in chart_types"></select>
+            <select ng-model="series.type" ng-options="type.type as type.display for type in chart_types"></select>
             <label>Y-axis: </label>
-            <select class="yaxis">
+            <select>
                <option value="0">none</option>
                <option value="1" selected="selected">primary</option>
                <option value="2">secondary</option>
@@ -271,7 +266,7 @@
         
         </div>
         
-        <div class="parent_list">
+        <div ng-show="series.filters.length > 0" class="parent_list">
             
             <table class="filters sublist">
                <tbody>
@@ -280,17 +275,27 @@
                      <th>Exclude&nbsp;</th>
                      <th>Filter</th>
                   </tr>
-                  <tr ng-repeat="filter in filters">
-                     <td class="sub_checkbox"><input title="Include" type="checkbox" name="ch_filter[lm]" value="yes"></td>
-                     <td class="sub_checkbox"><input title="Exclude" type="checkbox" name="ch_filter[lm]" value="no"></td>
-                     <td><label>{@filter@}</label></td>
+                  <tr ng-repeat="filter in series.filters">
+                     <td class="sub_checkbox"><input title="Include" ng-model="filter.include" type="checkbox"></td>
+                     <td class="sub_checkbox"><input title="Exclude" ng-model="filter.exclude" type="checkbox"></td>
+                     <td><label>{@filter.display@}</label></td>
                   </tr>
                </tbody>
             </table>
 
         </div>
         
-        <a class="close-reveal-modal">&#215;</a>
+       <!-- <div style="float:left">
+        
+        
+    
+        </div> -->
+        
+        <div style="float:right">
+        <i ng-click="closeSeriesOptions(series)" style="font-size:40px;" class="fi-x"></i>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <i ng-click="applySeriesOptions(series)" style="font-size:40px;" class="fi-check"></i>
+        </div>
     
     
     </div>   
@@ -542,7 +547,7 @@
                                 
                                     } else {
                                 
-                                        $('#lineoptions-'+ this.series.userOptions.dataset + '-' + this.series.userOptions.topic).foundation('reveal', 'open');
+                                        $('#seriesoptions-'+ this.series.userOptions.dataset + '-' + this.series.userOptions.topic).foundation('reveal', 'open');
                                 
                                     }
                                 }
