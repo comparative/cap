@@ -87,8 +87,8 @@
                 <div class="large-3 medium-4 columns">
                 
                    <label><h5>Dates</h5></label>
-                   <select ng-change="redrawChart()" ng-model="chart.yearFrom" ng-options="year for year in years" class="from years" name="years_from" style="display: inline-block;"></select>
-                   <select ng-change="redrawChart()" ng-model="chart.yearTo" ng-options="year for year in years" class="to years" name="years_to" style="display: inline-block;"></select>
+                   <select ng-change="drawChart()" ng-model="chart.yearFrom" ng-options="year for year in years" class="from years" name="years_from" style="display: inline-block;"></select>
+                   <select ng-change="drawChart()" ng-model="chart.yearTo" ng-options="year for year in years" class="to years" name="years_to" style="display: inline-block;"></select>
                     
                 </div>
                 
@@ -208,12 +208,12 @@
   
     <h5>Pinned</h5>
     <div style="overflow: auto; height: 360px; border: 2px solid #dadada;">
-    <img class="thumb" ng-click="savedMenu($index)" ng-repeat="thumb in saved | orderBy: 'id':true" ng-src="{@thumb.url@}">
+    <img class="thumb" ng-click="savedMenu($index)" ng-repeat="thumb in saved | orderBy: 'id':true" ng-src="{@thumb.imgsrc@}">
     </div>
     	
     <h5>Recent</h5>
     <div style="overflow: auto; height: 180px; border: 2px solid #dadada;">
-    <img class="thumb" ng-click="thumbMenu($index)" ng-repeat="thumb in recent | orderBy: 'id':true" ng-src="{@thumb.url@}">
+    <img class="thumb" ng-click="thumbMenu($index)" ng-repeat="thumb in recent | orderBy: 'id':true" ng-src="{@thumb.imgsrc@}">
     </div>
     
   </div>
@@ -266,7 +266,11 @@
         
         </div>
         
-        <div ng-show="series.filters.length > 0" class="parent_list">
+
+        
+        <div style="float:left">
+        
+            <div ng-show="series.filters.length > 0" class="parent_list">
             
             <table class="filters sublist">
                <tbody>
@@ -283,19 +287,17 @@
                </tbody>
             </table>
 
-        </div>
-        
-       <!-- <div style="float:left">
-        
+            </div>
         
     
-        </div> -->
-        
-        <div style="float:right">
-        <i ng-click="closeSeriesOptions(series)" style="font-size:40px;" class="fi-x"></i>
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        <i ng-click="applySeriesOptions(series)" style="font-size:40px;" class="fi-check"></i>
         </div>
+        
+        <div style="float:right;">
+            <i ng-click="closeSeriesModal(series)" style="font-size:40px;" class="fi-x"></i>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <i ng-click="editSeries(series)" style="font-size:40px;" class="fi-check"></i>
+        </div>
+    
     
     
     </div>   
@@ -350,263 +352,140 @@
 
      {% block scripts %}
           
-      <script src="/static/js/highcharts.js"></script>
-      <script src="http://code.highcharts.com/modules/exporting.js"></script>
-      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
-      <script src="/static/js/tool.js"></script>
-      <script src="/static/js/mtree.js"></script>
-        
-      <script>
-      
-        $(document).ready(function() {
-    
-            $('a.Source').click(function(e) {
-                e.preventDefault();
-                $('#datapoints').foundation('reveal', 'open');
-            });
-    
-            $('img.thumb').click(function(e) {
-                e.preventDefault();
-                $('#thumbnailoptions').foundation('reveal', 'open');
-            });
-    
-            $('h5.picker-label').click(function(e) {
-                e.preventDefault();
-                $('div.picker:visible').slideToggle('fast','linear');
-                $(this).next('div').slideToggle('fast','linear');
-            });
-            
-            $('#pushme').click(function(e) {
-        
-                /*
-                var turnOffGrid = { lineWidth: 0,
-                gridLineWidth: 0,
-                minorGridLineWidth: 0,
-                lineColor: 'transparent',      
-                labels: {
-                   enabled: false
-                },
-                minorTickLength: 0,
-                tickLength: 0 };
-                */
-        
-                //var turnOffGrid = {
-                //gridLineWidth: 0
-                //};
-        
-                /*
-                var options = theChart.options;
-                options.yAxis.lineWidth = 0;
-                options.yAxis.gridLineWidth = 0;
-                options.yAxis.gridLineColor = 'transparent';
-                options.yAxis.labels = {
-                   enabled: false
-                }
-                options.yAxis.minorTickLength = 0;
-                options.yAxis.tickLength = 0;
-                theChart = new Highcharts.Chart(options);
+<script src="/static/js/highcharts.js"></script>
+<script src="http://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
+<script src="/static/js/tool.js"></script>
 
-                theChart.addSeries({
-                    name: 'US State of Shock',
-                    data: [1,2,3,4,5,6,7,8,9,0]
-                });
-                */
+<script>
         
-                //var theseOptions = theChart.options;
-        
-                //console.log(theseOptions);
-        
-                //for (var attrname in turnOffGrid) { theseOptions.xAxis[attrname] = turnOffGrid[attrname]; }
-                //for (var attrname in turnOffGrid) { theseOptions.yAxis[attrname] = turnOffGrid[attrname]; }
-        
-        
-        
-                //theChart.destroy();
-                //theChart = new Highcharts.Chart(theseOptions);
-        
-        
-        
-                /*
-                e.preventDefault();
-                theChart.addSeries({
-                    name: 'US State of Shock',
-                    data: [1,2,3,4,5,6,7,8,9,0]
-                });
-                */
-        
-                //theChart.redraw();
-        
-        
-        
-        
-            });
-    
-            $( "#chart_actions" ).change(function() {
-    
-                if ($(this).val() == "download") {
-            
-                    theChart.exportChart({
-                        type: 'img/png',
-                        filename: $("#slug").val()
-                    });
-            
-                }
-                
-                if ($(this).val() == "copy") {
-                    
-                    window.prompt( "Copy to clipboard: Ctrl+C, Enter", "http://www.coolbest.net:5000/charts/" + $("#slug").val() );
-            
-                }
-                
-                if ($(this).val() == "embed") {
-                    
-                   $('#embed_code').foundation('reveal', 'open');
-            
-                }
-        
-            });
-            
-            theScope = angular.element(document.getElementById('toolcontroller')).scope();
-            options = getOptions();
-            theChart = new Highcharts.Chart(options);
-    
-        });
-      
-      
-        function getOptions() {
-            
-            {% if options %}
-        
-                var retval = {{ options | safe }};
-        
-            {% else %}
-        
-                var retval = {
-        
-                chart: {
-                    renderTo: 'chart',
-                    ignoreHiddenSeries : false
-                },
-        
-                title: {
-                    text: ''
-                },
-        
-                tooltip: { enabled: false },
-                credits: { enabled: false },
-        
-                xAxis: {
-                    title : {
-                        text: 'Year'
-                    },
-                    
-                    categories: year_list,
-                    
-			        labels : {
-							rotation: -90
-			        },
-			        
-			        tickPosition: 'outside',
-					tickWidth: 0,
-					lineWidth: 1,
-					lineColor: '#FFFFFF'
-                    
-                },
-             
-                yAxis: {
+var rgba_colors = [
+"{'background':'rgba(124, 181, 236, 0.5)'}", 
+"{'background':'rgba(144, 237, 125, 0.5)'}", 
+"{'background':'rgba(247, 163, 92, 0.5)'}", 
+"{'background':'rgba(128, 133, 233, 0.5)'}", 
+"{'background':'rgba(241, 92, 128, 0.5)'}", 
+"{'background':'rgba(228, 211, 84, 0.5)'}", 
+"{'background':'rgba(141, 70, 83, 0.5)'}",
+"{'background':'rgba(145, 232, 225, 0.5)'}"
+];
 
-                    title: {
-                        text: 'Count'
-                    },
-                    plotLines: [{
-                        value: 0,
-                        width: 1,
-                        color: '#808080'
-                    }]
-                },
-        
-                plotOptions:{
-                    line: {
-                        dataLabels: {
-                            enabled: false 
-                        }
-                    },
-                    column:{
-                        borderWidth: 0.2
-                    },
-                    series:{
-                        point: {
-                            events: {
-                                'click': function(event){
-                                    
-                                    //console.log(this);
-                                    
-                                    if ( $('a[href="#data-view"]').attr('aria-selected') == "true" ) { 
-                                
-                                        $('#datapoints').foundation('reveal', 'open');
-                                
-                                    } else {
-                                
-                                        $('#seriesoptions-'+ this.series.userOptions.dataset + '-' + this.series.userOptions.topic).foundation('reveal', 'open');
-                                
-                                    }
-                                }
-                            }
-                       },
-               
-                       states: {
-                        hover: {
-                         halo: false
-                        }
-                       },
-               
-                       shadow: false,
-                       animation: false,
-                       cursor: 'pointer'
-                   }
-                },
-        
-                legend:{
-                    enabled: false
-                },
-        
-                exporting:{
-                    buttons:{
-                        contextButton:{
-                            enabled: false
-                        }	 
-                    },
-                    url: 'http://104.237.136.8:8080/highcharts-export-web/',
-                    width: '960'
-                },
-        
-                series: [],
-        
-                colors: hex_colors,
+var hex_colors = ['#7cb5ec', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#8d4653', '#91e8e1'];
 
-                };
-      
-            {% endif %}
-            
-            
-            //theScope.chart.yearFrom = retval.xAxis[0].categories[0];
-            //theScope.chart.yearTo = retval.xAxis[0].categories[retval.xAxis[0].categories.length - 1];
-            
-            var selected = []
-            for (var i = 0; i < retval.series.length; i++) {
-                
-                var series = retval.series[i]; 
-                selected.push({dataset: series.dataset, topic: series.topic, name: series.name, color: rgba_colors[hex_colors.indexOf(series.color)],data:series.data});
-            
+var year_list = [];
+for (i=1946; i < 2016; i++) {
+    year_list.push(i.toString());            
+}
+
+var defaultOptions = {
+        
+    chart: {
+        renderTo: 'chart',
+        ignoreHiddenSeries : false
+    },
+
+    title: {
+        text: ''
+    },
+
+    tooltip: { enabled: false },
+    credits: { enabled: false },
+
+    xAxis: {
+        title : {
+            text: 'Year'
+        },
+    
+        categories: year_list,
+    
+        labels : {
+                rotation: -90
+        },
+    
+        tickPosition: 'outside',
+        tickWidth: 0,
+        lineWidth: 1,
+        lineColor: '#FFFFFF'
+    
+    },
+
+    yAxis: {
+
+        title: {
+            text: 'Count'
+        },
+        plotLines: [{
+            value: 0,
+            width: 1,
+            color: '#808080'
+        }]
+    },
+
+    plotOptions:{
+        line: {
+            dataLabels: {
+                enabled: false 
             }
-            
-            theScope.chart.series = selected;
+        },
+        column:{
+            borderWidth: 0.2
+        },
+        series:{
+            point: {
+                events: {
+                    'click': function(event){
                     
-            return retval;
-            
-        }
-        
+                        if ( $('a[href="#data-view"]').attr('aria-selected') == "true" ) { 
+                
+                            $('#datapoints').foundation('reveal', 'open');
+                
+                        } else {
+                
+                            $('#seriesoptions-'+ this.series.userOptions.dataset + '-' + this.series.userOptions.topic).foundation('reveal', 'open');
+                
+                        }
+                    }
+                }
+           },
+
+           states: {
+            hover: {
+             halo: false
+            }
+           },
+
+           shadow: false,
+           animation: false,
+           cursor: 'pointer'
+       }
+    },
+
+    legend:{
+        enabled: false
+    },
+
+    exporting:{
+        buttons:{
+            contextButton:{
+                enabled: false
+            }	 
+        },
+        url: 'http://104.237.136.8:8080/highcharts-export-web/',
+        width: '960'
+    },
+
+    series: [],
+
+    colors: hex_colors,
+
+};
+
+    {% if options %}
+        var options =  {{ options | safe }}; 
+    {% else %}
+        var options = $.extend(true, {}, defaultOptions); 
+    {% endif %}
       
-      </script>
+</script>
         
-    {% endblock %}
+{% endblock %}
