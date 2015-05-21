@@ -78,7 +78,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
         saved = [];
         angular.forEach(data, function (chart, index) {
-            item = new Saved(chart.slug,'http://www.coolbest.net:5000/charts/' + chart.slug, chart.options);
+            item = new Saved(chart.slug, 'http://www.coolbest.net:5000/charts/' + chart.slug, chart.options);
             saved.unshift(item);
         });
         $scope.saved = saved;
@@ -206,8 +206,8 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     $scope.chartToOptions = function() {
     
-        var optionsOut = options;
-        optionsOut.series = [];
+        
+        options.series = [];
         
         angular.forEach($scope.chart.series, function (series, index) {
             
@@ -222,15 +222,15 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
 				color: hex_colors[rgba_colors.indexOf(series.color)]
 			}
 			
-			optionsOut.series.push(s);
+			options.series.push(s);
             
         });
 
 
         $scope.yearslice = year_list.slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
-        optionsOut.xAxis.categories = $scope.yearslice;
+        options.xAxis.categories = $scope.yearslice;
             
-        return optionsOut;
+        return options;
     
     }
     
@@ -338,9 +338,10 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
             data: options,
             success: function() {
                 alert('chart pinned!');
-                item = new Saved( $("#slug").val(), options );
+                item = new Saved( $("#slug").val(), 'http://www.coolbest.net:5000/charts/' + $("#slug").val(), options );
                 $scope.saved.unshift(item);
                 $scope.$apply();
+                console.log($scope.saved);
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) { 
                 alert('could not pin chart.  Already pinned?'); 
@@ -367,8 +368,8 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     $scope.savedMenu = function(index) {
         
         reverse_index = $scope.saved.length - 1 - index;           
-        url = $scope.saved[index].url;        
-        window.location = 'http://www.coolbest.net:5000/tool/' + url.split('charts/')[1];
+        slug = $scope.saved[index].slug;        
+        window.location = 'http://www.coolbest.net:5000/tool/' + slug;
         
     }
     
