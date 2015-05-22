@@ -16,9 +16,13 @@ function Series (dataset,topic,name,filters) {
     
     this.measure = "count";
     this.type = "line";
+    this.yaxis = 0;
     
     this.color = undefined;
-    this.data = [];
+    this.alldata = [];
+    this.alldata.count = [];
+    this.alldata.percent_total = [];
+    this.alldata.percent_change = [];
     
 }
 
@@ -70,6 +74,13 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         {"type":"scatter","display":"Scatter"},
         {"type":"area","display":"Area"},
         {"type":"areaspline","display":"Smooth Area"}
+    ];
+    
+    
+    $scope.axes = [
+        {"num":0,"display":"none"},
+        {"num":1,"display":"primary"},
+        {"num":2,"display":"secondary"},
     ];
     
     $scope.chart = new Chart();
@@ -206,21 +217,119 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     $scope.chartToOptions = function() {
     
-        
         options.series = [];
+        options.yAxis = [];
+        
+        // GET DATE RANGE 
+                
+        var arrayLength = $scope.chart.series[0].alldata.count.length;
+        var FirstYear = arrayLength;
+        var LastYear = 0;
         
         angular.forEach($scope.chart.series, function (series, index) {
             
-            dataslice = series.data.slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
+            // find earliest year with data
+            for (var i = 0; i < arrayLength; i++) {
+                if (series.alldata[series.measure][i] != 0) {
+                    var firstYear = i;
+                    break;
+                }
+            }
+            if (firstYear < FirstYear) {
+                FirstYear = firstYear;
+            }
+
+            // find latest year with data
+            for (var i = arrayLength - 1; i >= 0; i--) {
+                if (series.alldata[series.measure][i] != 0) {
+                    var lastYear = i;
+                    break;
+                }
+            }
+            if (lastYear > LastYear) {
+                LastYear = lastYear;
+            }
+            
+        }); 
+        
+        
+        $scope.years = year_list.slice(FirstYear,LastYear + 1);
+        
+        if ($scope.chart.yearFrom < year_list[FirstYear]) {
+            $scope.chart.yearFrom = year_list[FirstYear];
+        }
+        
+        if ($scope.chart.yearTo > year_list[LastYear]) {
+            $scope.chart.yearTo = year_list[LastYear];
+        }
+        
+        
+        angular.forEach($scope.chart.series, function (series, index) {
+            
+            if (series.measure == "count") {var text = 'Count';}
+            if (series.measure == "percent_total") {var text = 'Percent Total';}
+            if (series.measure == "percent_change") {var text = 'Percent Change';}
+            
+            
+            if (series.yaxis == 0) {
+            
+                angular.forEach(options.yAxis, function (axis,index2) {
+            
+                    if (axis.title.text == text) {
+                        series.yaxis = index2 + 1;                
+                    }
+            
+                });
+            
+            
+                /*    
+                if (series.yaxis == 0) {
+            
+                    axis = { 
+                    title: {
+                        text: text
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                    };
+            
+                    if (options.yAxis.length > 0) {
+                        axis.opposite = true;
+                    }
+            
+                    options.yAxis.push(axis);
+                    series.yaxis = options.yAxis.length;
+                
+                }
+                */
+                
+                
+            }
+            
+            
+            dataslice = series.alldata[series.measure].slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
             
             var s = {
                 type: series.type,
 			    topic: series.topic,
 			    dataset: series.dataset,
 				name: series.name,
+				alldata: series.alldata,
 				data: dataslice,
 				color: hex_colors[rgba_colors.indexOf(series.color)]
+				
 			}
+			
+			//console.log(options.yAxis);
+			if (options.yAxis.length > 1) {
+			    s.yAxis = series.yaxis;
+			}
+			
+			//console.log(axisNum);
+			//console.log(s);
 			
 			options.series.push(s);
             
@@ -228,7 +337,9 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
 
 
         $scope.yearslice = year_list.slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
-        options.xAxis.categories = $scope.yearslice;
+        options.xAxis[0].categories = $scope.yearslice;
+            
+        //console.log($scope.yearslice);
             
         return options;
     
@@ -240,13 +351,16 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     	result.color = $scope.getRgbaColor();
     	$scope.chart.series.push(result);
     	
-    	var url = 'http://www.coolbest.net:5000/api/datasets/' + result.dataset.toString() + '/topic/' + result.topic.toString() + '/count';
+    	//console.log($scope.chart.series);
+    	
+    	var url = 'http://www.coolbest.net:5000/api/measures/dataset/' + result.dataset.toString() + '/topic/' + result.topic.toString();
 		
 		$.getJSON(url, function (retval) {
 			
+			
 			angular.forEach($scope.chart.series, function (selected, index) { 
                 if (result.name == selected.name) {
-                    $scope.chart.series[index].data = retval;
+                    $scope.chart.series[index].alldata = retval;
                 }
             });
 			
@@ -276,11 +390,19 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     $scope.drawChart = function() {
     
         theChart.destroy();
-		theChart = new Highcharts.Chart($scope.chartToOptions());
+        options = $scope.chartToOptions();
+        //console.log(options);
+        options.plotOptions.series.point.events['click'] = clickPoint;
+        //console.log(options);
+        
+		theChart = new Highcharts.Chart(options);
+		
+		//console.log($scope.chartToOptions());
+		//console.log(options);
 		
         var obj = {},
         exportUrl = 'http://104.237.136.8:8080/highcharts-export-web/';
-        obj.options = JSON.stringify(theChart.options);
+        obj.options = JSON.stringify(options);
         obj.type = 'image/png';
         obj.async = true;
         
@@ -329,7 +451,8 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     $scope.saveChart = function() {
         
-        options = JSON.stringify(theChart.options);
+        options = JSON.stringify(options);
+        //console.log(options);
             
         // SAVE CHART
         resp = $.ajax({
@@ -341,7 +464,6 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                 item = new Saved( $("#slug").val(), 'http://www.coolbest.net:5000/charts/' + $("#slug").val(), options );
                 $scope.saved.unshift(item);
                 $scope.$apply();
-                console.log($scope.saved);
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) { 
                 alert('could not pin chart.  Already pinned?'); 
@@ -475,15 +597,47 @@ $(document).ready(function() {
 
 //////////////////////////////////////////////////////////////////////// UTILS
 
+var clickPoint = function(event) {
+                    
+    if ( $('a[href="#data-view"]').attr('aria-selected') == "true" ) { 
+
+        $('#datapoints').foundation('reveal', 'open');
+
+    } else {
+
+        $('#seriesoptions-'+ this.series.userOptions.dataset + '-' + this.series.userOptions.topic).foundation('reveal', 'open');
+
+    }
+}
+
 Chart.prototype.chartFromOptions = function(options) {
 
-    var selected = [];
+    //console.log(options.series.point.events);
+    
+   // console.log(options);
+    
+    var series = [];
+    
     for (var i = 0; i < options.series.length; i++) { 
-        var series = options.series[i]; 
-        selected.push({dataset: series.dataset, topic: series.topic, name: series.name, color: rgba_colors[hex_colors.indexOf(series.color)],data:series.data});
+        
+        var s = options.series[i];
+        
+        var objS = new Series(s.dataset,s.topic,s.name,[]);  
+        objS.measure = "count";
+        objS.type = "line";
+        objS.color = rgba_colors[hex_colors.indexOf(s.color)];
+        objS.alldata = s.alldata;        
+        series.push(objS);
+        
     }
     
-    theScope.chart.series = selected;  
+    //console.log(options.xAxis[0].categories);
+    
+    //console.log(series);
+    
+    this.series = series;
+    this.yearFrom = options.xAxis[0].categories[0];
+    this.yearTo = options.xAxis[0].categories[options.xAxis[0].categories.length - 1];
 
 };
 

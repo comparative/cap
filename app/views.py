@@ -963,10 +963,13 @@ def api_datasets():
     cur.execute("""SELECT d.id, d.category_id AS category, d.short_display as name, c.short_name as country, d.filters as filters FROM dataset d INNER join country c ON d.country_id = c.id WHERE d.ready=true ORDER BY d.short_display""")
     return dumps(cur.fetchall())
    
-@app.route('/api/datasets/<dataset>/topic/<topic>/count')
-def api_count(dataset,topic):
+@app.route('/api/measures/dataset/<dataset>/topic/<topic>')
+def api_measures(dataset,topic):
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
+    data = {}
+    
+    # COUNT
     if int(topic) < 100:
         sql = """
         SELECT yc.year::int, yc.cnt::int FROM (
@@ -991,14 +994,41 @@ def api_count(dataset,topic):
         """
     cur.execute(sql,[dataset,topic])
     d = cur.fetchall()
-    data = []
+    count = []
     for i in range(1946,2016):
         found = False
         for r in d:
             if (r["year"] == i):
-                data.append(r["cnt"])
+                count.append(r["cnt"])
                 found = True
         if (found == False):
-            data.append(0)
+            count.append(0)
+    data['count'] = count 
+    
+    
+    # PERCENT TOTAL
+    sql = """
+    SELECT yt.year::int, yt.total::int FROM (
+    select datarow->>'year' AS year, COUNT(datarow->'id') as total
+    from (
+      select json_array_elements(content)
+      from dataset WHERE dataset.id = %s
+    ) s(datarow)
+    GROUP BY year) AS yt ORDER by year
+    """
+    cur.execute(sql,[dataset])
+    d = cur.fetchall()
+    percent_total = []
+    for i in range(1946,2016):
+        found = False
+        for r in d:
+            if (r["year"] == i):
+                pt = float(count[i - 1946])/r["total"]
+                percent_total.append(int(100 * float("{0:.2f}".format(pt))))
+                found = True
+        if (found == False):
+            percent_total.append(0)     
+    data['percent_total'] = percent_total 
+    data['percent_change'] = percent_total      
     return dumps(data)
     #return dumps(cur.fetchall())

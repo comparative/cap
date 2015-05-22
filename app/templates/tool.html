@@ -258,11 +258,7 @@
             <label>Type:</label>
             <select ng-model="series.type" ng-options="type.type as type.display for type in chart_types"></select>
             <label>Y-axis: </label>
-            <select>
-               <option value="0">none</option>
-               <option value="1" selected="selected">primary</option>
-               <option value="2">secondary</option>
-            </select>
+            <select ng-model="series.yaxis" ng-options="axis.num as axis.display for axis in axes"></select>
         
         </div>
         
@@ -391,7 +387,7 @@ var defaultOptions = {
     tooltip: { enabled: false },
     credits: { enabled: false },
 
-    xAxis: {
+    xAxis: [{
         title : {
             text: 'Year'
         },
@@ -407,19 +403,9 @@ var defaultOptions = {
         lineWidth: 1,
         lineColor: '#FFFFFF'
     
-    },
+    }],
 
-    yAxis: {
-
-        title: {
-            text: 'Count'
-        },
-        plotLines: [{
-            value: 0,
-            width: 1,
-            color: '#808080'
-        }]
-    },
+    yAxis: [],
 
     plotOptions:{
         line: {
@@ -433,18 +419,7 @@ var defaultOptions = {
         series:{
             point: {
                 events: {
-                    'click': function(event){
                     
-                        if ( $('a[href="#data-view"]').attr('aria-selected') == "true" ) { 
-                
-                            $('#datapoints').foundation('reveal', 'open');
-                
-                        } else {
-                
-                            $('#seriesoptions-'+ this.series.userOptions.dataset + '-' + this.series.userOptions.topic).foundation('reveal', 'open');
-                
-                        }
-                    }
                 }
            },
 
@@ -481,9 +456,14 @@ var defaultOptions = {
 };
 
     {% if options %}
-        var options =  {{ options | safe }}; 
+    
+        var options =  {{ options | safe }};
+        options.plotOptions.series.point.events['click'] = clickPoint;
+         
     {% else %}
+    
         var options = $.extend(true, {}, defaultOptions); 
+    
     {% endif %}
       
 </script>
