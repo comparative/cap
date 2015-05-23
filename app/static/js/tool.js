@@ -76,11 +76,10 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         {"type":"areaspline","display":"Smooth Area"}
     ];
     
-    
-    $scope.axes = [
-        {"num":0,"display":"none"},
-        {"num":1,"display":"primary"},
-        {"num":2,"display":"secondary"},
+    $scope.yaxischoices = [
+        {"num":0,"display":"primary","visible":true,"measure":"count","draw":false},
+        {"num":1,"display":"secondary","visible":true,"measure":"count","draw":false},
+        {"num":2,"display":"tertiary","visible":true,"measure":"count","draw":false}
     ];
     
     $scope.chart = new Chart();
@@ -264,49 +263,22 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         }
         
         
+        $scope.yaxes = [];
+        
+        
+        //SERIES TO OPTIONS
+        
         angular.forEach($scope.chart.series, function (series, index) {
             
-            if (series.measure == "count") {var text = 'Count';}
-            if (series.measure == "percent_total") {var text = 'Percent Total';}
-            if (series.measure == "percent_change") {var text = 'Percent Change';}
+            // new axis choice, new axis
+            if (!$scope.yaxes[series.yaxis]) {
+                $scope.yaxes.push({"measure":series.measure});
+            }
             
-            
-            if (series.yaxis == 0) {
-            
-                angular.forEach(options.yAxis, function (axis,index2) {
-            
-                    if (axis.title.text == text) {
-                        series.yaxis = index2 + 1;                
-                    }
-            
-                });
-            
-            
-                /*    
-                if (series.yaxis == 0) {
-            
-                    axis = { 
-                    title: {
-                        text: text
-                    },
-                    plotLines: [{
-                        value: 0,
-                        width: 1,
-                        color: '#808080'
-                    }]
-                    };
-            
-                    if (options.yAxis.length > 0) {
-                        axis.opposite = true;
-                    }
-            
-                    options.yAxis.push(axis);
-                    series.yaxis = options.yAxis.length;
-                
-                }
-                */
-                
-                
+            // new measure, new axis
+            if ($scope.yaxes[series.yaxis].measure != series.measure) {
+                $scope.yaxes.push({"measure":series.measure});
+                series.yaxis = $scope.yaxes.length - 1;     
             }
             
             
@@ -319,30 +291,40 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
 				name: series.name,
 				alldata: series.alldata,
 				data: dataslice,
-				color: hex_colors[rgba_colors.indexOf(series.color)]
-				
+				color: hex_colors[rgba_colors.indexOf(series.color)],
+				yAxis: series.yaxis
 			}
-			
-			//console.log(options.yAxis);
-			if (options.yAxis.length > 1) {
-			    s.yAxis = series.yaxis;
-			}
-			
-			//console.log(axisNum);
-			//console.log(s);
 			
 			options.series.push(s);
             
         });
 
-
+        
+        
+        // CONSTRUCT X AXIS
         $scope.yearslice = year_list.slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
         options.xAxis[0].categories = $scope.yearslice;
-            
-        //console.log($scope.yearslice);
+         
+        // CONSTRUCT Y AXES
+        angular.forEach($scope.yaxes, function (ax,index) {
+            axis = { 
+                title: {
+                    text: ax.measure
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            };
+            if (index > 0) {
+                axis.opposite = true;
+            }
+            options.yAxis.push(axis);
+        });   
             
         return options;
-    
+        
     }
     
     
