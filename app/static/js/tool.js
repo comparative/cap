@@ -17,6 +17,7 @@ function Series (dataset,topic,name,filters) {
     this.measure = "count";
     this.type = "line";
     this.yaxis = 0;
+    this.trump = false;
     
     this.color = undefined;
     this.alldata = [];
@@ -81,6 +82,8 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         {"num":1,"display":"secondary","visible":true,"measure":"count","draw":false},
         {"num":2,"display":"tertiary","visible":true,"measure":"count","draw":false}
     ];
+    
+    $scope.yaxes = [];
     
     $scope.chart = new Chart();
 
@@ -219,114 +222,216 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         options.series = [];
         options.yAxis = [];
         
+        
         // GET DATE RANGE 
+        
+        if ($scope.chart.series.length > 0) {
+              
+            var arrayLength = $scope.chart.series[0].alldata.count.length;
+            var FirstYear = arrayLength;
+            var LastYear = 0;
+        
+            angular.forEach($scope.chart.series, function (series, index) {
+            
+                // find earliest year with data
+                for (var i = 0; i < arrayLength; i++) {
+                    if (series.alldata[series.measure][i] != 0) {
+                        var firstYear = i;
+                        break;
+                    }
+                }
+                if (firstYear < FirstYear) {
+                    FirstYear = firstYear;
+                }
+
+                // find latest year with data
+                for (var i = arrayLength - 1; i >= 0; i--) {
+                    if (series.alldata[series.measure][i] != 0) {
+                        var lastYear = i;
+                        break;
+                    }
+                }
+                if (lastYear > LastYear) {
+                    LastYear = lastYear;
+                }
+            
+            }); 
+        
+        
+            $scope.years = year_list.slice(FirstYear,LastYear + 1);
+        
+            if ($scope.chart.yearFrom < year_list[FirstYear]) {
+                $scope.chart.yearFrom = year_list[FirstYear];
+            }
+        
+            if ($scope.chart.yearTo > year_list[LastYear]) {
+                $scope.chart.yearTo = year_list[LastYear];
+            }
+        
+        
+            // GET Y AXES
+            angular.forEach($scope.chart.series, function (series, index) {
                 
-        var arrayLength = $scope.chart.series[0].alldata.count.length;
-        var FirstYear = arrayLength;
-        var LastYear = 0;
-        
-        angular.forEach($scope.chart.series, function (series, index) {
+                // if there is not a y-axis for this measure, add one!!
+                
+                bExists = false;
+                angular.forEach($scope.yaxes, function (ax, index) {
+                    if (series.measure == ax.measure) {
+                        bExists = true;
+                    }
+                });
+                
+                if (!bExists) {
+                    $scope.yaxes.push({"measure":series.measure});
+                }                
             
-            // find earliest year with data
-            for (var i = 0; i < arrayLength; i++) {
-                if (series.alldata[series.measure][i] != 0) {
-                    var firstYear = i;
-                    break;
+            });
+            
+            
+            angular.forEach($scope.yaxischoices, function (choice, index) {
+                
+                choice.visible = true ? index <= $scope.yaxes.length && $scope.chart.series.length >= $scope.yaxes.length : false;
+                
+            });
+            
+            
+            //SERIES TO OPTIONS
+            
+            angular.forEach($scope.chart.series, function (series, index) {          
+                
+                // sort into yAxis by measure
+                for (var i = 0; i < $scope.yaxes.length; i++) {
+                   ax = $scope.yaxes[i];
+                   if (series.measure == ax.measure && series.trump == false) {
+                        series.yaxis = i;
+                        break;
+                    }
                 }
-            }
-            if (firstYear < FirstYear) {
-                FirstYear = firstYear;
-            }
+                
+                
+                // in case series is manually assigned to additional axis with identical measure
+                if (!$scope.yaxes[series.yaxis]) {
+                    $scope.yaxes.push({"measure":series.measure});
+                    series.yaxis = $scope.yaxes.length - 1;
+                }
+                
 
-            // find latest year with data
-            for (var i = arrayLength - 1; i >= 0; i--) {
-                if (series.alldata[series.measure][i] != 0) {
-                    var lastYear = i;
-                    break;
+                
+                
+                
+                
+                
+                
+                //series.trump = false;
+                
+                
+                dataslice = series.alldata[series.measure].slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
+            
+                var s = {
+                    type: series.type,
+                    topic: series.topic,
+                    dataset: series.dataset,
+                    name: series.name,
+                    alldata: series.alldata,
+                    data: dataslice,
+                    color: hex_colors[rgba_colors.indexOf(series.color)],
+                    yAxis: series.yaxis
                 }
-            }
-            if (lastYear > LastYear) {
-                LastYear = lastYear;
-            }
             
-        }); 
-        
-        
-        $scope.years = year_list.slice(FirstYear,LastYear + 1);
-        
-        if ($scope.chart.yearFrom < year_list[FirstYear]) {
-            $scope.chart.yearFrom = year_list[FirstYear];
-        }
-        
-        if ($scope.chart.yearTo > year_list[LastYear]) {
-            $scope.chart.yearTo = year_list[LastYear];
-        }
-        
-        
-        $scope.yaxes = [];
-        
-        
-        //SERIES TO OPTIONS
-        
-        angular.forEach($scope.chart.series, function (series, index) {
+                options.series.push(s);
             
-            // new axis choice, new axis
-            if (!$scope.yaxes[series.yaxis]) {
-                $scope.yaxes.push({"measure":series.measure});
-            }
-            
-            // new measure, new axis
-            if ($scope.yaxes[series.yaxis].measure != series.measure) {
-                $scope.yaxes.push({"measure":series.measure});
-                series.yaxis = $scope.yaxes.length - 1;     
-            }
-            
-            
-            dataslice = series.alldata[series.measure].slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
-            
-            var s = {
-                type: series.type,
-			    topic: series.topic,
-			    dataset: series.dataset,
-				name: series.name,
-				alldata: series.alldata,
-				data: dataslice,
-				color: hex_colors[rgba_colors.indexOf(series.color)],
-				yAxis: series.yaxis
-			}
-			
-			options.series.push(s);
-            
-        });
+            });
 
         
         
-        // CONSTRUCT X AXIS
-        $scope.yearslice = year_list.slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
-        options.xAxis[0].categories = $scope.yearslice;
+        
+        
+            // CONSTRUCT X AXIS
+            $scope.yearslice = year_list.slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
+            options.xAxis[0].categories = $scope.yearslice;
          
-        // CONSTRUCT Y AXES
-        angular.forEach($scope.yaxes, function (ax,index) {
-            axis = { 
-                title: {
-                    text: ax.measure
-                },
-                plotLines: [{
-                    value: 0,
-                    width: 1,
-                    color: '#808080'
-                }]
-            };
-            if (index > 0) {
-                axis.opposite = true;
-            }
-            options.yAxis.push(axis);
-        });   
+         
+         
+         
+            // CONSTRUCT Y AXES
             
+            // remove axis if no more series for this measure
+            
+            
+            for (var i = 0; i < $scope.yaxes.length; i++) {
+               ax = $scope.yaxes[i];
+               bFound = false;
+               for (var j = 0; j < $scope.chart.series.length; j++) {
+                    srs = $scope.chart.series[j];
+                    if (srs.yaxis == i) {
+                        bFound = true;
+                        break;
+                    }
+               }
+               if (!bFound) {
+                    $scope.yaxes.remove(ax);
+               }
+            }
+            
+            
+            
+            angular.forEach($scope.yaxes, function (ax,index) {
+
+                axis = { 
+                    title: {
+                        text: ax.measure
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                };
+                if (index > 0) {
+                    axis.opposite = true;
+                }
+                options.yAxis.push(axis);
+            });   
+        
+        }
+        
+         
         return options;
         
     }
     
+    
+    $scope.setTrump = function(thisSeries) {
+        
+       // thisSeries.trump = true;
+        
+        
+        angular.forEach($scope.chart.series, function (series, index) {
+            
+            if (series.measure == thisSeries.measure) {
+                series.trump = true;
+            } 
+            
+            
+            else {
+                series.trump = false;
+            }
+            
+            
+        });
+        
+         
+    }
+    
+    /*
+    
+    $scope.removeTrump = function(thisSeries) {
+        
+        thisSeries.trump = false;
+        
+    }
+    
+    */
     
     $scope.addToChart = function(result) {
     	

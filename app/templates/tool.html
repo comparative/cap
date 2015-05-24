@@ -258,7 +258,7 @@
             <label>Type:</label>
             <select ng-model="series.type" ng-options="type.type as type.display for type in chart_types"></select>
             <label>Y-axis: </label>
-            <select ng-model="series.yaxis" ng-options="axis.num as axis.display for axis in yaxischoices | filter: { visible: true }"></select>
+            <select ng-change="setTrump(series)" ng-model="series.yaxis" ng-options="axis.num as axis.display for axis in yaxischoices | filter: { visible: true }"></select>
         
         </div>
         
