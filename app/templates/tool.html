@@ -122,7 +122,9 @@
       <tr ng-repeat="year in yearslice">
          <td>{@ year @}</td>
          <td ng-repeat="series in chart.series">
+         <div class="text-center">
          <a>{@ series.data[$parent.$index] @}</a>
+         </div>
          </td>
       </tr>
    </tbody>
@@ -254,11 +256,11 @@
             <h6>{@series.name@}</h6>
             
             <label> Measure: </label>
-            <select ng-model="series.measure" ng-options="measure.measure as measure.display for measure in measures"></select>
+            <select ng-change="setAxisMeasure(series)" ng-model="series.measure" ng-options="measure.measure as measure.display for measure in measures"></select>
             <label>Type:</label>
             <select ng-model="series.type" ng-options="type.type as type.display for type in chart_types"></select>
             <label>Y-axis: </label>
-            <select ng-change="setTrump(series)" ng-model="series.yaxis" ng-options="axis.num as axis.display for axis in yaxischoices | filter: { visible: true }"></select>
+            <select ng-change="setTrump(series)" ng-model="series.yaxis" ng-options="axis.num as axis.display for axis in yaxischoices | filter: choiceIsVisible(series)"></select>
         
         </div>
         

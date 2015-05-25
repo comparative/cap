@@ -78,9 +78,9 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     ];
     
     $scope.yaxischoices = [
-        {"num":0,"display":"primary","visible":true,"measure":"count","draw":false},
-        {"num":1,"display":"secondary","visible":true,"measure":"count","draw":false},
-        {"num":2,"display":"tertiary","visible":true,"measure":"count","draw":false}
+        {"num":0,"display":"primary","measure":"count","draw":false},
+        {"num":1,"display":"secondary","measure":"count","draw":false},
+        {"num":2,"display":"tertiary","measure":"count","draw":false}
     ];
     
     $scope.yaxes = [];
@@ -270,9 +270,13 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         
         
             // GET Y AXES
+            
+            $scope.yaxes = [];
+            
+            
+            // if there is not a y-axis for this measure, add one!!
+            
             angular.forEach($scope.chart.series, function (series, index) {
-                
-                // if there is not a y-axis for this measure, add one!!
                 
                 bExists = false;
                 angular.forEach($scope.yaxes, function (ax, index) {
@@ -288,16 +292,42 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
             });
             
             
+            /*
+            
+            // remove axis if no more series for this measure
+            
+           // console.log($scope.yaxes);
+            
+            for (var i = 0; i < $scope.yaxes.length; i++) {
+               ax = $scope.yaxes[i];
+               console.log(ax);
+               bFound = false;
+               for (var j = 0; j < $scope.chart.series.length; j++) {
+                    srs = $scope.chart.series[j];
+                    if (srs.yaxis == i) {
+                        console.log('on the one');
+                        bFound = true;
+                        //break;
+                    }
+               }
+               if (!bFound) {
+                    console.log('hit me');
+                    $scope.yaxes.remove(ax);
+               }
+            }
+            */
+            
+            /*
             angular.forEach($scope.yaxischoices, function (choice, index) {
                 
                 choice.visible = true ? index <= $scope.yaxes.length && $scope.chart.series.length >= $scope.yaxes.length : false;
                 
             });
-            
+            */
             
             //SERIES TO OPTIONS
             
-            angular.forEach($scope.chart.series, function (series, index) {          
+            angular.forEach($scope.chart.series, function (series, index) {
                 
                 // sort into yAxis by measure
                 for (var i = 0; i < $scope.yaxes.length; i++) {
@@ -315,18 +345,10 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                     series.yaxis = $scope.yaxes.length - 1;
                 }
                 
-
-                
-                
-                
-                
-                
-                
-                //series.trump = false;
-                
                 
                 dataslice = series.alldata[series.measure].slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
-            
+                series.data = dataslice;
+                
                 var s = {
                     type: series.type,
                     topic: series.topic,
@@ -354,27 +376,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
          
          
             // CONSTRUCT Y AXES
-            
-            // remove axis if no more series for this measure
-            
-            
-            for (var i = 0; i < $scope.yaxes.length; i++) {
-               ax = $scope.yaxes[i];
-               bFound = false;
-               for (var j = 0; j < $scope.chart.series.length; j++) {
-                    srs = $scope.chart.series[j];
-                    if (srs.yaxis == i) {
-                        bFound = true;
-                        break;
-                    }
-               }
-               if (!bFound) {
-                    $scope.yaxes.remove(ax);
-               }
-            }
-            
-            
-            
+        
             angular.forEach($scope.yaxes, function (ax,index) {
 
                 axis = { 
@@ -394,9 +396,35 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
             });   
         
         }
-        
+         
          
         return options;
+        
+    }
+    
+    
+    $scope.choiceIsVisible = function(series) {
+        
+        return function( item ) {  
+            
+            /*
+            var filteredaxes = $scope.yaxes.filter(function(obj) {
+                return series.measure = obj.measure;
+            });
+            */
+              
+            return item.num <= $scope.yaxes.length 
+            && $scope.chart.series.length >= $scope.yaxes.length
+            && series.measure == item.measure;
+            
+        };
+        
+    }
+    
+    
+    $scope.setAxisMeasure = function(series) {
+        
+        $scope.yaxischoices[series.yaxis].measure = series.measure;
         
     }
     
@@ -459,8 +487,15 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     $scope.removeFromChart = function(index) {
         
+        // RESET TO DEFAULTS FOR NEXT ADD
+        $scope.chart.series[index].measure = "count";
+        $scope.chart.series[index].type = "line";
+        $scope.chart.series[index].yaxis = 0;
+        $scope.chart.series[index].trump = false; 	
+        
+        // REMOVE FROM CHART
         $scope.chart.series.splice(index,1);
-    	$scope.drawChart();    	
+    	$scope.drawChart();  
     	
     }
     
@@ -622,6 +657,18 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
 $interpolateProvider.startSymbol('{@').endSymbol('@}');
 });
 
+
+/*
+toolApp.filter('yaxes', function() {
+  return function(arr) {
+    return arr.map(function(valyoo){
+        console.log(valyoo);
+        return true;
+      //return num === 0 ? 'free' : num + '$';
+    });
+  };
+});
+*/
 
 /////////////////////////////////////////////////////////////////////// DOCUMENT READY
 
