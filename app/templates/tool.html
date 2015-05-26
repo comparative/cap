@@ -109,26 +109,26 @@
                 
                 <div style="margin-left:54px" class="content" id="data-view">
                 
-<table class="drilldown">
-   <tbody>
-      <tr>
-         <th></th>
-         <th ng-repeat="series in chart.series">
-            <h3>{@series.name@}</h3>
-            <br>
-         </th>
+                <table class="drilldown">
+                   <tbody>
+                      <tr>
+                         <th></th>
+                         <th ng-repeat="series in chart.series">
+                            <h3>{@series.name@}</h3>
+                            <h3 class="text-center">({@series.measure@})</h3>
+                         </th>
          
-      </tr>
-      <tr ng-repeat="year in yearslice">
-         <td>{@ year @}</td>
-         <td ng-repeat="series in chart.series">
-         <div class="text-center">
-         <a>{@ series.data[$parent.$index] @}</a>
-         </div>
-         </td>
-      </tr>
-   </tbody>
-</table>
+                      </tr>
+                      <tr ng-repeat="year in yearslice">
+                         <td>{@ year @}</td>
+                         <td ng-repeat="series in chart.series">
+                         <div class="text-center">
+                         <a>{@ series.data[$parent.$index] @}</a>
+                         </div>
+                         </td>
+                      </tr>
+                   </tbody>
+                </table>
 
 
                 <a href="#">Copy this table</a><br/>
@@ -296,13 +296,7 @@
             <i ng-click="editSeries(series)" style="font-size:40px;" class="fi-check"></i>
         </div>
     
-    
-    
-    </div>   
-      
-      
-      
-      
+    </div>
       
     <div id="datapoints" class="reveal-modal small" data-reveal>
         
@@ -310,7 +304,22 @@
         
         <div style="overflow: auto; height: 400px;">
         
-        <table class="instances_table"><tbody><tr><th>Source</th><th>Description</th></tr><tr><td>75-J841-8</td><td>Inflation and government policies.</td></tr><tr><td>75-J841-16</td><td>Inflation outlook.</td></tr><tr><td>75-J841-20</td><td>President's economic proposals, inflation.</td></tr><tr><td>75-J841-25</td><td>Food chain pricing activities, increase of food price.</td></tr><tr><td>75-S241-2</td><td>Creation of a monitoring agency to curb cost of living increases.</td></tr><tr><td>75-S361-16</td><td>Impact of high interest rates on the economy.</td></tr><tr><td>75-S721-2</td><td>Performing government contracts, inflation impact.</td></tr><tr><td>74-H241-18</td><td>Establish a cost of living task force.</td></tr><tr><td>74-H781-12</td><td>Unemployment compensation.</td></tr><tr><td>74-S241-25</td><td>Consumer price index.</td></tr><tr><td>74-S241-33</td><td>Consumer price indexing and practices of adjusting prices and wages.</td></tr><tr><td>74-S261-68</td><td>Consumer food costs.</td></tr></tbody></table>
+        <table class="instances_table">
+        
+        
+            <tbody>
+               <tr>
+                  <th>Source</th>
+                  <th>Description</th>
+               </tr>
+               <tr ng-repeat="instance in instances">
+                  <td>{@ instance.source @}</td>
+                  <td>{@ instance.description @}</td>
+               </tr>
+            </tbody>
+        
+        
+        </table>
         
         </div>
         

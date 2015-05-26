@@ -962,7 +962,23 @@ def api_datasets():
     #cur.execute("""SELECT category, short_display as name FROM datasets WHERE controller IS NOT NULL ORDER BY short_display""")
     cur.execute("""SELECT d.id, d.category_id AS category, d.short_display as name, c.short_name as country, d.filters as filters FROM dataset d INNER join country c ON d.country_id = c.id WHERE d.ready=true ORDER BY d.short_display""")
     return dumps(cur.fetchall())
-   
+
+@app.route('/api/instances/<dataset>/<topic>/<year>')
+def api_instances(dataset,topic,year):
+    conn = psycopg2.connect(app.config['CONN_STRING'])
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    data = {}
+    sql = """
+    select datarow->>'source' as source, datarow->>'description' as description
+    from (
+      select json_array_elements(content)
+      from dataset WHERE dataset.id = %s
+    ) s(datarow)
+    where datarow->>'majortopic' = %s AND datarow->>'year' = %s
+    """
+    cur.execute(sql,[dataset,topic,year])
+    return dumps(cur.fetchall())
+    
 @app.route('/api/measures/dataset/<dataset>/topic/<topic>')
 def api_measures(dataset,topic):
     conn = psycopg2.connect(app.config['CONN_STRING'])
