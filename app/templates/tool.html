@@ -123,7 +123,7 @@
                          <td>{@ year @}</td>
                          <td ng-repeat="series in chart.series">
                          <div class="text-center">
-                         <a>{@ series.data[$parent.$index] @}</a>
+                         <a ng-click="openDrilldown(series.dataset,series.topic,year)">{@ series.data[$parent.$index] @}</a>
                          </div>
                          </td>
                       </tr>

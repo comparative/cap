@@ -225,31 +225,36 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     }
     
     
-    // ADD/REMOVE FROM CHART
-    
+    // ADD TO CHART
+        
     $scope.addToChart = function(result) {
     	
     	result.color = $scope.getRgbaColor();
     	$scope.chart.series.push(result);
     	
-    	//console.log($scope.chart.series);
+    	// console.log($scope.chart.series);
     	
-    	var url = 'http://www.coolbest.net:5000/api/measures/dataset/' + result.dataset.toString() + '/topic/' + result.topic.toString();
+        var url = 'http://www.coolbest.net:5000/api/measures/dataset/' + result.dataset.toString() + '/topic/' + result.topic.toString();
 		
 		$.getJSON(url, function (retval) {
 			
+			// async... find the right series and assign the data
 			
-			angular.forEach($scope.chart.series, function (selected, index) { 
-                if (result.name == selected.name) {
+			angular.forEach($scope.chart.series, function (series, index) { 
+                if (result.name == series.name) {
                     $scope.chart.series[index].alldata = retval;
                 }
             });
+			
+			// redraw the chart
 			
 			$scope.drawChart(); 
             
 		});
     	
     }
+    
+    // REMOVE FROM CHART
     
     $scope.removeFromChart = function(index) {
         
@@ -273,11 +278,10 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         options.series = [];
         options.yAxis = [];
         
-        
         // GET DATE RANGE 
         
         if ($scope.chart.series.length > 0) {
-              
+                
             var arrayLength = $scope.chart.series[0].alldata.count.length;
             var FirstYear = arrayLength;
             var LastYear = 0;
@@ -384,6 +388,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         
         
             // CONSTRUCT X AXIS
+            
             $scope.yearslice = year_list.slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
             options.xAxis[0].categories = $scope.yearslice;
          
@@ -417,6 +422,39 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         
     }
     
+    // APPLY FILTERS
+    
+    $scope.applyFilters = function(series) {
+        
+		// have filters been checked?
+		var params = [];
+		angular.forEach(series.filters, function (filter, index) { 
+            var param = undefined;
+            if (filter.include) {
+                param = filter.name + "=1";
+            }
+            if (filter.exclude) {
+                param = filter.name + "=0";
+            }
+            if (param) {
+                params.push(param);
+            }   
+        });
+		
+		if (params.length > 0) {
+		    
+            var url = 'http://www.coolbest.net:5000/api/measures/dataset/' + series.dataset + '/topic/' + series.topic + "?" + params.join("&");
+            alert(url);
+        
+            $.getJSON(url, function (retval) {                
+                series.alldata = retval;
+                $scope.closeSeriesModal(series);
+                $scope.drawChart();
+            });
+
+		}
+        
+    }
     
     // DRAW CHART
     
@@ -494,8 +532,9 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     $scope.editSeries = function(series) {
         
-        $scope.closeSeriesModal(series);
-        $scope.drawChart();
+        // APPLY FILTERS (back to the data well!! closes modal and draws chart on finish)
+        
+        $scope.applyFilters(series);
         
     };
     
@@ -618,7 +657,12 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         return rgba_que[0];
                 
     }
-       
+    
+    $scope.openDrilldown = function(d,t,y) {
+        
+        drilldown(d,t,y);
+        
+    }
        
     
 }]).config(function($interpolateProvider){
@@ -690,24 +734,29 @@ var clickPoint = function(event) {
                     
     if ( $('a[href="#data-view"]').attr('aria-selected') == "true" ) { 
         
-        var d = this.series.userOptions.dataset;
-        var t = this.series.userOptions.topic;
-        var y = this.category;
-        
-        $.get( "http://www.coolbest.net:5000/api/instances/" + d + "/" + t + "/" + y, function( data ) {
-            
-            theScope.instances = JSON.parse(data);
-            theScope.$apply();
-            $('#datapoints').foundation('reveal', 'open');
-            
-        });
-        
+        drilldown(
+        this.series.userOptions.dataset,
+        this.series.userOptions.topic,
+        this.category);
 
     } else {
 
         $('#seriesoptions-'+ this.series.userOptions.dataset + '-' + this.series.userOptions.topic).foundation('reveal', 'open');
 
     }
+}
+
+
+var drilldown = function(dataset,topic,year) {
+    
+    $.get( "http://www.coolbest.net:5000/api/instances/" + dataset + "/" + topic + "/" + year, function( data ) {
+        
+        theScope.instances = JSON.parse(data);
+        theScope.$apply();
+        $('#datapoints').foundation('reveal', 'open');
+        
+    });
+
 }
 
 // OPTIONS TO CHART

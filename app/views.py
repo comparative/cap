@@ -985,26 +985,35 @@ def api_measures(dataset,topic):
     cur = conn.cursor(cursor_factory=RealDictCursor)
     data = {}
     
+    # GET FILTERS
+    
+    sql = """
+    select filters from dataset WHERE dataset.id = %s
+    """
+    cur.execute(sql,[dataset])
+    r = cur.fetchone()
+    filters = loads(r["filters"])
+    
+    for filter in filters:
+        app.logger.debug(filter)
+        app.logger.debug(request.args.get(filter))
+    
+    sql = """
+    SELECT yc.year::int, yc.cnt::int FROM (
+    select datarow->>'year' AS year, COUNT(datarow->'id') as cnt
+    from (
+    select json_array_elements(content)
+    from dataset WHERE dataset.id = %s
+    """
+
     # COUNT
     if int(topic) < 100:
-        sql = """
-        SELECT yc.year::int, yc.cnt::int FROM (
-        select datarow->>'year' AS year, COUNT(datarow->'id') as cnt
-        from (
-          select json_array_elements(content)
-          from dataset WHERE dataset.id = %s
-        ) s(datarow)
+        sql = sql + """) s(datarow)
         where datarow->>'majortopic' = %s
         GROUP BY year) AS yc ORDER by year
         """
-    else:
-        sql = """
-        SELECT yc.year::int, yc.cnt::int FROM (
-        select datarow->>'year' AS year, COUNT(datarow->'id') as cnt
-        from (
-          select json_array_elements(content)
-          from dataset WHERE dataset.id = %s
-        ) s(datarow)
+    else: 
+        sql = sql + """) s(datarow)
         where datarow->>'subtopic' = %s
         GROUP BY year) AS yc ORDER by year
         """
