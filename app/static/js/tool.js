@@ -452,6 +452,11 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                 $scope.drawChart();
             });
 
+		} else {
+		    
+		    $scope.closeSeriesModal(series);
+            $scope.drawChart();
+		    
 		}
         
     }
@@ -533,7 +538,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     $scope.editSeries = function(series) {
         
         // APPLY FILTERS (back to the data well!! closes modal and draws chart on finish)
-        
+        console.log('whut');
         $scope.applyFilters(series);
         
     };
@@ -623,6 +628,27 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
          
     }
     
+    // CLEAR CHART
+        
+    $scope.clearChart = function() {
+        
+        
+        //for (var i = 0; i < $scope.chart.series.length; i++) {
+        //    $scope.removeFromChart(0);
+        //}
+        
+        //options = angular.copy({}, defaultOptions);
+        
+        theChart.destroy();
+        $scope.chart = new Chart();
+        options = $scope.chartToOptions();
+        options.plotOptions.series.point.events['click'] = clickPoint;
+        
+		theChart = new Highcharts.Chart(options);
+        
+        
+        
+    }
     
     // HELPERS
             

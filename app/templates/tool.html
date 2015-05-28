@@ -58,13 +58,14 @@
             
             <div class="row">
             		
-            		<div id="chosen" style="margin-left:62px;">
+            		<div title="Click to remove!" id="chosen" style="margin-left:62px;">
             
 						<span ng-repeat="series in chart.series">
 			
 						<span ng-click="removeFromChart($index)" class="series" ng-style="{@series.color@}">
+						<i class="fi-x"></i>
 						{@series.name@}
-						<i class="fi-minus-circle"></i>
+						
 						</span>
 					
 						</span>
@@ -194,11 +195,12 @@
    
     <h5 ng-show="countryCount() > 0 && categoryCount() > 0 && topicCount() > 0" class="picker-label">Add series to chart</h5>
     <p class="no_results" ng-show="noResults()">No available series matching your selections.</p>
+    <p class="no_results" ng-hide="noResults() || countryCount() == 0 || categoryCount() == 0 || topicCount() == 0">Click on a series below to add it to the chart.</p>
     
-    <div ng-repeat="result in results" class="dataset">
+    <div title="Click to add!" ng-repeat="result in results" class="dataset">
     <p ng-hide="isSelected(result.name)" ng-click="addToChart(result)" class="panel series data-equalizer">
     <span class="data-equalizer-watch">{@result.name | limitTo:33@}</span><span class="addseries data-equalizer-watch">
-    <span style="float:right"><i class="fi-plus"></i></span>
+    <span style="float:right"><i class="fi-check"></i></span>
     </span>
     </p>
     </div>
@@ -215,7 +217,7 @@
     	
     <h5>Recent</h5>
     <div style="overflow: auto; height: 180px; border: 2px solid #dadada;">
-    <img class="thumb" ng-click="thumbMenu($index)" ng-repeat="thumb in recent | orderBy: 'id':true" ng-src="{@thumb.imgsrc@}">
+    <img class="thumb" ng-click="recentMenu($index)" ng-repeat="thumb in recent | orderBy: 'id':true" ng-src="{@thumb.imgsrc@}">
     </div>
     
   </div>
@@ -291,9 +293,9 @@
         </div>
         
         <div style="float:right;">
-            <i ng-click="closeSeriesModal(series)" style="font-size:40px;" class="fi-x"></i>
+            <i ng-click="closeSeriesModal(series)" style="font-size:40px; color:black;" class="fi-x"></i>
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <i ng-click="editSeries(series)" style="font-size:40px;" class="fi-check"></i>
+            <i ng-click="editSeries(series)" style="font-size:40px; color:black;" class="fi-check"></i>
         </div>
     
     </div>
@@ -417,7 +419,11 @@ var defaultOptions = {
     }],
 
     yAxis: [],
-
+    
+    tooltip: {
+        enabled: true
+    },
+    
     plotOptions:{
         line: {
             dataLabels: {

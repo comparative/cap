@@ -976,6 +976,7 @@ def api_instances(dataset,topic,year):
     ) s(datarow)
     where datarow->>'majortopic' = %s AND datarow->>'year' = %s
     """
+    app.logger.debug(sql)
     cur.execute(sql,[dataset,topic,year])
     return dumps(cur.fetchall())
     
@@ -992,11 +993,17 @@ def api_measures(dataset,topic):
     """
     cur.execute(sql,[dataset])
     r = cur.fetchone()
-    filters = loads(r["filters"])
+    filters = loads(r["filters"]) if r["filters"] != None else []
     
+    filter_predicates = []
     for filter in filters:
-        app.logger.debug(filter)
-        app.logger.debug(request.args.get(filter))
+        filterval = request.args.get(filter)
+        if (filterval != None):
+            filter_predicates.append("datarow->>'" + filter + "'='" + filterval + "'")
+    
+    topic_col = 'majortopic' if int(topic) < 100 else 'subtopic'
+    
+    # COUNT
     
     sql = """
     SELECT yc.year::int, yc.cnt::int FROM (
@@ -1004,19 +1011,19 @@ def api_measures(dataset,topic):
     from (
     select json_array_elements(content)
     from dataset WHERE dataset.id = %s
+    ) s(datarow)
+    where datarow->>'""" + topic_col + "' = %s"
+    
+    if len(filter_predicates) > 0:
+        for pred in filter_predicates:
+            sql = sql + " AND " + pred 
+            
+    sql = sql + """
+    GROUP BY year) AS yc ORDER by year
     """
-
-    # COUNT
-    if int(topic) < 100:
-        sql = sql + """) s(datarow)
-        where datarow->>'majortopic' = %s
-        GROUP BY year) AS yc ORDER by year
-        """
-    else: 
-        sql = sql + """) s(datarow)
-        where datarow->>'subtopic' = %s
-        GROUP BY year) AS yc ORDER by year
-        """
+   
+    #app.logger.debug(sql)
+    
     cur.execute(sql,[dataset,topic])
     d = cur.fetchall()
     count = []
@@ -1031,6 +1038,17 @@ def api_measures(dataset,topic):
     data['count'] = count 
     
     
+    # PERCENT CHANGE
+    percent_change = [0]
+    i = 0
+    for c in count:
+        i += 1
+        if i < len(count):
+            pc = float(count[i] - count[i - 1])/count[i - 1] if (count[i - 1] > 0) else 0
+            percent_change.append(int(100 * float("{0:.2f}".format(pc))))
+    data['percent_change'] = percent_change
+    #app.logger.debug(len(count))
+    
     # PERCENT TOTAL
     sql = """
     SELECT yt.year::int, yt.total::int FROM (
@@ -1038,7 +1056,13 @@ def api_measures(dataset,topic):
     from (
       select json_array_elements(content)
       from dataset WHERE dataset.id = %s
-    ) s(datarow)
+    ) s(datarow)"""
+    
+    #if len(filter_predicates) > 0:
+    #    for pred in filter_predicates:
+    #        sql = sql + " AND " + pred 
+    
+    sql = sql + """
     GROUP BY year) AS yt ORDER by year
     """
     cur.execute(sql,[dataset])
@@ -1053,7 +1077,6 @@ def api_measures(dataset,topic):
                 found = True
         if (found == False):
             percent_total.append(0)     
-    data['percent_total'] = percent_total 
-    data['percent_change'] = percent_total      
+    data['percent_total'] = percent_total      
     return dumps(data)
     #return dumps(cur.fetchall())
