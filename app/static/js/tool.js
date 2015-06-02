@@ -76,8 +76,12 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         {"type":"column","display":"Column"},
         {"type":"scatter","display":"Scatter"},
         {"type":"area","display":"Area"},
-        {"type":"areaspline","display":"Smooth Area"}
-    ];
+        {"type":"areaspline","display":"Smooth Area"},
+        {"type":"stacked_area","display":"Stacked Area Count"},
+        {"type":"stacked_area","display":"Stacked Area Percent Total"},
+        {"type":"stacked_column","display":"Stacked Column Count"},
+        {"type":"stacked_column","display":"Stacked Column Percent Total"},
+        ];
     
     $scope.yaxischoices = [
         {"num":0,"display":"primary","measure":"count","draw":false},
@@ -368,8 +372,27 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                 dataslice = series.alldata[series.measure].slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
                 series.data = dataslice;
                 
+                
+                if (series.type == 'stacked_area') {
+                
+                    theType = 'area';
+                    options.plotOptions.area["stacking"] = 'normal';
+                
+                } else if (series.type == 'stacked_column') {
+                        
+                    theType = 'column';
+                    options.plotOptions.column["stacking"] = 'normal';
+                    
+                } else {
+                    
+                    theType = series.type;
+                    options.plotOptions.area = {};
+                    
+                }
+                
+                
                 var s = {
-                    type: series.type,
+                    type: theType,
                     topic: series.topic,
                     dataset: series.dataset,
                     name: series.name,
@@ -383,7 +406,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
             
             });
 
-        
+        console.log(options);
         
         
         
@@ -444,7 +467,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
 		if (params.length > 0) {
 		    
             var url = 'http://www.coolbest.net:5000/api/measures/dataset/' + series.dataset + '/topic/' + series.topic + "?" + params.join("&");
-            alert(url);
+            //alert(url);
         
             $.getJSON(url, function (retval) {                
                 series.alldata = retval;
@@ -538,7 +561,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     $scope.editSeries = function(series) {
         
         // APPLY FILTERS (back to the data well!! closes modal and draws chart on finish)
-        console.log('whut');
+        //console.log('whut');
         $scope.applyFilters(series);
         
     };
