@@ -11,7 +11,7 @@ from functools import wraps, update_wrapper
 from flask import render_template, flash, redirect, url_for, request, make_response, send_file, abort
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from werkzeug import secure_filename
-from json import dumps, loads
+from json import dump, dumps, loads
 from slugify import slugify
 from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles, slideimages, codebookfiles, datasetfiles
 from .models import User, News, Country, Research, Staff, Page, File, Slide, Chart, Dataset, Category
@@ -829,8 +829,12 @@ def admin_dataset_item(slug,id):
                     filters.append(fieldname)
             dataset.filters = filters
             dataset.datasetfilename = datasetfilename
-            dataset.content = [ row for row in reader ]
+            thedata = [ row for row in reader ]
+            dataset.content = thedata
             dataset.ready = True
+            #cur = db.session.connection().connection.cursor()
+            #cur.execute("UPDATE dataset SET content=%s",dumps(thedata))
+            #db.session.commit() 
         dataset.display = form.display.data
         dataset.short_display = form.short_display.data
         dataset.description = form.description.data
@@ -944,10 +948,10 @@ def api_topics():
        AS topic
        , 
        Array_agg( 
-       Concat(Trim(To_char(t.id, '9999')), '_', t.shortdescription)) AS 
+       Concat(Trim(To_char(t.subtopic, '9999')), '_', t.shortname)) AS 
        subtopics 
     FROM   major_topics m 
-           JOIN topics t 
+           JOIN subtopicz t 
              ON m.majortopic = t.majortopic 
     GROUP  BY m.shortname, 
               m.majortopic 
@@ -979,9 +983,23 @@ def api_instances(dataset,topic,year):
     app.logger.debug(sql)
     cur.execute(sql,[dataset,topic,year])
     return dumps(cur.fetchall())
+ 
+@app.route('/api/testjson')
+def testjson():
+    return send_file('/var/www/cap/datacache/test.json')
     
 @app.route('/api/measures/dataset/<dataset>/topic/<topic>')
 def api_measures(dataset,topic):
+    
+    # CHECK CACHE
+    cached_path = '/var/www/cap/datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
+    app.logger.debug(cached_path);
+    
+    if (os.path.isfile(cached_path)):
+        return send_file(cached_path)
+    
+    # NO CACHE, GO TO THE DB!!
+    
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
     data = {}
@@ -1022,7 +1040,7 @@ def api_measures(dataset,topic):
     GROUP BY year) AS yc ORDER by year
     """
    
-    #app.logger.debug(sql)
+    app.logger.debug(sql)
     
     cur.execute(sql,[dataset,topic])
     d = cur.fetchall()
@@ -1077,6 +1095,11 @@ def api_measures(dataset,topic):
                 found = True
         if (found == False):
             percent_total.append(0)     
-    data['percent_total'] = percent_total      
+    data['percent_total'] = percent_total
+    
+    # WRITE CACHE
+    with open(cached_path, 'w') as outfile:
+        dump(data, outfile)
+         
     return dumps(data)
     #return dumps(cur.fetchall())

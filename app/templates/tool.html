@@ -198,8 +198,9 @@
     <p class="no_results" ng-hide="noResults() || countryCount() == 0 || categoryCount() == 0 || topicCount() == 0">Click on a series below to add it to the chart.</p>
     
     <div title="Click to add!" ng-repeat="result in results" class="dataset">
-    <p ng-hide="isSelected(result.name)" ng-click="addToChart(result)" class="panel series data-equalizer">
-    <span class="data-equalizer-watch">{@result.name | limitTo:33@}</span><span class="addseries data-equalizer-watch">
+    <p ng-hide="isSelected(result.name)" ng-click="addToChart(result)" class="panel series">
+    <span>{@result.name@}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    <span class="addseries">
     <span style="float:right"><i class="fi-check"></i></span>
     </span>
     </p>
@@ -258,11 +259,11 @@
             <h6>{@series.name@}</h6>
             
             <label> Measure: </label>
-            <select ng-change="setAxisMeasure(series)" ng-model="series.measure" ng-options="measure.measure as measure.display for measure in measures"></select>
+            <select ng-disabled="chart.stacked" ng-model="series.measure" ng-options="measure.measure as measure.display for measure in measures"></select>
             <label>Type:</label>
-            <select ng-model="series.type" ng-options="type.type as type.display for type in chart_types"></select>
+            <select ng-disabled="chart.stacked" ng-model="series.type" ng-options="type.type as type.display for type in chart_types"></select>
             <label>Y-axis: </label>
-            <select ng-change="setTrump(series)" ng-model="series.yaxis" ng-options="axis.num as axis.display for axis in yaxischoices | filter: choiceIsVisible(series)"></select>
+            <select ng-disabled="chart.stacked" ng-change="setTrump(series)" ng-model="series.yaxis" ng-options="axis.num as axis.display for axis in yaxischoices | filter:choiceIsVisible(series)"></select>
         
         </div>
         

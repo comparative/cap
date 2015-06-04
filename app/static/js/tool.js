@@ -41,6 +41,7 @@ function Chart() {
     this.series = [];
     this.yearFrom = year_list[0];
     this.yearTo = year_list[year_list.length - 1];
+    this.stacked = false;
     
 }
 
@@ -74,19 +75,18 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         {"type":"line","display":"Line"},
         {"type":"spline","display":"Smooth Line"},
         {"type":"column","display":"Column"},
-        {"type":"scatter","display":"Scatter"},
         {"type":"area","display":"Area"},
         {"type":"areaspline","display":"Smooth Area"},
-        {"type":"stacked_area","display":"Stacked Area Count"},
-        {"type":"stacked_area","display":"Stacked Area Percent Total"},
-        {"type":"stacked_column","display":"Stacked Column Count"},
-        {"type":"stacked_column","display":"Stacked Column Percent Total"},
+        {"type":"stacked_area_count","display":"Stacked Area Count"},
+        {"type":"stacked_area_percent_total","display":"Stacked Area Percent Total"},
+        {"type":"stacked_column_count","display":"Stacked Column Count"},
+        {"type":"stacked_column_percent_total","display":"Stacked Column Percent Total"},
         ];
     
     $scope.yaxischoices = [
-        {"num":0,"display":"primary","measure":"count","draw":false},
-        {"num":1,"display":"secondary","measure":"count","draw":false},
-        {"num":2,"display":"tertiary","measure":"count","draw":false}
+        {"num":0,"display":"primary"},
+        {"num":1,"display":"secondary"},
+        {"num":2,"display":"tertiary"}
     ];
     
     $scope.yaxes = [];
@@ -169,6 +169,10 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                        var $this = $(this);
                        if ($this.length) {
                         var selText = $this.next('span').text();
+                        var parentText = $this.closest('ol').siblings('label').children('span').text();
+                        if (parentText.length) {
+                            selText = parentText + ': ' + selText;
+                        }
                         var subtopic = $this.attr('subtopic');
                         if (country == dataset.country) {
                         
@@ -282,6 +286,10 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         options.series = [];
         options.yAxis = [];
         
+        
+        
+        
+        
         // GET DATE RANGE 
         
         if ($scope.chart.series.length > 0) {
@@ -337,7 +345,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
             angular.forEach($scope.chart.series, function (series, index) {
                 
                 bExists = false;
-                angular.forEach($scope.yaxes, function (ax, index) {
+                angular.forEach($scope.yaxes, function (ax, i) {
                     if (series.measure == ax.measure) {
                         bExists = true;
                     }
@@ -345,7 +353,10 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                 
                 if (!bExists) {
                     $scope.yaxes.push({"measure":series.measure});
-                }                
+                    //series.yaxis = index;
+                }
+                
+                                
             
             });
             
@@ -363,36 +374,20 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                     }
                 }
                 
+                
                 // in case series is manually assigned to additional axis with identical measure
                 if (!$scope.yaxes[series.yaxis]) {
                     $scope.yaxes.push({"measure":series.measure});
                     series.yaxis = $scope.yaxes.length - 1;
                 }
                 
+                
                 dataslice = series.alldata[series.measure].slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
                 series.data = dataslice;
-                
-                
-                if (series.type == 'stacked_area') {
-                
-                    theType = 'area';
-                    options.plotOptions.area["stacking"] = 'normal';
-                
-                } else if (series.type == 'stacked_column') {
-                        
-                    theType = 'column';
-                    options.plotOptions.column["stacking"] = 'normal';
-                    
-                } else {
-                    
-                    theType = series.type;
-                    options.plotOptions.area = {};
-                    
-                }
-                
+                                
                 
                 var s = {
-                    type: theType,
+                    type: series.type,
                     topic: series.topic,
                     dataset: series.dataset,
                     name: series.name,
@@ -401,21 +396,18 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                     color: hex_colors[rgba_colors.indexOf(series.color)],
                     yAxis: series.yaxis
                 }
+                
+                
             
                 options.series.push(s);
             
-            });
-
-        console.log(options);
-        
+            });        
         
         
             // CONSTRUCT X AXIS
             
             $scope.yearslice = year_list.slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
             options.xAxis[0].categories = $scope.yearslice;
-         
-         
          
          
             // CONSTRUCT Y AXES
@@ -435,8 +427,32 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                 if (index > 0) {
                     axis.opposite = true;
                 }
+                if (ax.measure != 'percent_change') {
+                    axis.min = 0;
+                }
+                
                 options.yAxis.push(axis);
+                
             });   
+            
+            
+            // HANDLE STACKING
+            
+            if ($scope.chart.stacked && $scope.chart.series[0].type == 'area') {
+            
+                options.plotOptions.area["stacking"] = 'normal';
+            
+            } else if ($scope.chart.stacked && $scope.chart.series[0].type == 'column') {
+                    
+                options.plotOptions.column["stacking"] = 'normal';
+                
+            } else {
+                
+                options.plotOptions.area["stacking"] = undefined;
+                options.plotOptions.column["stacking"] = undefined;
+    
+            }
+            
         
         }
          
@@ -526,11 +542,64 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     $scope.allSeriesSameType = function() {
         
-         angular.forEach($scope.chart.series, function (series, index) {
-            series.type = $scope.chart.chartType;
-         });
-         
-         $scope.drawChart();
+        var theType;
+        var theMeasure;
+        
+        switch($scope.chart.chartType) {
+        
+            
+            /*
+                if (series.type == 'stacked_area') {
+                
+                    theType = 'area';
+                    options.plotOptions.area["stacking"] = 'normal';
+                
+                } else if (series.type == 'stacked_column') {
+                        
+                    theType = 'column';
+                    options.plotOptions.column["stacking"] = 'normal';
+                    
+                } else {
+                    
+                    theType = series.type;
+                    options.plotOptions.area = {};
+                    
+                }
+                */
+            
+        
+            case "stacked_area_count":
+                theType = "area";
+                theMeasure = "count";
+                $scope.chart.stacked = true;
+                break;
+            case "stacked_area_percent_total":
+                theType = "area";
+                theMeasure = "percent_total";
+                $scope.chart.stacked = true;
+                break;
+            case "stacked_column_count":
+                theType = "column";
+                theMeasure = "count";
+                $scope.chart.stacked = true;
+                break;
+            case "stacked_column_percent_total":
+                theType = "column";
+                theMeasure = "percent_total";
+                $scope.chart.stacked = true;
+                break;
+            default:
+                theType = $scope.chart.chartType;
+                $scope.chart.stacked = false;
+                
+        }
+        
+        angular.forEach($scope.chart.series, function (series, index) {
+           series.type = theType;  
+           if (theMeasure) series.measure = theMeasure;
+        });
+ 
+        $scope.drawChart();
         
     }
     
@@ -610,27 +679,36 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     $scope.choiceIsVisible = function(series) {
         
-        return function( item ) {  
+        return function( choice ) {  
+        
+            // DOES THIS CHOICE BELONG TO A DIFFERENT AXIS SCALED FOR A DIFFERENT MEASURE?
             
-            /*
-            var filteredaxes = $scope.yaxes.filter(function(obj) {
-                return series.measure = obj.measure;
+            var avail = true;
+            
+            angular.forEach($scope.chart.series, function (s, index) {
+    
+                if (s != series && s.yaxis == choice.num) {
+ 
+                    if (s.measure != series.measure) {
+                        
+                        avail = false;
+                
+                    }
+                }
+                
             });
-            */
-              
-            return item.num <= $scope.yaxes.length 
-            && $scope.chart.series.length >= $scope.yaxes.length;
-           /* && series.measure == item.measure */
+            
+            var xtra = 0;
+            
+            // DO YOU NEED XTRA OPTION?? only if you are not the only series scaled to your measure
+            xtra = 1 ? $scope.chart.series.length != $scope.yaxes.length : 0;
+            
+            return choice.num < $scope.yaxes.length + xtra
+            && avail;
             
         };
         
     }
-    
-    $scope.setAxisMeasure = function(series) {
-        
-        $scope.yaxischoices[series.yaxis].measure = series.measure;
-        
-    } 
     
     $scope.setTrump = function(thisSeries) {
         
