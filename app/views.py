@@ -72,6 +72,14 @@ def save_chart(user,slug):
     db.session.add(chart)
     db.session.commit()
     return 'cool',200
+    
+@app.route('/charts/remove/<user>/<slug>', methods=['POST'])
+def remove_chart(user,slug):
+    chart = Chart.query.filter_by(slug=slug).first()
+    if chart is not None:
+        db.session.delete(chart)
+    db.session.commit()
+    return 'cool',200
 
 @app.route('/charts/<slug>')
 @app.route('/charts/<slug>/<switch>')
@@ -922,7 +930,7 @@ def admin_dataset_removecodebook(slug,id):
 def api_charts(user):
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute('SELECT slug, id FROM chart WHERE "user" = %(user)s ORDER BY "date"', {"user": user})
+    cur.execute('SELECT slug, options, id FROM chart WHERE "user" = %(user)s ORDER BY "date"', {"user": user})
     return dumps(cur.fetchall())
 
 @app.route('/api/countries')

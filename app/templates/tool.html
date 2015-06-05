@@ -213,12 +213,27 @@
   
     <h5>Pinned</h5>
     <div style="overflow: auto; height: 360px; border: 2px solid #dadada;">
-    <img class="thumb" ng-click="savedMenu($index)" ng-repeat="thumb in saved | orderBy: 'id':true" ng-src="{@thumb.imgsrc@}">
+    <div class="thumb-container-container">
+    <div class="thumb-container" ng-repeat="thumb in saved | orderBy: 'id':true">
+        
+        
+        <div class="thumb">
+        <img class="thumb" ng-src="{@thumb.imgsrc@}">
+        </div>
+        
+        
+        <div class="thumb-menu">
+        <span ng-click="recallPinned($index)">RECALL</span>
+        <span ng-click="deletePinned($index)">DELETE</span>
+        </div>
+        
+    </div>
+    </div>
     </div>
     	
     <h5>Recent</h5>
     <div style="overflow: auto; height: 180px; border: 2px solid #dadada;">
-    <img class="thumb" ng-click="recentMenu($index)" ng-repeat="thumb in recent | orderBy: 'id':true" ng-src="{@thumb.imgsrc@}">
+    <img class="thumb" ng-click="recallRecent($index)" ng-repeat="thumb in recent | orderBy: 'id':true" ng-src="{@thumb.imgsrc@}">
     </div>
     
   </div>
