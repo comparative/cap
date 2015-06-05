@@ -1,0 +1,9 @@
+.clickable {
+    /*color:#3b4e6f !important;*/
+    color:#3b4e6f !important;
+}
+
+.clickable:hover {
+    color:#008CBA !important;
+    /*color:#b2bcc8 !important; */
+}

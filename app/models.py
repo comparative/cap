@@ -142,6 +142,7 @@ class Chart(db.Model):
     options = db.Column(JSON)
     date = db.Column(db.DateTime, default=datetime.datetime.utcnow())
     user = db.Column(db.String(36))
+    unpinned = db.Column(db.Boolean())
     
     def __repr__(self):
         return self.slug

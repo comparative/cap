@@ -653,25 +653,26 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     $scope.deletePinned = function(index) {
         
        // alert('delete' + index);
+            
+        if (confirm('really unpin?')) {  
         
-         // DELETE CHART
-        resp = $.ajax({
-            type: 'POST',
-            url: '/charts/remove/' + $("#user").val() + '/' +  $scope.saved[index].slug ,
-            success: function() {
-                alert('chart un-pinned!');
-                $scope.saved.splice(index,1);
-                $scope.$apply();
-            },
-            error: function(XMLHttpRequest, textStatus, errorThrown) { 
-                alert('could not un-pin chart'); 
-            }
+             // DELETE CHART
+            resp = $.ajax({
+                type: 'POST',
+                url: '/charts/unpin/' +  $scope.saved[index].slug ,
+                success: function() {
+                    //alert('chart un-pinned!');
+                    $scope.saved.splice(index,1);
+                    $scope.$apply();
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown) { 
+                    alert('could not unpin'); 
+                }
              
-        });
+            });
         
-        
-        
-        
+        }
+
         
         //reverse_index = $scope.saved.length - 1 - index;           
         //slug = $scope.saved[index].slug;        
@@ -685,6 +686,9 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
        // alert('recall' + index);
         
        // console.log($scope.saved[index]);
+        
+        $scope.slug = $scope.saved[index].slug;
+        $("#slug").val($scope.saved[index].slug);
         
         $scope.chart.chartFromOptions(JSON.parse($scope.saved[index].options));
         $scope.drawChart(false); 
@@ -703,6 +707,10 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         //console.log($scope.recent[index].options);
         //console.log('---------------');
         
+        $scope.slug = $scope.recent[index].slug;
+        $("#slug").val($scope.recent[index].slug);
+        
+        
         $scope.chart.chartFromOptions(JSON.parse($scope.recent[index].options));
         $scope.drawChart(false);     
                 
@@ -714,7 +722,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     $scope.actions = function(index) {
         
-        alert(index);
+       // alert(index);
         
         /*
         if (action == 'download') {
@@ -895,7 +903,7 @@ $(document).ready(function() {
         
         if ($(this).val() == "copy") {
             
-            window.prompt( "Copy to clipboard: Ctrl+C, Enter", "http://www.coolbest.net:5000/charts/" + $("#slug").val() );
+            window.prompt( "copy to clipboard: Ctrl+C, Enter", "http://www.coolbest.net:5000/charts/" + $("#slug").val() );
     
         }
         

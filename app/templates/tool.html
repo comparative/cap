@@ -47,8 +47,8 @@
         <div class="row">
             
             <dl class="tabs" data-tab>
-              <dd class="active"><a href="#graph-view"><strong>Edit</strong></a></dd>
-              <dd><a href="#data-view"><strong>Explore</strong></a></dd>
+              <dd class="active"><a class="clickable" href="#graph-view">Edit</a></dd>
+              <dd><a class="clickable" href="#data-view">Explore</a></dd>
             </dl>
             
             <div class="row">
@@ -64,7 +64,7 @@
 			
 						<span ng-click="removeFromChart($index)" class="series" ng-style="{@series.color@}">
 						<i class="fi-x"></i>
-						{@series.name@}
+						<span>{@series.name@}</span>
 						
 						</span>
 					
@@ -124,7 +124,7 @@
                          <td>{@ year @}</td>
                          <td ng-repeat="series in chart.series">
                          <div class="text-center">
-                         <a ng-click="openDrilldown(series.dataset,series.topic,year)">{@ series.data[$parent.$index] @}</a>
+                         <a class="clickable" ng-click="openDrilldown(series.dataset,series.topic,year)">{@ series.data[$parent.$index] @}</a>
                          </div>
                          </td>
                       </tr>
@@ -146,15 +146,15 @@
 <div class="large-3 medium-3 pull-9 columns">
      
 <dl class="tabs" data-tab>
-  <dd class="active"><a href="#panel1"><strong>Add series</strong></a></dd>
-  <dd><a href="#panel2"><strong>View history</strong></a></dd>
+  <dd class="active"><a class="clickable" href="#panel1">Add series</a></dd>
+  <dd><a class="clickable" href="#panel2">View history</a></dd>
 </dl>
 <div class="tabs-content contained">
   <div class="content active" id="panel1">
     
    
     <!--h4>Find datasets</h4>-->
-    <h5 class="picker-label">Select countries<span ng-show="countryCount() > 0" class="selection_count">{@countryCount()@}</span></h5>
+    <h5 class="picker-label clickable">Select countries<span ng-show="countryCount() > 0" class="selection_count">{@countryCount()@}</span></h5>
     <div id="countries" class="picker" style="display:block">
     <div ng-repeat="country in countries">
     <input ng-attr-country="{@country.short_name@}" type="checkbox" ng-click="doFacets()">
@@ -164,7 +164,7 @@
    
 
 
-	<h5 class="picker-label">Select dataset types<span ng-show="categoryCount() > 0" class="selection_count">{@categoryCount()@}</span></h5>
+	<h5 class="picker-label clickable">Select dataset types<span ng-show="categoryCount() > 0" class="selection_count">{@categoryCount()@}</span></h5>
     <div id="categories" class="picker">
     <div ng-repeat="category in categories">
     <input ng-attr-catid="{@category.category_id@}" type="checkbox" ng-click="doFacets()">
@@ -173,13 +173,13 @@
     </div>
    
 
-    <h5 class="picker-label">Select policy topics<span ng-show="topicCount() > 0" class="selection_count">{@topicCount()@}</span></h5>
+    <h5 class="picker-label clickable">Select policy topics<span ng-show="topicCount() > 0" class="selection_count">{@topicCount()@}</span></h5>
     <div id="topics" class="picker">
 
         <ol id="menutree">
         
             <li ng-repeat="topic in topics">
-            <label class="menu_label" for="t{@topic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@topic.id@}" ng-click="doFacets()"><span class="major_topic">{@topic.name | limitTo:33 @}</span><span style="float:right;"><i ng-hide="isOpen" class="fi-arrow-down"></i><i ng-show="isOpen" class="fi-arrow-up"></i></span></label>
+            <label class="menu_label" for="t{@topic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@topic.id@}" ng-click="doFacets()"><span class="major_topic clickable">{@topic.name | limitTo:33 @}</span><span style="float:right;"><i ng-hide="isOpen" class="fi-arrow-down"></i><i ng-show="isOpen" class="fi-arrow-up"></i></span></label>
             <input ng-click="isOpen = ! isOpen" type="checkbox" id="t{@topic.id@}"/>
                 <ol>
                     <li ng-repeat="subtopic in topic.subtopics">
@@ -199,8 +199,9 @@
     
     <div title="Click to add!" ng-repeat="result in results" class="dataset">
     <p ng-hide="isSelected(result.name)" ng-click="addToChart(result)" class="panel series">
-    <span>{@result.name@}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-    <span class="addseries">
+    <!--<span style="clear:both;">{@result.name@}</span>-->
+    <span class="addseries clearfix">
+    <span style="float:left">{@result.name@}</span>
     <span style="float:right"><i class="fi-check"></i></span>
     </span>
     </p>
@@ -222,9 +223,9 @@
         </div>
         
         
-        <div class="thumb-menu">
-        <span ng-click="recallPinned($index)">RECALL</span>
-        <span ng-click="deletePinned($index)">DELETE</span>
+        <div class="thumb-menu clearfix">
+        <span class="left clickable" ng-click="deletePinned($index)">Unpin</span>
+        <span class="right clickable" ng-click="recallPinned($index)">Recall</span>
         </div>
         
     </div>
@@ -233,7 +234,33 @@
     	
     <h5>Recent</h5>
     <div style="overflow: auto; height: 180px; border: 2px solid #dadada;">
-    <img class="thumb" ng-click="recallRecent($index)" ng-repeat="thumb in recent | orderBy: 'id':true" ng-src="{@thumb.imgsrc@}">
+    <div class="thumb-container-container">
+    <div class="thumb-container" ng-repeat="thumb in recent | orderBy: 'id':true">
+        
+        
+        <div class="thumb">
+        <img class="thumb" ng-src="{@thumb.imgsrc@}">
+        </div>
+        
+        
+        <div class="thumb-menu clearfix">
+        <span class="right clickable" ng-click="recallRecent($index)">Recall</span>
+        </div>
+        
+    </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    <!--<img class="thumb clickable" ng-click="recallRecent($index)" ng-repeat="thumb in recent | orderBy: 'id':true" ng-src="{@thumb.imgsrc@}">-->
+    
+    
+    
+    
+    
     </div>
     
   </div>
@@ -309,9 +336,9 @@
         </div>
         
         <div style="float:right;">
-            <i ng-click="closeSeriesModal(series)" style="font-size:40px; color:black;" class="fi-x"></i>
+            <i ng-click="closeSeriesModal(series)" style="font-size:40px; color:black;" class="fi-x clickable"></i>
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <i ng-click="editSeries(series)" style="font-size:40px; color:black;" class="fi-check"></i>
+            <i ng-click="editSeries(series)" style="font-size:40px; color:black;" class="fi-check clickable"></i>
         </div>
     
     </div>

@@ -73,12 +73,12 @@ def save_chart(user,slug):
     db.session.commit()
     return 'cool',200
     
-@app.route('/charts/remove/<user>/<slug>', methods=['POST'])
-def remove_chart(user,slug):
+@app.route('/charts/unpin/<slug>', methods=['POST'])
+def remove_chart(slug):
     chart = Chart.query.filter_by(slug=slug).first()
     if chart is not None:
-        db.session.delete(chart)
-    db.session.commit()
+        chart.unpinned = True
+        db.session.commit()
     return 'cool',200
 
 @app.route('/charts/<slug>')
@@ -930,7 +930,7 @@ def admin_dataset_removecodebook(slug,id):
 def api_charts(user):
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute('SELECT slug, options, id FROM chart WHERE "user" = %(user)s ORDER BY "date"', {"user": user})
+    cur.execute('SELECT slug, options, id FROM chart WHERE unpinned = False AND "user" = %(user)s ORDER BY "date"', {"user": user})
     return dumps(cur.fetchall())
 
 @app.route('/api/countries')
@@ -952,7 +952,7 @@ def api_topics():
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("""
-    SELECT Concat(Trim(To_char(m.majortopic, '999')), '_', m.shortname) 
+SELECT Concat(Trim(To_char(m.majortopic, '999')), '_', m.shortname) 
        AS topic
        , 
        Array_agg( 
@@ -961,9 +961,10 @@ def api_topics():
     FROM   major_topics m 
            JOIN subtopicz t 
              ON m.majortopic = t.majortopic 
-    GROUP  BY m.shortname, 
+    GROUP  BY m.id,
+	      m.shortname,
               m.majortopic 
-    ORDER  BY m.shortname
+    ORDER  BY m.id
     """)
     return dumps(cur.fetchall())
 
