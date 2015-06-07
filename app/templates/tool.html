@@ -97,12 +97,15 @@
 				<div class="large-3 medium-4 columns left">
 					
 					<label><h5>Chart export</h5></label>
-					<select id="chart_actions" class="from years" name="years_from" style="display: inline-block;">
+					
+					<select ng-change="chartExport(chart.exportOption)" ng-model="chart.exportOption" ng-options="option.num as option.display for option in export_options" class="from years" style="display: inline-block;"></select>
+					
+					<!--<select ng-change="chartExport()" >
 					<option selected="selected">&nbsp;</option>
 					<option value="download">Download Image</option>
 					<option value="copy">Copy URL</option>
 					<option value="embed">Embed</option>
-					</select>
+					</select>-->
 					
 				</div>
                  
@@ -116,15 +119,15 @@
                          <th></th>
                          <th ng-repeat="series in chart.series">
                             <h3>{@series.name@}</h3>
-                            <h3 class="text-center">({@series.measure@})</h3>
+                            <!--<h3 class="text-center">({@series.measure@})</h3>-->
                          </th>
          
                       </tr>
                       <tr ng-repeat="year in yearslice">
                          <td>{@ year @}</td>
-                         <td ng-repeat="series in chart.series">
+                         <td ng-style="{@series.color@}" ng-repeat="series in chart.series">
                          <div class="text-center">
-                         <a class="clickable" ng-click="openDrilldown(series.dataset,series.topic,year)">{@ series.data[$parent.$index] @}</a>
+                         <a class="clickable" ng-click="openDrilldown(series.filters,series.dataset,series.topic,year)">{@ series.data[$parent.$index] @}</a>
                          </div>
                          </td>
                       </tr>
@@ -201,7 +204,7 @@
     <p ng-hide="isSelected(result.name)" ng-click="addToChart(result)" class="panel series">
     <!--<span style="clear:both;">{@result.name@}</span>-->
     <span class="addseries clearfix">
-    <span style="float:left">{@result.name@}</span>
+    <span style="float:left; width:90%;">{@result.name@}</span>
     <span style="float:right"><i class="fi-check"></i></span>
     </span>
     </p>
@@ -323,8 +326,8 @@
                      <th>Filter</th>
                   </tr>
                   <tr ng-repeat="filter in series.filters">
-                     <td class="sub_checkbox"><input title="Include" ng-model="filter.include" type="checkbox"></td>
-                     <td class="sub_checkbox"><input title="Exclude" ng-model="filter.exclude" type="checkbox"></td>
+                     <td class="sub_checkbox"><input title="Include" ng-change="clickInclude(filter)" ng-model="filter.include" type="checkbox"></td>
+                     <td class="sub_checkbox"><input title="Exclude" ng-change="clickExclude(filter)" ng-model="filter.exclude" type="checkbox"></td>
                      <td><label>{@filter.display@}</label></td>
                   </tr>
                </tbody>
@@ -429,6 +432,8 @@ for (i=1946; i < 2016; i++) {
     year_list.push(i.toString());            
 }
 
+var baseUrl = 'http://www.coolbest.net:5000';
+
 var defaultOptions = {
         
     chart: {
@@ -440,7 +445,6 @@ var defaultOptions = {
         text: ''
     },
 
-    tooltip: { enabled: false },
     credits: { enabled: false },
 
     xAxis: [{
@@ -451,7 +455,8 @@ var defaultOptions = {
         categories: year_list,
     
         labels : {
-                rotation: -90
+            rotation: -60,
+            step: 2
         },
     
         tickPosition: 'outside',
@@ -464,7 +469,13 @@ var defaultOptions = {
     yAxis: [],
     
     tooltip: {
-        enabled: true
+    
+        enabled: true,
+
+        formatter: function() {
+            return '<center><b>' + this.x + '</b><br/>' + this.series.name.split(': ').join(':<br/>').split(' #').join('<br/>#') + '<br/><b>' + this.y + '</b></center>';
+        }
+        
     },
     
     plotOptions:{

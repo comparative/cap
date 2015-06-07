@@ -65,12 +65,29 @@ def tool(slug=None):
 
 @app.route('/charts/save/<user>/<slug>', methods=['POST'])
 def save_chart(user,slug):
-    chart = Chart()
-    chart.slug = slug
-    chart.user = user
-    chart.options = request.get_data()
-    db.session.add(chart)
+    exists = Chart.query.filter_by(slug=slug).first()
+    if exists:
+        exists.unpinned = False
+    else:
+        chart = Chart()
+        chart.slug = slug
+        chart.user = user
+        chart.options = request.get_data()
+        db.session.add(chart)
     db.session.commit()
+    return 'cool',200
+    
+@app.route('/charts/saveunpinned/<user>/<slug>', methods=['POST'])
+def save_chart_unpinned(user,slug):
+    exists = Chart.query.filter_by(slug=slug).first()
+    if not exists:
+        chart = Chart()
+        chart.slug = slug
+        chart.user = user
+        chart.options = request.get_data()
+        chart.unpinned = True
+        db.session.add(chart)
+        db.session.commit()
     return 'cool',200
     
 @app.route('/charts/unpin/<slug>', methods=['POST'])
@@ -981,14 +998,47 @@ def api_instances(dataset,topic,year):
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
     data = {}
+    
+    # GET FILTERS
+    
+    sql = """
+    select filters from dataset WHERE dataset.id = %s
+    """
+    cur.execute(sql,[dataset])
+    r = cur.fetchone()
+    filters = loads(r["filters"]) if r["filters"] != None else []
+    
+    filter_predicates = []
+    for filter in filters:
+        filterval = request.args.get(filter)
+        if (filterval != None):
+            filter_predicates.append("datarow->>'" + filter + "'='" + filterval + "'")
+    
+    topic_col = 'majortopic' if int(topic) < 100 else 'subtopic'
+    
+    # INSTANCES
+    
     sql = """
     select datarow->>'source' as source, datarow->>'description' as description
     from (
       select json_array_elements(content)
       from dataset WHERE dataset.id = %s
     ) s(datarow)
-    where datarow->>'majortopic' = %s AND datarow->>'year' = %s
-    """
+    where datarow->>'""" + topic_col + "' = %s AND datarow->>'year' = %s"
+    
+    if len(filter_predicates) > 0:
+        for pred in filter_predicates:
+            sql = sql + " AND " + pred 
+    
+    #sql = """
+    #select datarow->>'source' as source, datarow->>'description' as description
+    #from (
+    #  select json_array_elements(content)
+    #  from dataset WHERE dataset.id = %s
+    #) s(datarow)
+    #where datarow->>'majortopic' = %s AND datarow->>'year' = %s
+    #"""
+    
     app.logger.debug(sql)
     cur.execute(sql,[dataset,topic,year])
     return dumps(cur.fetchall())
@@ -1049,7 +1099,7 @@ def api_measures(dataset,topic):
     GROUP BY year) AS yc ORDER by year
     """
    
-    app.logger.debug(sql)
+    #app.logger.debug(sql)
     
     cur.execute(sql,[dataset,topic])
     d = cur.fetchall()
@@ -1066,13 +1116,16 @@ def api_measures(dataset,topic):
     
     
     # PERCENT CHANGE
-    percent_change = [0]
+    percent_change = [None]
     i = 0
     for c in count:
         i += 1
         if i < len(count):
-            pc = float(count[i] - count[i - 1])/count[i - 1] if (count[i - 1] > 0) else 0
-            percent_change.append(int(100 * float("{0:.2f}".format(pc))))
+            pc = float(count[i] - count[i - 1])/count[i - 1] if (count[i - 1] > 0) else None
+            if pc:
+                percent_change.append(int(100 * float("{0:.2f}".format(pc))))
+            else:
+                percent_change.append(None)
     data['percent_change'] = percent_change
     #app.logger.debug(len(count))
     
@@ -1083,11 +1136,12 @@ def api_measures(dataset,topic):
     from (
       select json_array_elements(content)
       from dataset WHERE dataset.id = %s
-    ) s(datarow)"""
+    ) s(datarow)
+    WHERE 1=1"""
     
-    #if len(filter_predicates) > 0:
-    #    for pred in filter_predicates:
-    #        sql = sql + " AND " + pred 
+    if len(filter_predicates) > 0:
+        for pred in filter_predicates:
+            sql = sql + " AND " + pred 
     
     sql = sql + """
     GROUP BY year) AS yt ORDER by year

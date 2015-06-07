@@ -43,6 +43,8 @@ function Chart() {
     this.yearTo = year_list[year_list.length - 1];
     this.stacked = false;
     this.chartType = "line";
+    this.exportOption = 0;
+    this.yaxes = [];
     
 }
 
@@ -90,7 +92,13 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         {"num":2,"display":"tertiary"}
     ];
     
-    $scope.yaxes = [];
+     $scope.export_options = [
+        {"num":0,"display":""},
+        {"num":1,"display":"Download Image"},
+        {"num":2,"display":"Copy URL"},
+        {"num":3,"display":"Embed"}
+    ];
+    
     
     $scope.instances = [];
     
@@ -101,11 +109,11 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
 
     // LOAD SAVED CHARTS FROM DB BY USER COOKIE VAL
 
-    $http.get('http://www.coolbest.net:5000/api/charts/' + $("#user").val() ).success(function(data){
+    $http.get(baseUrl + '/api/charts/' + $("#user").val() ).success(function(data){
     
         saved = [];
         angular.forEach(data, function (chart, index) {
-            item = new Saved(chart.slug, 'http://www.coolbest.net:5000/charts/' + chart.slug, JSON.parse(chart.options));
+            item = new Saved(chart.slug, baseUrl + '/charts/' + chart.slug, JSON.parse(chart.options));
             saved.unshift(item);
         });
         $scope.saved = saved;
@@ -115,15 +123,15 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     // FACETED SEARCH (left sidebar)
           
-    $http.get('http://www.coolbest.net:5000/api/countries').success(function(data){
+    $http.get(baseUrl + '/api/countries').success(function(data){
         $scope.countries = data;
     });
     
-    $http.get('http://www.coolbest.net:5000/api/categories').success(function(data){
+    $http.get(baseUrl + '/api/categories').success(function(data){
         $scope.categories = data;
     });
     
-    $http.get('http://www.coolbest.net:5000/api/topics').success(function(data){
+    $http.get(baseUrl + '/api/topics').success(function(data){
         
         var retval = [];
         for (var i = 0; i < data.length; i++) {
@@ -146,7 +154,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         
     });
     
-    $http.get('http://www.coolbest.net:5000/api/datasets').success(function(data){
+    $http.get(baseUrl + '/api/datasets').success(function(data){
     
         $scope.datasets = data;
     
@@ -239,11 +247,38 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     $scope.addToChart = function(result) {
     	
     	result.color = $scope.getRgbaColor();
-    	$scope.chart.series.push(result);
     	
+    	if ($scope.chart.stacked) {
+    	
+             switch($scope.chart.chartType) {
+        
+                case "stacked_area_count":
+                    result.type = "area";
+                    result.measure = "count";
+                    break;
+                case "stacked_area_percent_total":
+                    result.type = "area";
+                    result.measure = "percent_total";
+                    break;
+                case "stacked_column_count":
+                    result.type = "column";
+                    result.measure = "count";
+                    break;
+                case "stacked_column_percent_total":
+                    result.type = "column";
+                    result.measure = "percent_total";
+                    break;
+                default:
+                
+            }
+    	
+    	}
+    	
+    	$scope.chart.series.push(result);
+
     	// console.log($scope.chart.series);
     	
-        var url = 'http://www.coolbest.net:5000/api/measures/dataset/' + result.dataset.toString() + '/topic/' + result.topic.toString();
+        var url = baseUrl + '/api/measures/dataset/' + result.dataset.toString() + '/topic/' + result.topic.toString();
 		
 		$.getJSON(url, function (retval) {
 			
@@ -277,7 +312,9 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         
         // REMOVE FROM CHART
         $scope.chart.series.splice(index,1);
-        if (draw) $scope.drawChart();  
+        
+        seriesRemaining = $scope.chart.series.length > 0;
+        if (draw) $scope.drawChart(seriesRemaining);  
     	
     }
     
@@ -339,21 +376,21 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         
             // GET Y AXES
             
-            $scope.yaxes = [];
+            $scope.chart.yaxes = [];
             
             // if there is not a y-axis for this measure, add one!!
             
             angular.forEach($scope.chart.series, function (series, index) {
                 
                 bExists = false;
-                angular.forEach($scope.yaxes, function (ax, i) {
+                angular.forEach($scope.chart.yaxes, function (ax, i) {
                     if (series.measure == ax.measure) {
                         bExists = true;
                     }
                 });
                 
                 if (!bExists) {
-                    $scope.yaxes.push({"measure":series.measure});
+                    $scope.chart.yaxes.push({"measure":series.measure});
                     //series.yaxis = index;
                 }
                 
@@ -367,8 +404,8 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
             angular.forEach($scope.chart.series, function (series, index) {
                 
                 // sort into yAxis by measure
-                for (var i = 0; i < $scope.yaxes.length; i++) {
-                   ax = $scope.yaxes[i];
+                for (var i = 0; i < $scope.chart.yaxes.length; i++) {
+                   ax = $scope.chart.yaxes[i];
                    if (series.measure == ax.measure && series.trump == false) {
                         series.yaxis = i;
                         break;
@@ -377,9 +414,9 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                 
                 
                 // in case series is manually assigned to additional axis with identical measure
-                if (!$scope.yaxes[series.yaxis]) {
-                    $scope.yaxes.push({"measure":series.measure});
-                    series.yaxis = $scope.yaxes.length - 1;
+                if (!$scope.chart.yaxes[series.yaxis]) {
+                    $scope.chart.yaxes.push({"measure":series.measure});
+                    series.yaxis = $scope.chart.yaxes.length - 1;
                 }
                 
                 
@@ -388,6 +425,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                                 
                 
                 var s = {
+                    trump: series.trump,
                     type: series.type,
                     topic: series.topic,
                     dataset: series.dataset,
@@ -396,7 +434,8 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                     data: dataslice,
                     measure: series.measure,
                     color: hex_colors[rgba_colors.indexOf(series.color)],
-                    yAxis: series.yaxis
+                    yAxis: series.yaxis,
+                    filters: series.filters
                 }
                 
                 
@@ -414,11 +453,11 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
          
             // CONSTRUCT Y AXES
         
-            angular.forEach($scope.yaxes, function (ax,index) {
+            angular.forEach($scope.chart.yaxes, function (ax,index) {
 
                 axis = { 
                     title: {
-                        text: ax.measure
+                        text: ax.measure.split('_').join(' ').capitalizeFirstLetter()
                     },
                     plotLines: [{
                         value: 0,
@@ -481,32 +520,27 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
             }   
         });
 		
-		if (params.length > 0) {
-		    
-            var url = 'http://www.coolbest.net:5000/api/measures/dataset/' + series.dataset + '/topic/' + series.topic + "?" + params.join("&");
-            //alert(url);
-        
-            $.getJSON(url, function (retval) {                
-                series.alldata = retval;
-                $scope.closeSeriesModal(series);
-                $scope.drawChart();
-            });
-
-		} else {
-		    
-		    $scope.closeSeriesModal(series);
+				
+        var url = baseUrl + '/api/measures/dataset/' + series.dataset + '/topic/' + series.topic;
+    
+        if (params.length > 0) {
+            url = url + "?" + params.join("&");
+        }
+    
+        $.getJSON(url, function (retval) {                
+            series.alldata = retval;
+            $scope.closeSeriesModal(series);
             $scope.drawChart();
-		    
-		}
+        });
         
     }
     
     // DRAW CHART
     
-    $scope.drawChart = function(thumb) {
+    $scope.drawChart = function(burnThumb) {
         
-        thumb = typeof thumb !== 'undefined' ? thumb : true;
-        
+        // always burn a thumbnail unless we are told not to...
+        burnThumb = typeof burnThumb !== 'undefined' ? burnThumb : true;
         
         theChart.destroy();
         options = $scope.chartToOptions();
@@ -514,7 +548,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         
 		theChart = new Highcharts.Chart(options);
 		
-		if (thumb) {
+		if (burnThumb) {
 		
             var obj = {},
             exportUrl = 'http://104.237.136.8:8080/highcharts-export-web/';
@@ -555,27 +589,6 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         var theMeasure;
         
         switch($scope.chart.chartType) {
-        
-            
-            /*
-                if (series.type == 'stacked_area') {
-                
-                    theType = 'area';
-                    options.plotOptions.area["stacking"] = 'normal';
-                
-                } else if (series.type == 'stacked_column') {
-                        
-                    theType = 'column';
-                    options.plotOptions.column["stacking"] = 'normal';
-                    
-                } else {
-                    
-                    theType = series.type;
-                    options.plotOptions.area = {};
-                    
-                }
-                */
-            
         
             case "stacked_area_count":
                 theType = "area";
@@ -624,7 +637,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
             data: strOptions,
             success: function() {
                 alert('chart pinned!');
-                item = new Saved( $("#slug").val(), 'http://www.coolbest.net:5000/charts/' + $("#slug").val(), strOptions );
+                item = new Saved( $("#slug").val(), baseUrl + '/charts/' + $("#slug").val(), strOptions );
                 $scope.saved.unshift(item);
                 $scope.$apply();
             },
@@ -639,7 +652,6 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     $scope.editSeries = function(series) {
         
         // APPLY FILTERS (back to the data well!! closes modal and draws chart on finish)
-        //console.log('whut');
         $scope.applyFilters(series);
         
     };
@@ -651,8 +663,6 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     };
 
     $scope.deletePinned = function(index) {
-        
-       // alert('delete' + index);
             
         if (confirm('really unpin?')) {  
         
@@ -672,70 +682,33 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
             });
         
         }
-
-        
-        //reverse_index = $scope.saved.length - 1 - index;           
-        //slug = $scope.saved[index].slug;        
-        //window.location = 'http://www.coolbest.net:5000/tool/' + slug;
         
     }
     
     
     $scope.recallPinned = function(index) {
         
-       // alert('recall' + index);
-        
-       // console.log($scope.saved[index]);
-        
         $scope.slug = $scope.saved[index].slug;
         $("#slug").val($scope.saved[index].slug);
         
         $scope.chart.chartFromOptions(JSON.parse($scope.saved[index].options));
         $scope.drawChart(false); 
-        
-       // reverse_index = $scope.saved.length - 1 - index;           
-       // slug = $scope.saved[index].slug;        
-       // window.location = 'http://www.coolbest.net:5000/tool/' + slug;
-        
+    
     }
     
     
     
     
     $scope.recallRecent = function(index) {
-
-        //console.log($scope.recent[index].options);
-        //console.log('---------------');
         
         $scope.slug = $scope.recent[index].slug;
         $("#slug").val($scope.recent[index].slug);
         
-        
         $scope.chart.chartFromOptions(JSON.parse($scope.recent[index].options));
         $scope.drawChart(false);     
-                
-        /*reverse_index = $scope.saved.length - 1 - index;    
-        url = $scope.saved[reverse_index].url;        
-        window.location = 'http://www.coolbest.net:5000/tool/' + url.split('charts/')[1];*/
         
     }
     
-    $scope.actions = function(index) {
-        
-       // alert(index);
-        
-        /*
-        if (action == 'download') {
-            
-            theChart.exportChart({
-                type: 'img/png',
-                filename: $scope.chart.slug + '.png'
-            });
-            
-        }
-        */
-                 
-    }
     
     
     // Y-AXIS HELPERS
@@ -766,9 +739,9 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
             // DO YOU NEED XTRA OPTION?? only if you are not the only series scaled to your measure
             //console.log('series with this measure:' + $scope.chart.series.filter(function (el) {return el.measure == series.measure;}).length)
             
-            xtra = 1 ? $scope.chart.series.length != $scope.yaxes.length : 0;
+            xtra = 1 ? $scope.chart.series.length != $scope.chart.yaxes.length : 0;
             
-            return choice.num < $scope.yaxes.length + xtra
+            return choice.num < $scope.chart.yaxes.length + xtra
             && avail;
             
         };
@@ -794,6 +767,57 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
          
     }
     
+    
+    $scope.chartExport = function(option) {
+        
+        var save = false;
+        
+        switch(option) {
+
+            case 1:
+                theChart.exportChart({
+                type: 'img/png',
+                filename: $("#slug").val()
+                });
+                break;
+                
+            case 2:
+                window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/charts/" + $("#slug").val() );
+                save = true;
+                break;
+            case 3:
+                $('#embed_code').foundation('reveal', 'open');
+                save = true;
+                break;
+            default:
+    
+        }
+        
+        if (save) {
+        
+            strOptions = JSON.stringify(options);
+            //console.log(options);
+            
+            // SAVE CHART UNPINNED
+            resp = $.ajax({
+                type: 'POST',
+                url: '/charts/saveunpinned/' + $("#user").val() + '/' + $("#slug").val() ,
+                data: strOptions,
+                success: function() { },
+                error: function(XMLHttpRequest, textStatus, errorThrown) { 
+                    alert('error saving chart'); 
+                }
+             
+            });
+        
+        }
+        
+        $scope.chart.exportOption = 0;
+        
+        
+    }
+    
+    
     // CLEAR CHART
         
     $scope.clearChart = function() {
@@ -813,6 +837,18 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     }
     
     // HELPERS
+      
+    $scope.clickInclude = function(filter) {
+        
+        if (filter.include == true) filter.exclude = false;
+    
+    }  
+      
+    $scope.clickExclude = function(filter) {
+        
+        if (filter.exclude == true) filter.include = false;
+    
+    }  
             
     $scope.isSelected = function (thisname) {
     	
@@ -846,9 +882,9 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
                 
     }
     
-    $scope.openDrilldown = function(d,t,y) {
+    $scope.openDrilldown = function(f,d,t,y) {
         
-        drilldown(d,t,y);
+        drilldown(f,d,t,y);
         
     }
        
@@ -871,50 +907,14 @@ $(document).ready(function() {
     
     // send options to highcharts
     theChart = new Highcharts.Chart(options);
-    
-    $('a.Source').click(function(e) {
-        e.preventDefault();
-        $('#datapoints').foundation('reveal', 'open');
-    });
-    
-    /*
-    $('img.thumb').click(function(e) {
-        e.preventDefault();
-        $('#thumbnailoptions').foundation('reveal', 'open');
-    });
-    */
 
     $('h5.picker-label').click(function(e) {
         e.preventDefault();
         $('div.picker:visible').slideToggle('fast','linear');
         $(this).next('div').slideToggle('fast','linear');
     });
-
-    $( "#chart_actions" ).change(function() {
-
-        if ($(this).val() == "download") {
     
-            theChart.exportChart({
-                type: 'img/png',
-                filename: $("#slug").val()
-            });
-    
-        }
-        
-        if ($(this).val() == "copy") {
-            
-            window.prompt( "copy to clipboard: Ctrl+C, Enter", "http://www.coolbest.net:5000/charts/" + $("#slug").val() );
-    
-        }
-        
-        if ($(this).val() == "embed") {
-            
-           $('#embed_code').foundation('reveal', 'open');
-    
-        }
-
-    });
-              
+               
 });
 
 
@@ -925,6 +925,7 @@ var clickPoint = function(event) {
     if ( $('a[href="#data-view"]').attr('aria-selected') == "true" ) { 
         
         drilldown(
+        this.series.userOptions.filters,
         this.series.userOptions.dataset,
         this.series.userOptions.topic,
         this.category);
@@ -937,9 +938,30 @@ var clickPoint = function(event) {
 }
 
 
-var drilldown = function(dataset,topic,year) {
+var drilldown = function(filters,dataset,topic,year) {
     
-    $.get( "http://www.coolbest.net:5000/api/instances/" + dataset + "/" + topic + "/" + year, function( data ) {
+    // have filters been checked?
+    var params = [];
+    angular.forEach(filters, function (filter, index) { 
+        var param = undefined;
+        if (filter.include) {
+            param = filter.name + "=1";
+        }
+        if (filter.exclude) {
+            param = filter.name + "=0";
+        }
+        if (param) {
+            params.push(param);
+        }   
+    });
+    
+    var url = baseUrl + "/api/instances/" + dataset + "/" + topic + "/" + year;
+    
+    if (params.length > 0) {
+        url = url + "?" + params.join("&");
+    }
+    
+    $.get(url, function( data ) {
         
         theScope.instances = JSON.parse(data);
         theScope.$apply();
@@ -949,11 +971,12 @@ var drilldown = function(dataset,topic,year) {
 
 }
 
+
 // OPTIONS TO CHART
 
 Chart.prototype.chartFromOptions = function(options) {
     
-    console.log(options);
+    //console.log(options);
     
     var series = [];
     
@@ -966,8 +989,14 @@ Chart.prototype.chartFromOptions = function(options) {
         objS.type = s.type;
         objS.yaxis = s.yAxis;
         objS.color = rgba_colors[hex_colors.indexOf(s.color)];
-        objS.alldata = s.alldata;        
+        objS.alldata = s.alldata; 
+        objS.filters = s.filters; 
+        objS.trump = s.trump;      
         series.push(objS);
+        
+        if (!this.yaxes[s.yAxis]) {
+            this.yaxes.push({"measure":s.measure});
+        }
         
     }
     
@@ -984,26 +1013,6 @@ Chart.prototype.chartFromOptions = function(options) {
         this.stacked = true;
         
     }
-    
-    /*
-    if (options.plotOptions.area.stacking == 'normal') {
-        
-        this.stacked = true;
-        
-        if (options.series[0].measure == "count") this.chartType = 'stacked_area_count';
-        if (options.series[0].measure == "percent_change") this.chartType = 'stacked_area_percent_change';
-        
-    }
-    
-    if (options.plotOptions.column.stacking == 'normal') {
-        
-        this.stacked = true;
-        
-        if (options.series[0].measure == "count") this.chartType = 'stacked_column_count';
-        if (options.series[0].measure == "percent_change") this.chartType = 'stacked_column_percent_change';
-        
-    }
-    */
 
 };
 
@@ -1021,3 +1030,7 @@ Array.prototype.remove = function() {
     return this;
     
 };
+
+String.prototype.capitalizeFirstLetter = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}
