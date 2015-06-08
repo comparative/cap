@@ -1,3 +1,11 @@
+
+
+
+.reveal-modal-bg {
+    background:none;
+}
+
+
 div.thumb-container:hover > div.thumb-menu {
     display: block;
     -webkit-animation:none;

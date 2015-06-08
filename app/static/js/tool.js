@@ -771,24 +771,41 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     $scope.chartExport = function(option) {
         
         var save = false;
-        
+    
         switch(option) {
 
             case 1:
-                theChart.exportChart({
-                type: 'img/png',
-                filename: $("#slug").val()
-                });
-                break;
+                theChart.exportChart(
+                    {
+                    type: 'img/png',
+                    filename: $("#slug").val(),
+                    sourceWidth: 960,
+                    },
                 
+                    {yAxis: [{
+                    gridLineWidth: 0,
+                    minorGridLineWidth: 0,
+                    labels: {
+                        enabled: false
+                    },
+                    title: {
+                        text: $scope.chart.series[0].measure.split('_').join(' ').capitalizeFirstLetter()
+                    }
+                    }]
+                    }
+                );
+                break;
+  
             case 2:
                 window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/charts/" + $("#slug").val() );
                 save = true;
                 break;
+                
             case 3:
                 $('#embed_code').foundation('reveal', 'open');
                 save = true;
                 break;
+                
             default:
     
         }

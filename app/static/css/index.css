@@ -17,6 +17,7 @@ textarea {
 	background:#ffffff;
 }
 
+/*
 #title {
 	margin-left:0px;
 	padding-left:5px;
@@ -56,9 +57,9 @@ a#go {
 
 div#social {
 	padding-left:0px;
-	/*padding-right:30px;*/
+	padding-right:30px;
 }
-
+*/
 
 input#updates {
 	-moz-border-radius: 15px;
@@ -108,17 +109,8 @@ h1,h2,h3,h4,h5,h6,p.panel,p.panel a, #page-title, #page-subtitle {
 }
 */
 
-#page-title {
-	font-weight:bold;
-	font-size:13pt;
-	margin-top:4px;
-	line-height:1;
-}
 
-#page-subtitle {
-	font-size:13pt;
-	line-height:1;
-}
+
 
 /*
 div#bluestripe {
@@ -169,7 +161,7 @@ div#under-graph {
 
 .bold-link {
     font-weight:bold;
-    font-size:1.2rem;
+    font-size:1rem;
 }
 
 .orbit-container .orbit-slides-container li .orbit-caption{
@@ -184,9 +176,18 @@ div#under-graph {
     display: none;
 }
 
+
+.orbit-caption {
+    border-left:1px solid #b2bcc8;
+    border-right:1px solid #b2bcc8;
+    border-bottom:1px solid #b2bcc8;
+    border-top:0;
+}
+
+
 .orbit-caption h3 {
     font-size: 1.6rem;
-    margin-bottom:3px;
+    margin-bottom:0px;
 }
 
 .orbit-caption h6 {
