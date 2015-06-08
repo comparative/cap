@@ -27,7 +27,13 @@
 */
 
 
+
+footer {
+    background-color:#f2f2f2;
+}
+
 #footer-links {
+    background-color:#f2f2f2;
     border:0;
     margin-top: 38px;
     width: 100%;
@@ -41,7 +47,7 @@ i.fi-social-twitter, i.fi-social-youtube {
 }
 
 #title {
-	padding-top:25px;
+	padding-top:26px;
 }
 
 
@@ -124,6 +130,11 @@ input#updates {
 .news-image {
     margin-bottom:20px; 
     margin-top:10px;
+    border:1px solid #3b4e6f;
+    /*border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+    border-bottom-right-radius:5px;
+    border-bottom-left-radius:5px;*/
 }
 
 div.scrollable {
@@ -214,7 +225,6 @@ a.orange-link {
 #slogan {
   margin-bottom: .5rem;
   font-size: 15px;
-  text-align: center;
 }
 
 hr {
@@ -234,6 +244,7 @@ h1,h2,h3,h4,h5,h6,p.panel,p.panel a, #page-title a, #page-subtitle a, #slogan {
 #logo {
 	margin-right:0px;
 	padding-right:5px;
+	padding-left:0px;
 }
 
 
@@ -283,7 +294,7 @@ div#bluestripe {
 	margin-bottom: .5rem;
 }
 
-
+/*
 .orbit-container {
 	width: 99%;
 	
@@ -296,7 +307,7 @@ div#bluestripe {
 .slideborder {
     border: 3px solid #3b4e6f;
 }
-
+*/
 .bold-link {
     font-weight:bold;
     font-size:1.2rem;

@@ -1,5 +1,13 @@
 
 
+div#bluestripe {
+    padding-top:10px;
+}
+
+
+#save-chart,#clear-chart {
+    margin-bottom:5px;
+}
 
 .reveal-modal-bg {
     background:none;
@@ -71,6 +79,10 @@ label {
 }
 
 .tool-help {
+padding-top:5px;
+}
+
+.tool-help a {
 font-weight:bold;
 }
 
@@ -133,6 +145,14 @@ img {
 }
 **/
 
+a.button.tiny:hover {
+ background:#d8d8d8;
+}
+
+a.button.tiny {
+ background:#f2f2f2;
+ font-size:14px;
+}
 
 .fullWidth {
    width: 100%;

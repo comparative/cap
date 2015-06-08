@@ -1,3 +1,8 @@
+h3 {
+    margin-top:10px;
+    margin-bottom:10px;
+}
+
 .news-item {
     margin-top:15px;
     margin-bottom:15px;
@@ -45,6 +50,20 @@ p.caption {
 }
 
 
+.tabs-content>.content {
+  display: none;
+  float: left;
+  padding: 0 0;
+  width: 100%;
+}
+
+.tabs-content img {
+    border:1px solid #3b4e6f;
+    /*border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;*/
+}
 
 .tabs dd>a, .tabs .tab-title>a {
   outline: none;

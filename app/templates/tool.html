@@ -20,24 +20,24 @@
      	 <div class="row fullWidth">
      	    
      	    <div class="medium-11 columns text-right">
-     	        <a id="save-chart" ng-click="saveChart()" style="margin-bottom:10px;" class="button tiny">Pin chart</a>
-     	        <a id="clear-chart" ng-click="clearChart()" style="margin-bottom:10px;" class="button tiny">Clear chart</a>
+     	        <a id="save-chart" ng-click="saveChart()" class="button tiny clickable">Pin chart</a>
+     	        <a id="clear-chart" ng-click="clearChart()" class="button tiny clickable">Clear chart</a>
      	    </div>
      	    
-     	    <div class="medium-1 columns text-left">
-     	    <a class="orange-link tool-help" href="pages/Help">help</a>
+     	    <div class="tool-help medium-1 columns text-left">
+     	    <a class="orange-link" href="pages/Help">help</a>
      	    </div>
      	    
      	 </div>
      	</div>
      </div>
 
-</div> 
+</div>
 
 
 <div id="app-container">
 
-<div ngclass="row fullWidth">    
+<div class="row fullWidth">    
 
 <input type="hidden" id="user" name="user" value="{{user}}" />
 <input type="hidden" id="slug" name="slug" value="{{slug}}" />
@@ -49,6 +49,8 @@
             <dl class="tabs" data-tab>
               <dd class="active"><a class="clickable" href="#graph-view">Edit</a></dd>
               <dd><a class="clickable" href="#data-view">Explore</a></dd>
+              <!--<dd class="right"><a class="clickable" href="#data-view" id="save-chart" ng-click="saveChart()" style="margin-bottom:10px;" class="button tiny">Pin chart</a></dd>
+              <dd class="right"><a class="clickable" href="#data-view"id="clear-chart" ng-click="clearChart()" style="margin-bottom:10px;" class="button tiny">Clear chart</a></dd>-->
             </dl>
             
             <div class="row">
