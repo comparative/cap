@@ -8,3 +8,7 @@
     /*color:#b2bcc8 !important; */
 }
 
+
+dd.active a.clickable:hover {
+    color:#3b4e6f !important;
+}

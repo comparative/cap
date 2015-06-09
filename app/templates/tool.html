@@ -83,7 +83,7 @@
                 <div class="large-3 medium-3 columns" style="margin-left: 34px;">
 
                  <label><h5>Chart type</h5></label>
-                 <select class="type" ng-change="allSeriesSameType()" ng-model="chart.chartType" ng-options="type.type as type.display for type in chart_types"></select>
+                 <select class="type" ng-change="allSeriesSameType('{@chart.chartType@}')" ng-model="chart.chartType" ng-options="type.type as type.display for type in chart_types"></select>
                 
                </div>
                 
@@ -301,7 +301,7 @@
       
     <div ng-repeat="series in chart.series" id="seriesoptions-{@series.dataset@}-{@series.topic@}" class="reveal-modal small" data-reveal>
         
-        <div id="bills_topic_1" class="active_controls">
+        <div class="active_controls">
             
             <h6>{@series.name@}</h6>
             
@@ -373,7 +373,9 @@
         
         </div>
         
-        <a class="close-reveal-modal">&#215;</a>
+        <div style="float:right;">
+            <a class="close-reveal-modal"><i style="font-size:40px; color:black;" class="fi-x clickable"></i></a>
+        </div>
         
     </div>
     
@@ -411,8 +413,10 @@
           
 <script src="/static/js/highcharts.js"></script>
 <script src="http://code.highcharts.com/modules/exporting.js"></script>
+<script src="/static/js/highcharts-regression.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
 <script src="/static/js/tool.js"></script>
+
 
 <script>
         
@@ -437,7 +441,9 @@ for (i=1946; i < 2016; i++) {
 var baseUrl = 'http://www.coolbest.net:5000';
 
 var defaultOptions = {
-        
+    
+    chartType: "line",
+     
     chart: {
         renderTo: 'chart',
         ignoreHiddenSeries : false

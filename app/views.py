@@ -844,7 +844,7 @@ def admin_dataset_item(slug,id):
             form.fieldnames = reader.fieldnames
     if form.validate_on_submit():
         if 'codebook' in request.files and request.files['codebook'].filename != '':
-            codebookfilename = codebooks.save(request.files['codebook'])
+            codebookfilename = codebookfiles.save(request.files['codebook'])
             dataset.codebookfilename = codebookfilename
         if 'content' in request.files and request.files['content'].filename != '':
             filters = []
