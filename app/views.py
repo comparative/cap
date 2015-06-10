@@ -58,8 +58,11 @@ def tool(slug=None):
     exists = Chart.query.filter_by(slug=slug).first()
     options = exists.options if exists else None
     
+    # were we passed a project id?
+    projectid = request.args.get('project')
+    
     # send response
-    resp=make_response(render_template('tool.html',user=user,slug=slug,options=options,recent=recent))    
+    resp=make_response(render_template('tool.html',user=user,slug=slug,options=options,recent=recent,projectid=projectid))    
     resp.set_cookie('captool_user',value=user)
     return resp
 
@@ -126,7 +129,6 @@ def charts(slug,switch=None):
 ######### CMS ROUTES
 
 @app.route('/')
-@app.route('/index')
 def index():
     slides = Slide.query.filter_by(active=True).paginate(1,3,False).items
     for item in slides:
@@ -143,33 +145,6 @@ def index():
                            countries=countries,
                            slides=slides,
                            news=news)
-
-
-@app.route('/countries/<slug>')
-@app.route('/countries/<slug>/<pane>')
-def country(slug,pane='about'):
-    country = Country.query.filter_by(slug=slug).first()
-    countries = Country.query.filter(Country.id != country.id).order_by(Country.name).all()
-    latest_research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date)).paginate(1, 1, False).items
-    research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date))
-    staff = Staff.query.filter_by(country_id=country.id).order_by(Staff.sort_order)
-    url = countryimages.url(country.filename) if country.filename else None
-    return render_template("country.html",
-                           countries=countries,
-                           pane=pane,
-                           url = url,
-                           latest_research=latest_research,
-                           country=country,
-                           research=research,
-                           staff=staff)
-
-@app.route('/countries/<slug>/research/<id>')
-def research_item(slug,id):
-    countries = Country.query.order_by(Country.name)
-    country = Country.query.filter_by(slug=slug).first()
-    research = Research.query.filter_by(id=id).first()
-    return render_template("research_item.html",countries=countries,country=country,research=research) 
-    
 
 @app.route('/news')
 @app.route('/news/<int:page>')
@@ -437,14 +412,14 @@ def admin_slide_removeimage(id):
 
 ## COUNTRIES
 
-@app.route('/admin/countries')
+@app.route('/admin/projects')
 @login_required
 def admin_country_list():
     countries = Country.query.order_by(Country.name)
     return render_template('admin/country_list.html',
                            countries=countries)
                                                
-@app.route('/admin/countries/<slug>', methods=['GET', 'POST'])
+@app.route('/admin/projects/<slug>', methods=['GET', 'POST'])
 @login_required
 def admin_country_item(slug):
     country = Country() if slug == 'add' else Country.query.filter_by(slug=slug).first()
@@ -485,7 +460,7 @@ def admin_country_item(slug):
                            form=form)
  
 
-@app.route('/admin/countries/delete/<id>')
+@app.route('/admin/projects/delete/<id>')
 @login_required
 def admin_country_delete(id):
     country = Country.query.filter_by(id=id).first()
@@ -499,7 +474,7 @@ def admin_country_delete(id):
     flash('Country not found!')
     return redirect(url_for('admin'))  
 
-@app.route('/admin/countries/removeimage/<id>')
+@app.route('/admin/projects/removeimage/<id>')
 @login_required
 def admin_country_removeimage(id):
     country = Country.query.filter_by(id=id).first()
@@ -567,8 +542,8 @@ def admin_user_delete(id):
 
 ## NEWS
 
-@app.route('/admin/countries/<slug>/news')
-@app.route('/admin/countries/<slug>/news/p/<int:page>')
+@app.route('/admin/projects/<slug>/news')
+@app.route('/admin/projects/<slug>/news/p/<int:page>')
 @login_required
 def admin_news_list(slug,page=1):
     country = Country.query.filter_by(slug=slug).first()
@@ -578,7 +553,7 @@ def admin_news_list(slug,page=1):
                            country=country,
                            news=news)
                     
-@app.route('/admin/countries/<slug>/news/<id>', methods=['GET', 'POST'])
+@app.route('/admin/projects/<slug>/news/<id>', methods=['GET', 'POST'])
 @login_required
 def admin_news_item(slug,id):
     country = Country.query.filter_by(slug=slug).first()
@@ -612,7 +587,7 @@ def admin_news_item(slug,id):
                            url=url,
                            form=form)
 
-@app.route('/admin/countries/<slug>/news/delete/<id>')
+@app.route('/admin/projects/<slug>/news/delete/<id>')
 @login_required
 def admin_news_delete(slug,id):
     news = News.query.filter_by(id=id).first()
@@ -626,7 +601,7 @@ def admin_news_delete(slug,id):
     flash('News not found!')
     return redirect(url_for('admin'))  
 
-@app.route('/admin/countries/<slug>/news/removeimage/<id>')
+@app.route('/admin/projects/<slug>/news/removeimage/<id>')
 @login_required
 def admin_news_removeimage(slug,id):
     news = News.query.filter_by(id=id).first()
@@ -644,8 +619,8 @@ def admin_news_removeimage(slug,id):
 
 
 
-@app.route('/admin/countries/<slug>/research')
-@app.route('/admin/countries/<slug>/research/p/<int:page>')
+@app.route('/admin/projects/<slug>/research')
+@app.route('/admin/projects/<slug>/research/p/<int:page>')
 @login_required
 def admin_research_list(slug,page=1):
     country = Country.query.filter_by(slug=slug).first()
@@ -654,7 +629,7 @@ def admin_research_list(slug,page=1):
                            country=country,
                            research=research)
 
-@app.route('/admin/countries/<slug>/research/<id>', methods=['GET', 'POST'])
+@app.route('/admin/projects/<slug>/research/<id>', methods=['GET', 'POST'])
 @login_required
 def admin_research_item(slug,id):
     country = Country.query.filter_by(slug=slug).first()
@@ -696,7 +671,7 @@ def admin_research_item(slug,id):
                            imageurl=imageurl,
                            form=form)
 
-@app.route('/admin/countries/<slug>/research/delete/<id>')
+@app.route('/admin/projects/<slug>/research/delete/<id>')
 @login_required
 def admin_research_delete(slug,id):
     research = Research.query.filter_by(id=id).first()
@@ -710,7 +685,7 @@ def admin_research_delete(slug,id):
     flash('Research not found!')
     return redirect(url_for('admin')) 
 
-@app.route('/admin/countries/<slug>/research/removefile/<id>')
+@app.route('/admin/projects/<slug>/research/removefile/<id>')
 @login_required
 def admin_research_removefile(slug,id):
     research = Research.query.filter_by(id=id).first()
@@ -724,7 +699,7 @@ def admin_research_removefile(slug,id):
     flash('Research not found!')
     return redirect(url_for('admin'))
 
-@app.route('/admin/countries/<slug>/research/removeimage/<id>')
+@app.route('/admin/projects/<slug>/research/removeimage/<id>')
 @login_required
 def admin_research_removeimage(slug,id):
     research = Research.query.filter_by(id=id).first()
@@ -739,8 +714,8 @@ def admin_research_removeimage(slug,id):
     return redirect(url_for('admin')) 
 
 ## STAFF
-@app.route('/admin/countries/<slug>/staff')
-@app.route('/admin/countries/<slug>/staff/p/<int:page>')
+@app.route('/admin/projects/<slug>/staff')
+@app.route('/admin/projects/<slug>/staff/p/<int:page>')
 @login_required
 def admin_staff_list(slug,page=1):
     country = Country.query.filter_by(slug=slug).first()
@@ -749,7 +724,7 @@ def admin_staff_list(slug,page=1):
                            country=country,
                            staff=staff)
 
-@app.route('/admin/countries/<slug>/staff/<id>', methods=['GET', 'POST'])
+@app.route('/admin/projects/<slug>/staff/<id>', methods=['GET', 'POST'])
 @login_required
 def admin_staff_item(slug,id):
     country = Country.query.filter_by(slug=slug).first()
@@ -788,7 +763,7 @@ def admin_staff_item(slug,id):
                            url=url,
                            form=form)
 
-@app.route('/admin/countries/<slug>/staff/delete/<id>')
+@app.route('/admin/projects/<slug>/staff/delete/<id>')
 @login_required
 def admin_staff_delete(slug,id):
     staff = Staff.query.filter_by(id=id).first()
@@ -802,7 +777,7 @@ def admin_staff_delete(slug,id):
     flash('Staff member not found!')
     return redirect(url_for('admin'))
 
-@app.route('/admin/countries/<slug>/staff/removeimage/<id>')
+@app.route('/admin/projects/<slug>/staff/removeimage/<id>')
 @login_required
 def admin_staff_removefile(slug,id):
     staff = Staff.query.filter_by(id=id).first()
@@ -817,10 +792,20 @@ def admin_staff_removefile(slug,id):
     return redirect(url_for('admin'))
 
 
+## ANALYTICS
+
+@app.route('/admin/projects/<slug>/analytics')
+@login_required
+def admin_analytics(slug):
+    country = Country.query.filter_by(slug=slug).first()
+    return render_template('admin/analytics.html',
+                           country=country)
+
+
 ## DATASETS
 
-@app.route('/admin/countries/<slug>/datasets')
-@app.route('/admin/countries/<slug>/datasets/p/<int:page>')
+@app.route('/admin/projects/<slug>/datasets')
+@app.route('/admin/projects/<slug>/datasets/p/<int:page>')
 @login_required
 def admin_dataset_list(slug,page=1):
     country = Country.query.filter_by(slug=slug).first()
@@ -829,7 +814,7 @@ def admin_dataset_list(slug,page=1):
                            country=country,
                            datasets=datasets)
                     
-@app.route('/admin/countries/<slug>/dataset/<id>', methods=['GET', 'POST'])
+@app.route('/admin/projects/<slug>/dataset/<id>', methods=['GET', 'POST'])
 @login_required
 def admin_dataset_item(slug,id):
     country = Country.query.filter_by(slug=slug).first()
@@ -897,7 +882,7 @@ def admin_dataset_item(slug,id):
                            codebookfilename=dataset.codebookfilename,
                            form=form)
 
-@app.route('/admin/countries/<slug>/dataset/delete/<id>')
+@app.route('/admin/projects/<slug>/dataset/delete/<id>')
 @login_required
 def admin_dataset_delete(slug,id):
     dataset = Dataset.query.filter_by(id=id).first()
@@ -911,7 +896,7 @@ def admin_dataset_delete(slug,id):
     flash('Dataset not found!')
     return redirect(url_for('admin'))  
 
-@app.route('/admin/countries/<slug>/dataset/remove/<id>')
+@app.route('/admin/projects/<slug>/dataset/remove/<id>')
 @login_required
 def admin_dataset_removecontent(slug,id):
     dataset = Dataset.query.filter_by(id=id).first()
@@ -926,7 +911,7 @@ def admin_dataset_removecontent(slug,id):
     flash('Dataset not found!')
     return redirect(url_for('admin')) 
 
-@app.route('/admin/countries/<slug>/codebook/remove/<id>')
+@app.route('/admin/projects/<slug>/codebook/remove/<id>')
 @login_required
 def admin_dataset_removecodebook(slug,id):
     dataset = Dataset.query.filter_by(id=id).first()
@@ -950,7 +935,7 @@ def api_charts(user):
     cur.execute('SELECT slug, options, id FROM chart WHERE unpinned = False AND "user" = %(user)s ORDER BY "date"', {"user": user})
     return dumps(cur.fetchall())
 
-@app.route('/api/countries')
+@app.route('/api/projects')
 def api_countries():
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -1028,24 +1013,11 @@ def api_instances(dataset,topic,year):
     
     if len(filter_predicates) > 0:
         for pred in filter_predicates:
-            sql = sql + " AND " + pred 
+            sql = sql + " AND " + pred
     
-    #sql = """
-    #select datarow->>'source' as source, datarow->>'description' as description
-    #from (
-    #  select json_array_elements(content)
-    #  from dataset WHERE dataset.id = %s
-    #) s(datarow)
-    #where datarow->>'majortopic' = %s AND datarow->>'year' = %s
-    #"""
-    
-    app.logger.debug(sql)
+    #app.logger.debug(sql)
     cur.execute(sql,[dataset,topic,year])
     return dumps(cur.fetchall())
- 
-@app.route('/api/testjson')
-def testjson():
-    return send_file('/var/www/cap/datacache/test.json')
     
 @app.route('/api/measures/dataset/<dataset>/topic/<topic>')
 def api_measures(dataset,topic):
@@ -1166,3 +1138,35 @@ def api_measures(dataset,topic):
          
     return dumps(data)
     #return dumps(cur.fetchall())
+
+    
+@app.route('/<slug>')
+@app.route('/<slug>/<pane>')
+def country(slug,pane='about'):
+    country = Country.query.filter_by(slug=slug).first()
+    if country:
+        countries = Country.query.filter(Country.id != country.id).order_by(Country.name).all()
+        latest_research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date)).paginate(1, 1, False).items
+        research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date))
+        staff = Staff.query.filter_by(country_id=country.id).order_by(Staff.sort_order)
+        url = countryimages.url(country.filename) if country.filename else None
+        return render_template("country.html",
+                               countries=countries,
+                               pane=pane,
+                               url = url,
+                               latest_research=latest_research,
+                               country=country,
+                               research=research,
+                               staff=staff)
+    else:
+        abort(404)
+
+@app.route('/<slug>/research/<id>')
+def research_item(slug,id):
+    countries = Country.query.order_by(Country.name)
+    country = Country.query.filter_by(slug=slug).first()
+    if country:
+        research = Research.query.filter_by(id=id).first()
+        return render_template("research_item.html",countries=countries,country=country,research=research)
+    else:
+        abort(404)

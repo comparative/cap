@@ -1,0 +1,15 @@
+<!-- extend from base layout -->
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4>
+{% if not current_user.country %}
+    <a href="{{ url_for('admin_country_list') }}">Projects</a> >>
+{% endif %}
+<a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> Analytics
+</h4>
+
+<img src="http://speckycdn.sdm.netdna-cdn.com/wp-content/uploads/2008/10/underconstruction3.gif"/>
+
+{% endblock %}

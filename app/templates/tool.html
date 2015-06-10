@@ -159,10 +159,10 @@
     
    
     <!--h4>Find datasets</h4>-->
-    <h5 class="picker-label clickable">Select countries<span ng-show="countryCount() > 0" class="selection_count">{@countryCount()@}</span></h5>
-    <div id="countries" class="picker" style="display:block">
+    <h5 class="picker-label clickable">Select projects<span ng-show="countryCount() > 0" class="selection_count">{@countryCount()@}</span></h5>
+    <div id="projects" class="picker" style="display:block">
     <div ng-repeat="country in countries">
-    <input ng-attr-country="{@country.short_name@}" type="checkbox" ng-click="doFacets()">
+    <input id="{@country.slug@}" ng-attr-country="{@country.short_name@}" type="checkbox" ng-click="doFacets()">
     <label>{@country.name | limitTo : 27@}</label>
     </div>
     </div>

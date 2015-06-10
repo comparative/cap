@@ -5,7 +5,7 @@
 
 <h4>
 {% if not current_user.country %}
-    <a href="{{ url_for('admin_country_list') }}">Countries</a> >>
+    <a href="{{ url_for('admin_country_list') }}">Projects</a> >>
 {% endif %}
 <a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> <a href="{{ url_for('admin_dataset_list',slug=country.slug) }}">Datasets</a>
 </h4>

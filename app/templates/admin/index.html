@@ -10,7 +10,7 @@
 {% if current_user.country %}
 <a href="{{ url_for('admin_country_item',slug=current_user.country.slug) }}">{{ current_user.country.name }}</a>
 {% else %}
-<a href="{{ url_for('admin_country_list') }}">Countries</a>
+<a href="{{ url_for('admin_country_list') }}">Projects</a>
 {% endif %}
 </li>
 

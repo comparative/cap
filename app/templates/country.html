@@ -191,6 +191,8 @@
                     
                         </div>
                         
+
+                        
                         {% if pane=='about' %}
                         <div class="content active" id="about-pane">
                         {% else %}
@@ -201,10 +203,12 @@
                                 
                                 
                                 
-                                <h3>Explore Trends in {{ country.short_name }} Policy</h3>
+                                <h3>Explore Policy Trends</h3>
                                 
-                                <a href="{{ url_for('admin') }}" target="_tool">
-                                <img style="height:200px;" src="/static/img/chart-us.png" width="100%"/>    
+                                {% if country.embed_url %}
+                                
+                                <a href="{{ url_for('tool') }}?project={{ country.slug }}" target="_tool">
+                                <img style="padding:10px 10px 10px 10px;" src="{{ country.embed_url }}" width="100%"/>    
                                 </a>
                                 
                                 <p class="caption">
@@ -212,6 +216,7 @@
                                 The Trends tool allows for policy comparisons across governing institutions and countries.
                                 </p>
                                 
+                                {% endif %}
                                 
                                 <p>{{ country.about|safe }}</p>
                                 

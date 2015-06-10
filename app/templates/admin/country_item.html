@@ -5,7 +5,7 @@
 
 <h4>
 {% if not current_user.country %}
-    <a href="{{ url_for('admin_country_list') }}">Countries</a> >>
+    <a href="{{ url_for('admin_country_list') }}">Projects</a> >>
 {% endif %}
 {{ form.name.data }}
 </h4>
@@ -23,22 +23,26 @@
 
 <div class="row">
 
-<div class="small-3 columns text-center">
+<div class="small-2 columns text-center">
 <a href="{{ url_for('admin_dataset_list',slug=slug) }}">Datasets</a>
 </div>
 
-<div class="small-3 columns text-center">
+<div class="small-2 columns text-center">
 <a href="{{ url_for('admin_news_list',slug=slug) }}">News</a>
 </div>
 
-<div class="small-3 columns text-center">
+<div class="small-2 columns text-center">
 <a href="{{ url_for('admin_research_list',slug=slug) }}">Research</a>
 </div>
 
-<div class="small-3 columns text-center">
+<div class="small-2 columns text-center">
 <a href="{{ url_for('admin_staff_list',slug=slug) }}">Staff</a>
 </div>
 
+<div class="small-2 columns text-center left">
+<a href="{{ url_for('admin_analytics',slug=slug) }}">Analytics</a>
+</div>
+                                
 
 </div>
 

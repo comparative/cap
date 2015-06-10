@@ -62,7 +62,7 @@ function Saved(slug, imgsrc, options) {
 
 var toolApp = angular.module('toolApp', []);
 
-toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
+toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($scope,$http,$timeout)
 {
     
     // INIT VARS
@@ -126,8 +126,16 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     // FACETED SEARCH (left sidebar)
           
-    $http.get(baseUrl + '/api/countries').success(function(data){
-        $scope.countries = data;
+    $http.get(baseUrl + '/api/projects').success(function(data){
+        
+            $scope.countries = data;
+                        
+            $timeout(function() {
+                project = getQueryVariable('project');
+                if (project) checkbox = angular.element('#' + project);
+                if (checkbox) checkbox.trigger('click');
+            }, 500);
+            
     });
     
     $http.get(baseUrl + '/api/categories').success(function(data){
@@ -175,7 +183,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
         
         angular.forEach($scope.datasets, function (dataset, index) {
             if (cats.indexOf(dataset.category.toString()) > -1) {
-                angular.element('#countries input:checked').each(function () {
+                angular.element('#projects input:checked').each(function () {
                     var country = $(this).attr('country');
                     angular.element('.choose_topic:checked').each(function () {
                        var $this = $(this);
@@ -228,7 +236,7 @@ toolApp.controller('ToolController', ['$scope', '$http', function ($scope,$http)
     
     $scope.countryCount = function() {
         
-        return angular.element('#countries input[type="checkbox"]:checked').length;
+        return angular.element('#projects input[type="checkbox"]:checked').length;
         
     }
     
@@ -1384,4 +1392,15 @@ Array.prototype.remove = function() {
 
 String.prototype.capitalizeFirstLetter = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
+function getQueryVariable(variable)
+{
+       var query = window.location.search.substring(1);
+       var vars = query.split("&");
+       for (var i=0;i<vars.length;i++) {
+               var pair = vars[i].split("=");
+               if(pair[0] == variable){return pair[1];}
+       }
+       return(false);
 }
