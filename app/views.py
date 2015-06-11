@@ -102,6 +102,7 @@ def remove_chart(slug):
     return 'cool',200
 
 @app.route('/charts/<slug>')
+@app.route('/charts/<slug>.png')
 @app.route('/charts/<slug>/<switch>')
 def charts(slug,switch=None):
     exists = Chart.query.filter_by(slug=slug).first()
@@ -110,7 +111,7 @@ def charts(slug,switch=None):
         values = {}
         values['options'] = dumps(loads(exists.options))
         values['type'] = 'image/png'
-        values['width'] = '960'
+        values['width'] = '600'
         values['constr'] = 'Chart'
         data = urllib.urlencode(values)
         req = urllib2.Request(url, data)
@@ -939,14 +940,16 @@ def api_charts(user):
 def api_countries():
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""SELECT * FROM country ORDER BY name""")
+    cur.execute("""SELECT DISTINCT(c.*) FROM country c INNER JOIN dataset d ON c.id = d.country_id ORDER BY c.name""")
+    #cur.execute("""SELECT * FROM country ORDER BY name""")
     return dumps(cur.fetchall())
 
 @app.route('/api/categories')
 def api_categories():
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""SELECT * FROM categories ORDER BY name""")
+    #cur.execute("""SELECT DISTINCT(c.*) FROM category c INNER JOIN dataset d ON c.id = d.category_id ORDER BY c.name""")
+    cur.execute("""SELECT c.id as category_id, c.* FROM category c ORDER BY c.name""")
     return dumps(cur.fetchall())
 
 @app.route('/api/topics')
@@ -1146,6 +1149,15 @@ def country(slug,pane='about'):
     country = Country.query.filter_by(slug=slug).first()
     if country:
         countries = Country.query.filter(Country.id != country.id).order_by(Country.name).all()
+        categories = Category.query.order_by(Category.name).all()
+        cats = []
+        for category in categories:
+            datasets = [u.__dict__ for u in Dataset.query.filter_by(country_id=country.id).filter_by(category_id=category.id).filter_by(ready=True).all()]
+            app.logger.debug(datasets)
+            if len(datasets) > 0:
+                setattr(category, 'datasets', datasets)
+                cats.append(category)
+        #categories = [{"name":"Good Datasets","datasets":datasets},{"name":"Bad Datasets","datasets":datasets}]
         latest_research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date)).paginate(1, 1, False).items
         research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date))
         staff = Staff.query.filter_by(country_id=country.id).order_by(Staff.sort_order)
@@ -1157,7 +1169,8 @@ def country(slug,pane='about'):
                                latest_research=latest_research,
                                country=country,
                                research=research,
-                               staff=staff)
+                               staff=staff,
+                               categories=cats)
     else:
         abort(404)
 
