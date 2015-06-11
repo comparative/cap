@@ -1,6 +1,6 @@
-h3 {
-    margin-top:10px;
-    margin-bottom:10px;
+#embedded-img {
+    padding:10px;
+    margin-top:6px;
 }
 
 .news-item {
@@ -11,12 +11,14 @@ h3 {
 .news-image {
     margin-bottom:20px; 
     margin-top:10px;
+    width:100%;
 }
 
 h1 a, h1 a:hover, h1 a:visited {
   color: #ffffff;
   text-decoration: none;
   line-height: inherit;
+  margin-bottom: 0px;
 }
 
 
@@ -97,12 +99,21 @@ div#countrystripe {
    margin-bottom: 0;
    max-width: initial;
    min-width:790px;
-   padding-top:30px;
+   padding-top:5px;
    padding-bottom:5px;
+}
+
+#trends-tool {
+    padding-top:21px;
 }
 
 div#countrystripe h1 {
     color:#ffffff;
+}
+
+div#stripecontainer {
+    margin-top:3px;
+    margin-bottom:3px;
 }
 
 .staff-image {
@@ -111,6 +122,8 @@ div#countrystripe h1 {
 }
 
 .featured-research-image {
-    /* margin-bottom:10px; */
-    margin-top:5px;
+  float: left;
+  margin-right: 10px;
+  width: 45%;
+  margin-top:5px;
 }

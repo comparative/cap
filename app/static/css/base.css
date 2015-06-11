@@ -26,7 +26,9 @@
 }
 */
 
-
+h3 {
+    margin-top:20px;
+}
 
 footer {
     background-color:#f2f2f2;
@@ -70,7 +72,8 @@ i.fi-social-twitter, i.fi-social-youtube {
 
 
 #go-container {
-    margin-top: 2px;
+    /*margin-top: 2px;*/
+    height:36px;
 	display:none;
 	padding:0px;
 	transition: width .5s ease;
@@ -78,7 +81,8 @@ i.fi-social-twitter, i.fi-social-youtube {
 
 
 input#go {
-	margin-top: 2px;
+	/*margin-top: 2px;*/
+	height:36px;
 	margin-left: 5px;
 	margin-bottom: 0px;
 	background-color: #3b4e6f;
@@ -89,18 +93,21 @@ input#go {
 	padding-right:0px;
 	padding-top:0px;
 	padding-bottom:0px;
+	height:36px;
 	transition: width .5s ease;
 }
 
+
+
 #email {
 	transition: width .5s ease;
-	padding-top:21px;
+	padding-top:25px;
     padding-left:2px;
 }
 
 
 div#social {
-	padding-top:10px;
+	padding-top:12px;
 	padding-bottom:0px;
 	margin-top:0px;
 	margin-bottom:0px;
@@ -115,7 +122,7 @@ input#updates {
 	background-color:#f6f6f6;
 	text-align: center; 
 	margin-bottom: 0px;
-	margin-top: 3px;
+	/*margin-top: 3px;*/
 }
 
 

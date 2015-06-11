@@ -1,3 +1,7 @@
+h3 {
+    margin-top:0px;
+}
+
 .news-item {
     margin-top:15px;
     margin-bottom:15px;
@@ -59,7 +63,7 @@ div#social {
 	padding-left:0px;
 	padding-right:30px;
 }
-*/
+
 
 input#updates {
 	-moz-border-radius: 15px;
@@ -70,7 +74,7 @@ input#updates {
 	margin-bottom: 0px;
 	margin-top: 2px;
 }
-
+*/
 
 
 .size-12 { font-size: 12px; }
@@ -127,6 +131,15 @@ div#bluestripe {
 
 div#under-graph {
 	margin-top: 15px;
+}
+
+div#under-graph h3 {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+div#indexmenu {
+    margin-top:10px;
 }
 
 .slider {

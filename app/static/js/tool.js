@@ -132,8 +132,10 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                         
             $timeout(function() {
                 project = getQueryVariable('project');
-                if (project) checkbox = angular.element('#' + project);
-                if (checkbox) checkbox.trigger('click');
+                if (project) {
+                    checkbox = angular.element('#' + project);
+                    if (checkbox) checkbox.trigger('click');
+                }
             }, 500);
             
     });
@@ -1160,6 +1162,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     // CLEAR CHART
         
     $scope.clearChart = function() {
+        
+        $scope.chart.scatter = false;
+        $scope.chart.stacked = false;
         
         while ($scope.chart.series.length > 0) {
             $scope.removeFromChart(0,false);

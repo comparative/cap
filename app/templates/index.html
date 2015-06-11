@@ -95,7 +95,7 @@
         
         
         
-        <div class="medium-3 columns left">
+        <div id="indexmenu" class="medium-3 columns left">
         
             <a target="_tool" href="/tool">
         	    <p class="panel">Explore Trends Tool</p>
@@ -107,7 +107,7 @@
       		
 			<ul id="drop" class="f-dropdown" data-dropdown-content>
 			{% for item in countries %}
-			  <li><a href="/countries/{{ item.slug }}">{{ item.name }}</a></li>
+			  <li><a href="{{ url_for('country',slug=item.slug) }}">{{ item.name }}</a></li>
 			{% endfor %} 
 			</ul>
 				

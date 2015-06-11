@@ -12,7 +12,7 @@
 
 <div id="countrystripe">
      
-     <div class="row">
+     <div id="stripecontainer" class="row">
      
         <div class="medium-12 columns">
         
@@ -76,7 +76,7 @@
         	    
                 <div class="medium-3 columns left">
                     
-                    <a href="{{ url_for('tool') }}" target="_tool"><img src="/static/img/trends_tool.png"/></a>
+                    <a href="{{ url_for('tool') }}?project={{ country.slug }}" target="_tool"><img id="trends-tool" src="/static/img/trends_tool.png"/></a>
                     
                 </div>
         
@@ -208,7 +208,7 @@
                                 {% if country.embed_url %}
                                 
                                 <a href="{{ url_for('tool') }}?project={{ country.slug }}" target="_tool">
-                                <img style="padding:10px 10px 10px 10px;" src="{{ country.embed_url }}" width="100%"/>    
+                                <img id="embedded-img" src="{{ country.embed_url }}" width="100%"/>    
                                 </a>
                                 
                                 <p class="caption">
