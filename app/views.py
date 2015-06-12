@@ -173,7 +173,19 @@ def about():
 
 @app.route('/datasets_codebooks')
 def datasets_codebooks():
-    return render_template('datasets_codebooks.html')
+    countries = Country.query.order_by(Country.name)
+    categories = Category.query.all()
+    cats = []
+    for category in categories:
+        datasets = []
+        for u in Dataset.query.filter_by(category_id=category.id).filter_by(ready=True).all():
+            dataset = u.__dict__
+            dataset['country'] = u.country.name
+            datasets.append(dataset)
+        if len(datasets) > 0:
+            setattr(category, 'datasets', datasets)
+            cats.append(category)
+    return render_template("datasets_codebooks.html",countries=countries,categories=cats)
 
 @app.route('/pages/<slug>')
 def page(slug):
@@ -1027,7 +1039,7 @@ def api_measures(dataset,topic):
     
     # CHECK CACHE
     cached_path = '/var/www/cap/datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
-    app.logger.debug(cached_path);
+    #app.logger.debug(cached_path);
     
     if (os.path.isfile(cached_path)):
         return send_file(cached_path)
@@ -1153,7 +1165,7 @@ def country(slug,pane='about'):
         cats = []
         for category in categories:
             datasets = [u.__dict__ for u in Dataset.query.filter_by(country_id=country.id).filter_by(category_id=category.id).filter_by(ready=True).all()]
-            app.logger.debug(datasets)
+            #app.logger.debug(datasets)
             if len(datasets) > 0:
                 setattr(category, 'datasets', datasets)
                 cats.append(category)

@@ -124,8 +124,17 @@
                                 {% for dataset in category.datasets %}
                                 
                                 <li class="dataset">
-                                    <a class="line-item highlight" href="#congressional_hearings"><h6 class="clickable">{{dataset.display}}</h6></a>
-                                    <div class="dataset_description" style="display: none;">{{dataset.description | safe}}
+                                    
+                                    <a class="line-item clickable" href="#congressional_hearings">
+                                        <div class="dataset-display clearfix">
+                                        <span class="left">{{dataset.display}}</span>
+                                        <span class="arrow right"><i class="fi-arrow-down"></i><i style="display:none;" class="fi-arrow-up ng-hide"></i></span>
+                                        </div>
+                                    </a>
+                                    
+                                    <div class="dataset_description" style="display: none;">
+                                    
+                                    {{dataset.description | safe}}
                                     <a class="clickable" href="/_uploads/datasetfiles/{{dataset.datasetfilename}}">download dataset</a>
                                     
                                     {% if dataset.codebookfilename %}
@@ -133,6 +142,7 @@
                                     {% endif %}
                                     
                                     </div>
+                                    
                                 </li>
                                 
                                 {% endfor %}
@@ -345,7 +355,8 @@
 
       
         $(document).ready(function() {
-
+            
+            /*
             $(".scrollable p").hover(function() {
     
                 $(this).addClass('country-hover');	
@@ -355,26 +366,16 @@
                 $(this).removeClass('country-hover');
     
             });
-            
-            
-            $(document).ready(function(){
-    
-                /*
-                var hash = window.location.hash;
-                if(hash){
-                    $('li.dataset a').toggleClass('highlight').next('div.dataset_description').slideToggle(200);
-                }
-                */
+            */
                 
-                $("li.dataset a.line-item").click(function(event) {
-                    $(this).toggleClass('highlight').next("div.dataset_description").slideToggle(200);
-                    event.preventDefault();
-                });
-
+            $("li.dataset a.line-item").click(function(event) {
+                $(this).siblings("div.dataset_description").slideToggle(200);
+                $(this).find("i.fi-arrow-down").toggle();
+                $(this).find("i.fi-arrow-up").toggle();
+                event.preventDefault();
             });
-            
-            
-            
+
+ 
         });
         
         </script>

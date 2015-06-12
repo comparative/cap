@@ -1,5 +1,15 @@
 $(document).ready(function() {
     
+    $(".scrollable p").hover(function() {
+
+        $(this).addClass('country-hover');	
+
+    }, function() {
+
+        $(this).removeClass('country-hover');
+
+    });
+    
     $("ul.slider li").addClass('slideborder-off');
 
 	$("#updates").focus(function() {

@@ -1,21 +1,140 @@
 {% extends "base.html" %}
 
-{% block head %}{% endblock %}
+{% block head %}
+
+<style>
+
+ul.category h3 {
+    margin-top:10px;
+    margin-bottom:0px;
+}
+
+div.dataset_description p {
+    margin-bottom:0px;
+}
+
+ul.category {
+    padding: 0px;
+    margin: 0px;
+}
+
+ul.category h5 {
+    color:black;
+}
+
+li.dataset {
+    list-style-type: none;
+    padding: 0px;
+    margin: 0px;
+    margin-left:30px;
+}
+
+div.dataset-display {
+    border-bottom: 1px solid #ccc;
+}
+
+div.dataset-display:hover > span.arrow i {
+    color:#008CBA !important;
+}
+
+
+</style>
+
+
+{% endblock %}
 
 {% block content %}
 
+
+
+<div id="bluestripe">
+     
+    <div class="row">
+     	<div id="slogan" class="medium-12 columns">
+     	The Comparative Agendas Project collects and organizes data from archived sources to track policy outcomes across countries.&nbsp;&nbsp;&nbsp;<a class="orange-link" href="pages/About">read more</a>
+     	</div>
+     </div>
+
+</div>
+
+
+
+
 <div class="row">
-<div class="medium-12 columns">
-        
-<h3>Datasets / Codebooks</h3>            
-            
+
+<div class="medium-9 columns">
+
+
+
+<h3>Datasets / Codebooks</h3>  
+
+
+
+    {% for category in categories %}
+
+    <ul class="category">
+    <h5>{{category.name}}</h5>
+
+    {% for dataset in category.datasets %}
+
+    <li class="dataset">
+    
+        <a class="line-item clickable" href="#congressional_hearings">
+            <div class="dataset-display clearfix">
+            <span class="left">{{dataset.country}}: {{dataset.display}}</span>
+            <span class="arrow right"><i class="fi-arrow-down"></i><i style="display:none;" class="fi-arrow-up ng-hide"></i></span>
+            </div>
+        </a>
+    
+        <div class="dataset_description" style="display: none;">
+    
+        {{dataset.description | safe}}
+        <a class="clickable" href="/_uploads/datasetfiles/{{dataset.datasetfilename}}">download dataset</a>
+    
+        {% if dataset.codebookfilename %}
+        &nbsp;&nbsp;<a class="clickable" href="/_uploads/codebookfiles/{{dataset.codebookfilename}}" target="_new">download codebook</a>
+        {% endif %}
+    
+        </div>
+    
+    </li>
+
+    {% endfor %}
+
+    </ul>
+
+    {% endfor %}
+
+
+
 </div>
+
+<div class="medium-3 columns left">
+
+{% include "sidebar.html" %}
+
 </div>
 
+</div>
 
-{% endblock %}    
+{% endblock %}  
 
-{% block scripts %}{% endblock %}
+{% block scripts %}
+<script>
+
+        $(document).ready(function() {
+                
+            $("li.dataset a.line-item").click(function(event) {
+                $(this).siblings("div.dataset_description").slideToggle(200);
+                $(this).find("i.fi-arrow-down").toggle();
+                $(this).find("i.fi-arrow-up").toggle();
+                event.preventDefault();
+            });
+
+        });
+
+</script>
+{% endblock %}
 
 
 
