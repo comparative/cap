@@ -107,8 +107,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     $scope.recent = [];
     
-    $scope.chart = new Chart();
-
 
     // LOAD SAVED CHARTS FROM DB BY USER COOKIE VAL
 
@@ -743,7 +741,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         }
         
-         
+        options.CAP_chart = $scope.chart;
         return options;
         
     }
@@ -1015,7 +1013,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         $scope.slug = $scope.saved[index].slug;
         $("#slug").val($scope.saved[index].slug);
         
-        $scope.chart.chartFromOptions(JSON.parse($scope.saved[index].options));
+        //$scope.chart.chartFromOptions(JSON.parse($scope.saved[index].options));
+        $scope.chart = JSON.parse($scope.saved[index].options).CAP_chart;
+        
         $scope.drawChart(false); 
     
     }
@@ -1028,7 +1028,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         $scope.slug = $scope.recent[index].slug;
         $("#slug").val($scope.recent[index].slug);
         
-        $scope.chart.chartFromOptions(JSON.parse($scope.recent[index].options));
+       // $scope.chart.chartFromOptions(JSON.parse($scope.recent[index].options));
+        $scope.chart = JSON.parse($scope.recent[index].options).CAP_chart;
         $scope.drawChart(false);     
         
     }
@@ -1247,7 +1248,12 @@ $(document).ready(function() {
     theScope = angular.element(document.getElementById('toolcontroller')).scope();
     
     // create angular model from highcharts options
-    theScope.chart.chartFromOptions(options);
+    // theScope.chart.chartFromOptions(options);
+    if (typeof options.CAP_chart == 'undefined') {
+        options.CAP_chart = new Chart();
+    }
+    
+    theScope.chart = options.CAP_chart;
     
     // send options to highcharts
     theChart = new Highcharts.Chart(options);
@@ -1318,9 +1324,11 @@ var drilldown = function(filters,dataset,topic,year) {
 
 // OPTIONS TO CHART
 
+/*
 Chart.prototype.chartFromOptions = function(options) {
     
     //console.log(options);
+    
     
     if (options.chart.type == 'scatter') {
         
@@ -1379,7 +1387,7 @@ Chart.prototype.chartFromOptions = function(options) {
     
 
 };
-
+*/
 
 Array.prototype.remove = function() {
 
