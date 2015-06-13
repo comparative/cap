@@ -98,8 +98,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
      $scope.export_options = [
         {"num":0,"display":""},
         {"num":1,"display":"Download Image"},
-        {"num":2,"display":"Copy URL"},
-        {"num":3,"display":"Embed"}
+        {"num":2,"display":"Copy Image URL"},
+        {"num":3,"display":"Copy Tool URL"},
+        {"num":4,"display":"Copy Embed Code"}
     ];
     
     
@@ -1125,8 +1126,13 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/charts/" + $("#slug").val() );
                 save = true;
                 break;
-                
+            
             case 3:
+                window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/tool/" + $("#slug").val() );
+                save = true;
+                break;
+                
+            case 4:
                 $('#embed_code').foundation('reveal', 'open');
                 save = true;
                 break;
@@ -1140,7 +1146,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             strOptions = JSON.stringify(options);
             //console.log(options);
             
-            // SAVE CHART UNPINNED
+            // SAVE CHART, UNPINNED
             resp = $.ajax({
                 type: 'POST',
                 url: '/charts/saveunpinned/' + $("#user").val() + '/' + $("#slug").val() ,

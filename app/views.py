@@ -252,8 +252,8 @@ def admin_page_item(slug):
     if form.validate_on_submit():
         page.title = form.title.data
         page.body = form.body.data
-        page.slug = slugify(page.title)
         if slug == 'add':
+            page.slug = slugify(page.title,to_lower=True)
             db.session.add(page)
         db.session.commit()
     	flash('Page "%s" saved' %
@@ -303,8 +303,8 @@ def admin_file_item(slug):
             filename = adhocfiles.save(request.files['file'])
             file.filename = filename
         file.name = form.name.data
-        file.slug = slugify(file.name)
         if slug == 'add':
+            file.slug = slugify(file.name,to_lower=True)
             db.session.add(file)
         db.session.commit()
     	flash('File "%s" saved' %
@@ -448,13 +448,13 @@ def admin_country_item(slug):
         country.heading = form.heading.data
         country.about = form.about.data
         country.embed_url = form.embed_url.data
-        country.slug = slugify(country.short_name)
         if slug == 'add':
+            country.slug = slugify(country.short_name,to_lower=True)
             db.session.add(country)
         db.session.commit()
     	flash('Country "%s" saved' %
               (form.name.data))
-        return redirect( url_for('admin_country_item',slug=current_user.country.slug) if current_user.country else 'admin/countries' )
+        return redirect( url_for('admin_country_item',slug=current_user.country.slug) if current_user.country else url_for('admin_country_list') )
     else:
         url = countryimages.url(country.filename) if country.filename else None
         if request.method == 'GET':
@@ -578,8 +578,8 @@ def admin_news_item(slug,id):
             news.filename = filename
         news.title = form.title.data
         news.content = form.content.data
-        news.slug = slugify(news.title)
         if id == 'add':
+            news.slug = slugify(news.title,to_lower=True)
             news.country_id = country.id
             db.session.add(news)
         news.saved_date = datetime.utcnow()
