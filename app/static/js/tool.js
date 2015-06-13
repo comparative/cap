@@ -294,8 +294,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             }
         
             $scope.chart.series.push(result);
-
-            // console.log($scope.chart.series);
         
             var url = baseUrl + '/api/measures/dataset/' + result.dataset.toString() + '/topic/' + result.topic.toString();
         
@@ -363,50 +361,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         
         if ($scope.chart.scatter) {
-            
-            
-                /* GET DATE RANGE ----- attention DRY!!!
-            
-                var arrayLength = $scope.chart.series[0].alldata.count.length;
-                var FirstYear = arrayLength;
-                var LastYear = 0;
-        
-                angular.forEach($scope.chart.series, function (series, index) {
-            
-                    // find earliest year with data
-                    for (var i = 0; i < arrayLength; i++) {
-                        if (series.alldata[series.measure][i] != 0) {
-                            var firstYear = i;
-                            break;
-                        }
-                    }
-                    if (firstYear < FirstYear) {
-                        FirstYear = firstYear;
-                    }
-
-                    // find latest year with data
-                    for (var i = arrayLength - 1; i >= 0; i--) {
-                        if (series.alldata[series.measure][i] != 0) {
-                            var lastYear = i;
-                            break;
-                        }
-                    }
-                    if (lastYear > LastYear) {
-                        LastYear = lastYear;
-                    }
-            
-                });
-        
-                $scope.years = year_list.slice(FirstYear,LastYear + 1);
-        
-                if ($scope.chart.yearFrom < year_list[FirstYear]) {
-                    $scope.chart.yearFrom = year_list[FirstYear];
-                }
-        
-                if ($scope.chart.yearTo > year_list[LastYear]) {
-                    $scope.chart.yearTo = year_list[LastYear];
-                }
-                */
             
             options = {
             chart: {
@@ -562,12 +516,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             
         } else {
         
-        
             options = angular.copy(defaultOptions);
-        
-            //options.series = [];
-            //options.yAxis = [];
-        
             if ($scope.chart.series.length > 0) {
             
                 options.chartType = $scope.chart.chartType;
@@ -688,8 +637,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
                 // CONSTRUCT X AXIS
             
-                $scope.yearslice = year_list.slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
-                options.xAxis[0].categories = $scope.yearslice;
+                $scope.chart.yearslice = year_list.slice(year_list.indexOf($scope.chart.yearFrom),year_list.indexOf($scope.chart.yearTo) + 1);
+                options.xAxis[0].categories = $scope.chart.yearslice;
          
          
                 // CONSTRUCT Y AXES
@@ -738,8 +687,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
             }
          
-         
-        
         }
         
         options.CAP_chart = $scope.chart;
@@ -814,8 +761,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 success: function (data) {
                 
                     slug = data.substr(6,8) // slug is between 'files/' & '.png' in return value
-                    $scope.slug = slug;
-                    $("#slug").val(slug);
+                    $scope.chart.slug = slug;
                                 
                     // ADD THUMBNAIL TO RECENT
                     item = new Saved(slug, exportUrl + data, obj.options);
@@ -834,8 +780,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     // CHART CONTROLS
     
     $scope.allSeriesSameType = function(oldType) {
-        
-       // console.log(oldType);
         
         var theType;
         var theMeasure;
@@ -956,11 +900,11 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         // SAVE CHART
         resp = $.ajax({
             type: 'POST',
-            url: '/charts/save/' + $("#user").val() + '/' + $("#slug").val() ,
+            url: '/charts/save/' + $("#user").val() + '/' + $scope.chart.slug,
             data: strOptions,
             success: function() {
                 alert('chart pinned!');
-                item = new Saved( $("#slug").val(), baseUrl + '/charts/' + $("#slug").val(), strOptions );
+                item = new Saved( $scope.chart.slug, baseUrl + '/charts/' + $scope.chart.slug, strOptions );
                 $scope.saved.unshift(item);
                 $scope.$apply();
             },
@@ -1011,30 +955,20 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     $scope.recallPinned = function(index) {
         
-        $scope.slug = $scope.saved[index].slug;
-        $("#slug").val($scope.saved[index].slug);
-        
-        //$scope.chart.chartFromOptions(JSON.parse($scope.saved[index].options));
+        $scope.chart.slug = $scope.saved[index].slug;
         $scope.chart = JSON.parse($scope.saved[index].options).CAP_chart;
-        
         $scope.drawChart(false); 
     
     }
     
     
-    
-    
     $scope.recallRecent = function(index) {
         
-        $scope.slug = $scope.recent[index].slug;
-        $("#slug").val($scope.recent[index].slug);
-        
-       // $scope.chart.chartFromOptions(JSON.parse($scope.recent[index].options));
+        $scope.chart.slug = $scope.recent[index].slug;
         $scope.chart = JSON.parse($scope.recent[index].options).CAP_chart;
         $scope.drawChart(false);     
         
     }
-    
     
     
     // Y-AXIS HELPERS
@@ -1104,7 +1038,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 theChart.exportChart(
                     {
                     type: 'img/png',
-                    filename: $("#slug").val(),
+                    filename: $scope.chart.slug,
                     sourceWidth: 960,
                     },
                 
@@ -1123,12 +1057,12 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 break;
   
             case 2:
-                window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/charts/" + $("#slug").val() );
+                window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/charts/" + $scope.chart.slug );
                 save = true;
                 break;
             
             case 3:
-                window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/tool/" + $("#slug").val() );
+                window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/tool/" + $scope.chart.slug );
                 save = true;
                 break;
                 
@@ -1144,12 +1078,11 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         if (save) {
         
             strOptions = JSON.stringify(options);
-            //console.log(options);
             
             // SAVE CHART, UNPINNED
             resp = $.ajax({
                 type: 'POST',
-                url: '/charts/saveunpinned/' + $("#user").val() + '/' + $("#slug").val() ,
+                url: '/charts/saveunpinned/' + $("#user").val() + '/' + $scope.chart.slug ,
                 data: strOptions,
                 success: function() { },
                 error: function(XMLHttpRequest, textStatus, errorThrown) { 
@@ -1326,74 +1259,6 @@ var drilldown = function(filters,dataset,topic,year) {
     });
 
 }
-
-
-// OPTIONS TO CHART
-
-/*
-Chart.prototype.chartFromOptions = function(options) {
-    
-    //console.log(options);
-    
-    
-    if (options.chart.type == 'scatter') {
-        
-        //options.series[0].data = tooples;
-        alert('hi, I can not recall your scatter chart yet');
-        
-    
-    } else {
-        
-        this.scatter = false;
-        
-        var series = [];
-    
-        for (var i = 0; i < options.series.length; i++) { 
-        
-            var s = options.series[i];
-        
-            var objS = new Series(s.dataset,s.topic,s.name,[]);  
-            objS.measure = s.measure;
-            objS.type = s.type;
-            objS.yaxis = s.yAxis;
-            objS.color = rgba_colors[hex_colors.indexOf(s.color)];
-            objS.alldata = s.alldata; 
-            objS.filters = s.filters; 
-            objS.trump = s.trump;      
-            series.push(objS);
-        
-            if (!this.yaxes[s.yAxis]) {
-                this.yaxes.push({"measure":s.measure});
-            }
-        
-        }
-    
-        this.series = series;
-    
-
-    
-        this.yearFrom = options.xAxis[0].categories[0];
-        this.yearTo = options.xAxis[0].categories[options.xAxis[0].categories.length - 1];
-    
-        // DETERMINE CHART TYPE
-    
-        this.chartType = options.chartType;
-    
-        if (options.plotOptions.area.stacking == 'normal' || options.plotOptions.column.stacking == 'normal') {
-        
-            this.stacked = true;
-        
-        } else {
-    
-            this.stacked = false;
-        
-        }
-    
-    }
-    
-
-};
-*/
 
 Array.prototype.remove = function() {
 
