@@ -94,8 +94,8 @@
                 <div class="large-3 medium-4 columns">
                 
                    <label><h5>Dates</h5></label>
-                   <select ng-change="drawChart()" ng-model="chart.yearFrom" ng-options="year for year in years" class="from years" name="years_from" style="display: inline-block;"></select>
-                   <select ng-change="drawChart()" ng-model="chart.yearTo" ng-options="year for year in years" class="to years" name="years_to" style="display: inline-block;"></select>
+                   <select ng-change="drawChart()" ng-model="chart.yearFrom" ng-options="year for year in chart.yearsAvailable | filter: lessThan(chart.yearTo)" class="from years" name="years_from" style="display: inline-block;"></select>
+                   <select ng-change="drawChart()" ng-model="chart.yearTo" ng-options="year for year in chart.yearsAvailable | filter: greaterThan(chart.yearFrom)" class="to years" name="years_to" style="display: inline-block;"></select>
                     
                 </div>
                 
@@ -129,11 +129,11 @@
                          </th>
          
                       </tr>
-                      <tr ng-repeat="year in chart.yearslice">
+                      <tr ng-repeat="year in chart.yearsSelected">
                          <td>{@ year @}</td>
                          <td ng-style="{@series.color@}" ng-repeat="series in chart.series">
                          <div class="text-center">
-                         <a class="clickable" ng-click="openDrilldown(series.filters,series.dataset,series.topic,year)">{@ series.data[$parent.$index] @}</a>
+                         <a class="clickable" ng-click="openDrilldown(series.filters,series.dataset,series.topic,year)">{@ series.alldata[series.measure][$parent.$index] @}</a>
                          </div>
                          </td>
                       </tr>
@@ -441,12 +441,93 @@ var rgba_colors = [
 
 var hex_colors = ['#7cb5ec', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#8d4653', '#91e8e1'];
 
-var year_list = [];
-for (i=1946; i < 2016; i++) {
-    year_list.push(i.toString());            
-}
-
 var baseUrl = 'http://www.coolbest.net:5000';
+
+var scatterOptions = {
+            chart: {
+                renderTo: 'chart',
+                type: 'scatter',
+            },
+            title: {
+                text: ''
+            },
+            credits: { 
+                enabled: false 
+            },    
+            xAxis: {
+                title: {
+                    enabled: true,
+                    text: ''
+                },
+                startOnTick: true,
+                endOnTick: true,
+                showLastLabel: true
+            },
+            yAxis: {
+                title: {
+                    text: ''
+                },
+                min: 0,
+            },
+            /*legend: {
+                layout: 'vertical',
+                align: 'left',
+                verticalAlign: 'top',
+                x: 100,
+                y: 70,
+                floating: true,
+                backgroundColor: '#FFFFFF',
+                borderWidth: 1
+            },*/
+            legend:{
+                enabled: false
+            },
+            plotOptions: {
+                scatter: {
+                    marker: {
+                        radius: 5,
+                        states: {
+                            hover: {
+                                enabled: true,
+                                lineColor: 'rgb(100,100,100)'
+                            }
+                        }
+                    },
+                    states: {
+                        hover: {
+                            marker: {
+                                enabled: false
+                            }
+                        }
+                    },
+                    tooltip: {
+                        headerFormat: '',
+                        pointFormat: '{point.name}'
+                    }
+                }
+            },
+            
+            exporting:{
+                buttons:{
+                    contextButton:{
+                        enabled: false
+                    }
+                },
+                url: 'http://104.237.136.8:8080/highcharts-export-web/',
+                width: '960'
+            },
+            
+            series: [{
+                regression: false ,
+                regressionSettings: {
+                    type: 'linear',
+                    color:  'rgba(59, 78, 111, .9)'
+                },
+                name: '',
+                color: 'rgba(59, 78, 111, .5)',
+                data:  []
+            }]
+        };
 
 var defaultOptions = {
     
@@ -468,7 +549,7 @@ var defaultOptions = {
             text: 'Year'
         },
     
-        categories: year_list,
+        categories: [],
     
         labels : {
             rotation: -60,
@@ -488,9 +569,7 @@ var defaultOptions = {
     
         enabled: true,
 
-        formatter: function() {
-            return '<center><b>' + this.x + '</b><br/>' + this.series.name.split(': ').join(':<br/>').split(' #').join('<br/>#') + '<br/><b>' + this.y + '</b></center>';
-        }
+        formatter: tooltipFormatter
         
     },
     
@@ -514,7 +593,7 @@ var defaultOptions = {
         series:{
             point: {
                 events: {
-                    
+                    click: clickPoint
                 }
            },
 
@@ -550,16 +629,20 @@ var defaultOptions = {
 
 };
 
-    {% if options %}
+{% if options %}
+
+    var options =  {{ options | safe }};
     
-        var options =  {{ options | safe }};
-        options.plotOptions.series.point.events['click'] = clickPoint;
-         
-    {% else %}
-    
-        var options = $.extend(true, {}, defaultOptions); 
-    
-    {% endif %}
+    // These properties have HTML & don't survive serialization to db and back.. why?
+    options.plotOptions.series.point.events['click'] = clickPoint;
+    options.tooltip.formatter = tooltipFormatter;
+
+     
+{% else %}
+
+    var options = $.extend(true, {}, defaultOptions); 
+
+{% endif %}
       
 </script>
         

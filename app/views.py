@@ -1089,18 +1089,17 @@ def api_measures(dataset,topic):
     #app.logger.debug(sql)
     
     cur.execute(sql,[dataset,topic])
-    d = cur.fetchall()
-    count = []
-    for i in range(1946,2016):
-        found = False
-        for r in d:
-            if (r["year"] == i):
-                count.append(r["cnt"])
-                found = True
-        if (found == False):
-            count.append(0)
-    data['count'] = count 
+    rows = cur.fetchall()
     
+    count = []
+    years = []
+    
+    for i, year in enumerate(d['year'] for d in rows): 
+        years.append(year)
+    data['years'] = years
+    for i, cnt in enumerate(d['cnt'] for d in rows): 
+        count.append(cnt)
+    data['count'] = count
     
     # PERCENT CHANGE
     percent_change = [None]
@@ -1109,11 +1108,12 @@ def api_measures(dataset,topic):
         i += 1
         if i < len(count):
             pc = float(count[i] - count[i - 1])/count[i - 1] if (count[i - 1] > 0) else None
-            if pc:
+            if pc is not None:
                 percent_change.append(int(100 * float("{0:.2f}".format(pc))))
             else:
                 percent_change.append(None)
     data['percent_change'] = percent_change
+    
     #app.logger.debug(len(count))
     
     # PERCENT TOTAL
@@ -1133,19 +1133,30 @@ def api_measures(dataset,topic):
     sql = sql + """
     GROUP BY year) AS yt ORDER by year
     """
+    
     cur.execute(sql,[dataset])
-    d = cur.fetchall()
+    rows = cur.fetchall()
+    
+    totals = []    
+    for i, total in enumerate(d['total'] for d in rows): 
+        totals.append(total)
+    
+    #data['totals'] = totals
+
     percent_total = []
-    for i in range(1946,2016):
-        found = False
-        for r in d:
-            if (r["year"] == i):
-                pt = float(count[i - 1946])/r["total"]
+    i = 0
+    for c in count:
+        if i < len(count):
+            pt = float(count[i])/totals[i] if (totals[i] > 0) else None
+            if pt is not None:
                 percent_total.append(int(100 * float("{0:.2f}".format(pt))))
-                found = True
-        if (found == False):
-            percent_total.append(0)     
+                #percent_total.append(pt)
+            else:
+                percent_total.append(None)
+            i += 1
     data['percent_total'] = percent_total
+    
+    #return dumps(data)
     
     # WRITE CACHE
     with open(cached_path, 'w') as outfile:
