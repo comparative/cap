@@ -67,7 +67,7 @@
         	    
                 <div class="medium-3 columns left">
                     
-                    <a href="{{ url_for('tool') }}" target="_tool"><img id="trends-tool" src="/static/img/trends_tool.png"/></a>
+                    <a href="{{ url_for('tool') }}" target="_tool"><img id="trends-tool" src="/static/img/rounded-trend-button.png"/></a>
                     
                 </div>
         
@@ -109,7 +109,7 @@
                 
                 <div class="medium-4 columns">
                     
-                    <img style="margin-top:24px;" class="news-image" src="http://www.coolbest.net:5000/_uploads/researchimages/{{ research.imagename }}">
+                    <img style="margin-top:24px;" class="news-image" src="http://beta.comparativeagendas.com/_uploads/researchimages/{{ research.imagename }}">
                 
                 </div>
                 
@@ -119,7 +119,7 @@
 				{{ smart_truncate(research.body,5000)|safe }}
 				{% if research.filename %}
 				    
-				    <a href="http://www.coolbest.net:5000/_uploads/researchfiles/{{ research.filename }}">{{ research.filename }}</a>
+				    <a href="http://beta.comparativeagendas.com/_uploads/researchfiles/{{ research.filename }}">{{ research.filename }}</a>
 				    
 				{% endif %}
 				</div>

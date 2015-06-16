@@ -76,7 +76,7 @@
         	    
                 <div class="medium-3 columns left">
                     
-                    <a href="{{ url_for('tool') }}?project={{ country.slug }}" target="_tool"><img id="trends-tool" src="/static/img/trends_tool.png"/></a>
+                    <a href="{{ url_for('tool') }}?project={{ country.slug }}" target="_tool"><img id="trends-tool" src="/static/img/rounded-trend-button.png"/></a>
                     
                 </div>
         
@@ -172,7 +172,7 @@
                                 <div class="row">
 
                                     <div class="medium-4 columns">
-                                    <img class="news-image" src="http://www.coolbest.net:5000/_uploads/researchimages/{{ item.imagename }}"/>
+                                    <img class="news-image" src="http://beta.comparativeagendas.com/_uploads/researchimages/{{ item.imagename }}"/>
                                     </div>
 
                                     <div class="medium-8 columns">
@@ -292,7 +292,7 @@
                                     <div class="medium-12 columns">
                                     <h5>{{ item.title }}</h5>
                                     <p>
-                                    {% if item.imagename %}<img style="float:left; margin-right:10px;" class="featured-research-image" src="http://www.coolbest.net:5000/_uploads/researchimages/{{ item.imagename }}">{% endif %}
+                                    {% if item.imagename %}<img style="float:left; margin-right:10px;" class="featured-research-image" src="http://beta.comparativeagendas.com/_uploads/researchimages/{{ item.imagename }}">{% endif %}
                                     {{ smart_truncate(item.body,475)|safe }}
                                     <a class="orange-link" href="{{ url_for('research_item',slug=country.slug,id=item.id) }}">read more</a></p>
                                     

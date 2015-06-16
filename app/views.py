@@ -8,7 +8,7 @@ from sqlalchemy import desc
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
 from functools import wraps, update_wrapper
-from flask import render_template, flash, redirect, url_for, request, make_response, send_file, abort
+from flask import render_template, flash, redirect, url_for, request, make_response, send_file, abort, send_from_directory
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from werkzeug import secure_filename
 from json import dump, dumps, loads
@@ -34,6 +34,12 @@ def nocache(view):
         
     return update_wrapper(no_cache, view)
 
+######## robots.txt
+
+@app.route('/robots.txt')
+#@app.route('/sitemap.xml')
+def static_from_root():
+    return send_from_directory(app.static_folder, request.path[1:])
 
 ######### CHARTING ROUTES
 
@@ -976,7 +982,7 @@ SELECT Concat(Trim(To_char(m.majortopic, '999')), '_', m.shortname)
        Concat(Trim(To_char(t.subtopic, '9999')), '_', t.shortname)) AS 
        subtopics 
     FROM   major_topics m 
-           JOIN subtopicz t 
+           JOIN sub_topics t 
              ON m.majortopic = t.majortopic 
     GROUP  BY m.id,
 	      m.shortname,
@@ -1050,7 +1056,7 @@ def api_measures(dataset,topic):
     cur = conn.cursor(cursor_factory=RealDictCursor)
     data = {}
     
-    # GET FILTERS
+    # FILTERS
     
     sql = """
     select filters from dataset WHERE dataset.id = %s
@@ -1067,7 +1073,7 @@ def api_measures(dataset,topic):
     
     topic_col = 'majortopic' if int(topic) < 100 else 'subtopic'
     
-    # COUNT
+    # COUNT THIS TOPIC
     
     sql = """
     SELECT yc.year::int, yc.cnt::int FROM (
@@ -1083,6 +1089,8 @@ def api_measures(dataset,topic):
             sql = sql + " AND " + pred 
             
     sql = sql + """
+    AND datarow->>'year' ~ '^[0-9]'
+    AND datarow->>'year' != '0'
     GROUP BY year) AS yc ORDER by year
     """
    
@@ -1116,7 +1124,8 @@ def api_measures(dataset,topic):
     
     #app.logger.debug(len(count))
     
-    # PERCENT TOTAL
+    # TOTALS THIS TOPIC
+    
     sql = """
     SELECT yt.year::int, yt.total::int FROM (
     select datarow->>'year' AS year, COUNT(datarow->'id') as total
@@ -1131,6 +1140,8 @@ def api_measures(dataset,topic):
             sql = sql + " AND " + pred 
     
     sql = sql + """
+    AND datarow->>'year' ~ '^[0-9]'
+    AND datarow->>'year' != '0'
     GROUP BY year) AS yt ORDER by year
     """
     

@@ -261,6 +261,7 @@ h1,h2,h3,h4,h5,h6,p.panel,p.panel a, #page-title a, #page-subtitle a, #slogan {
 
 #logo-footer {
     width:60px;
+    margin-top:5px;
 }
 
 
@@ -271,7 +272,7 @@ h1,h2,h3,h4,h5,h6,p.panel,p.panel a, #page-title a, #page-subtitle a, #slogan {
 #page-title-footer {
 	font-weight:bold;
 	font-size:11pt;
-	margin-top:4px;
+	margin-top:0px;
 	line-height:1;
 	letter-spacing: 2px;
 }

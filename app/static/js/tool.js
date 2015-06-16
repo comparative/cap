@@ -334,15 +334,13 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     // REMOVE FROM CHART
     
-    $scope.removeFromChart = function(index,draw) {
+    $scope.removeFromChart = function(index) {
         
         if ($scope.chart.scatter) {
         
             alert('Scatter plot chart type requires exactly two series.');
         
         } else {
-        
-            draw = typeof draw !== 'undefined' ? draw : true;
         
             // RESET TO DEFAULTS FOR NEXT ADD
             $scope.chart.series[index].measure = "count";
@@ -363,7 +361,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             }
         
             doSeriesRemain = $scope.chart.series.length > 0;            
-            if (draw) $scope.drawChart(doSeriesRemain); 
+            $scope.drawChart(doSeriesRemain); 
         
         } 
     	
@@ -991,7 +989,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     $scope.clearChart = function() {
         
         $scope.chart = new Chart();
-        $scope.drawChart();
+        $scope.drawChart(false);
         
     }
     
