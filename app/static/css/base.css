@@ -41,7 +41,7 @@ footer {
 #footer-links {
     background-color:#f2f2f2;
     border:0;
-    margin-top: 38px;
+    margin-top: 49px;
     width: 100%;
 }
 
@@ -60,7 +60,7 @@ i.fi-social-twitter, i.fi-social-youtube {
 #page-title {
 	font-weight:bold;
 	font-size:13pt;
-	margin-top:4px;
+	margin-top:6px;
 	line-height:1;
 	letter-spacing:2px;
 }
@@ -261,7 +261,7 @@ h1,h2,h3,h4,h5,h6,p.panel,p.panel a, #page-title a, #page-subtitle a, #slogan {
 
 #logo-footer {
     width:60px;
-    margin-top:5px;
+    margin-top:10px;
 }
 
 
@@ -272,7 +272,7 @@ h1,h2,h3,h4,h5,h6,p.panel,p.panel a, #page-title a, #page-subtitle a, #slogan {
 #page-title-footer {
 	font-weight:bold;
 	font-size:11pt;
-	margin-top:0px;
+	margin-top:-4px;
 	line-height:1;
 	letter-spacing: 2px;
 }
@@ -323,16 +323,4 @@ div#bluestripe {
 .bold-link {
     font-weight:bold;
     font-size:1.2rem;
-}
-
-.orbit-container .orbit-slides-container li .orbit-caption{
-	top:0;
-	right:0;
-	height:30%;
-	width:40%;
-	background-color: rgba(255,255,255,0.8);
-}
-
-.orbit-caption a {
-    display: none;
 }

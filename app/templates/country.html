@@ -115,7 +115,13 @@
                             <div class="medium-12 columns">
                             
                                 <h3>Datasets</h3>
-                            
+                        
+                                {% if country.datasets_intro %}
+                                
+                                {{ country.datasets_intro|safe }}
+                                
+                                {% endif %}
+                                
                                 {% for category in categories %}
                                 
                                 <ul class="category">
@@ -348,7 +354,7 @@
   $(document).foundation({
     tab: {
       callback : function (tab) {
-        console.log(tab);
+        //console.log(tab);
       }
     }
   });

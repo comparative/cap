@@ -1,3 +1,4 @@
+import shutil
 import os
 import uuid
 import psycopg2
@@ -179,6 +180,7 @@ def about():
 
 @app.route('/datasets_codebooks')
 def datasets_codebooks():
+    intro = Page.query.filter_by(slug='datasets-intro').first()
     countries = Country.query.order_by(Country.name)
     categories = Category.query.all()
     cats = []
@@ -191,7 +193,7 @@ def datasets_codebooks():
         if len(datasets) > 0:
             setattr(category, 'datasets', datasets)
             cats.append(category)
-    return render_template("datasets_codebooks.html",countries=countries,categories=cats)
+    return render_template("datasets_codebooks.html",intro=intro,countries=countries,categories=cats)
 
 @app.route('/pages/<slug>')
 def page(slug):
@@ -453,6 +455,7 @@ def admin_country_item(slug):
         country.location = form.location.data
         country.heading = form.heading.data
         country.about = form.about.data
+        country.datasets_intro = form.datasets_intro.data
         country.embed_url = form.embed_url.data
         if slug == 'add':
             country.slug = slugify(country.short_name,to_lower=True)
@@ -470,6 +473,7 @@ def admin_country_item(slug):
             form.location.data = country.location
             form.heading.data = country.heading
             form.about.data = country.about
+            form.datasets_intro.data = country.datasets_intro 
             form.embed_url.data = country.embed_url
     
     return render_template('admin/country_item.html', 
@@ -842,7 +846,17 @@ def admin_dataset_item(slug,id):
     form.fieldnames=[]
     if 'content' in request.files and request.files['content'].filename != '':
             datasetfilename = datasetfiles.save(request.files['content'])
-            csvfile = open(datasetfiles.path(datasetfilename), 'rU')
+            datasetfilepath = datasetfiles.path(datasetfilename)
+            #try:
+            #    didit = convert_to_utf8(datasetfilepath)
+            #except:
+            #    flash('Something went wrong, dataset not converted to UTF-8 dude!')
+            #if (didit == False):
+            #    flash('Something went wrong, dataset not converted to UTF-8!')
+            #with codecs.open(datasetfilepath, "w", "utf-8-sig") as temp:
+            #    temp.write("hi mom\n")
+            #    temp.write(u"This has ")
+            csvfile = open(datasetfilepath, 'rU')
             reader = csv.DictReader(csvfile)
             reader.fieldnames = [item.lower() for item in reader.fieldnames]
             form.fieldnames = reader.fieldnames
@@ -872,12 +886,16 @@ def admin_dataset_item(slug,id):
         dataset.category = form.category.data        
         if id == 'add':
             dataset.country_id = country.id
-            db.session.add(dataset)
+            db.session.add(dataset)  
         dataset.saved_date = datetime.utcnow()
-        db.session.commit()
-    	flash('Dataset "%s" saved' %
-              (form.display.data))
+        try:
+            db.session.commit()
+            flash('Dataset "%s" saved' %
+                  (form.display.data))
+        except:
+            flash('Something went wrong, dataset not saved!')
         return redirect(url_for('admin_dataset_list',slug=slug))
+        
     else:
         dataseturl= datasetfiles.url(dataset.datasetfilename) if dataset.datasetfilename else None
         codebookurl = codebookfiles.url(dataset.codebookfilename) if dataset.codebookfilename else None
@@ -1073,6 +1091,43 @@ def api_measures(dataset,topic):
     
     topic_col = 'majortopic' if int(topic) < 100 else 'subtopic'
     
+    
+    # TOTALS ALL TOPICS
+    
+    sql = """
+    SELECT yt.year::int, yt.total::int FROM (
+    select datarow->>'year' AS year, COUNT(datarow->'id') as total
+    from (
+      select json_array_elements(content)
+      from dataset WHERE dataset.id = %s
+    ) s(datarow)
+    WHERE 1=1"""
+    
+    if len(filter_predicates) > 0:
+        for pred in filter_predicates:
+            sql = sql + " AND " + pred 
+    
+    sql = sql + """
+    AND datarow->>'year' ~ '^[0-9]'
+    AND datarow->>'year' != '0'
+    GROUP BY year) AS yt ORDER by year
+    """
+    
+    cur.execute(sql,[dataset])
+    rows = cur.fetchall()
+    
+    totals = []
+    for i, total in enumerate(d['total'] for d in rows): 
+        totals.append(total)
+    
+    # years for which this dataset "has data" (for ANY topic)
+    years = []   
+    for i, year in enumerate(d['year'] for d in rows): 
+        years.append(year)
+         
+    data['years'] = years
+    
+    
     # COUNT THIS TOPIC
     
     sql = """
@@ -1099,15 +1154,17 @@ def api_measures(dataset,topic):
     cur.execute(sql,[dataset,topic])
     rows = cur.fetchall()
     
-    count = []
-    years = []
+    #app.logger.debug(rows)
     
-    for i, year in enumerate(d['year'] for d in rows): 
-        years.append(year)
-    data['years'] = years
-    for i, cnt in enumerate(d['cnt'] for d in rows): 
-        count.append(cnt)
+    count = []
+    for year in years:
+        found = next((item for item in rows if item['year'] == year), None)
+        if found is not None:
+            count.append(found['cnt'])
+        else:
+            count.append(0)
     data['count'] = count
+    
     
     # PERCENT CHANGE
     percent_change = [None]
@@ -1117,41 +1174,12 @@ def api_measures(dataset,topic):
         if i < len(count):
             pc = float(count[i] - count[i - 1])/count[i - 1] if (count[i - 1] > 0) else None
             if pc is not None:
-                percent_change.append(int(100 * float("{0:.2f}".format(pc))))
+                percent_change.append(float("{0:.2f}".format(100 * pc)))
             else:
                 percent_change.append(None)
     data['percent_change'] = percent_change
     
-    #app.logger.debug(len(count))
-    
-    # TOTALS THIS TOPIC
-    
-    sql = """
-    SELECT yt.year::int, yt.total::int FROM (
-    select datarow->>'year' AS year, COUNT(datarow->'id') as total
-    from (
-      select json_array_elements(content)
-      from dataset WHERE dataset.id = %s
-    ) s(datarow)
-    WHERE 1=1"""
-    
-    if len(filter_predicates) > 0:
-        for pred in filter_predicates:
-            sql = sql + " AND " + pred 
-    
-    sql = sql + """
-    AND datarow->>'year' ~ '^[0-9]'
-    AND datarow->>'year' != '0'
-    GROUP BY year) AS yt ORDER by year
-    """
-    
-    cur.execute(sql,[dataset])
-    rows = cur.fetchall()
-    
-    totals = []    
-    for i, total in enumerate(d['total'] for d in rows): 
-        totals.append(total)
-    
+    #app.logger.debug(len(count))    
     #data['totals'] = totals
 
     percent_total = []
@@ -1160,21 +1188,20 @@ def api_measures(dataset,topic):
         if i < len(count):
             pt = float(count[i])/totals[i] if (totals[i] > 0) else None
             if pt is not None:
-                percent_total.append(int(100 * float("{0:.2f}".format(pt))))
+                percent_total.append(float("{0:.2f}".format(100 * pt)))
                 #percent_total.append(pt)
             else:
                 percent_total.append(None)
             i += 1
     data['percent_total'] = percent_total
     
-    #return dumps(data)
+    return dumps(data)
     
     # WRITE CACHE
     with open(cached_path, 'w') as outfile:
         dump(data, outfile)
          
     return dumps(data)
-    #return dumps(cur.fetchall())
 
     
 @app.route('/<slug>')
@@ -1217,3 +1244,55 @@ def research_item(slug,id):
         return render_template("research_item.html",countries=countries,country=country,research=research)
     else:
         abort(404)
+
+def convert_to_utf8(filename):
+    # gather the encodings you think that the file may be
+    # encoded inside a tuple
+    encodings = ('macintosh','windows-1250','iso-8859-1','iso-8859-2','utf-8','utf-7','ibm852','shift_jis','iso-2022-jp')
+ 
+    # try to open the file and exit if some IOError occurs
+    try:
+        f = open(filename, 'r').read()
+    except Exception:
+        return False
+        #sys.exit(1)
+ 
+    # now start iterating in our encodings tuple and try to
+    # decode the file
+    for enc in encodings:
+        try:
+            # try to decode the file with the first encoding
+            # from the tuple.
+            # if it succeeds then it will reach break, so we
+            # will be out of the loop (something we want on
+            # success).
+            # the data variable will hold our decoded text
+            data = f.decode(enc)
+            break
+        except Exception:
+            # if the first encoding fail, then with the continue
+            # keyword will start again with the second encoding
+            # from the tuple an so on.... until it succeeds.
+            # if for some reason it reaches the last encoding of
+            # our tuple without success, then exit the program.
+            if enc == encodings[-1]:
+                return False
+                #sys.exit(1)
+            continue
+ 
+    # now get the absolute path of our filename and append .bak
+    # to the end of it (for our backup file)
+    fpath = os.path.abspath(filename)
+    newfilename = fpath + '.bak'
+    # and make our backup file with shutil
+    shutil.copy(filename, newfilename)
+ 
+    # and at last convert it to utf-8
+    f = open(filename, 'w')
+    try:
+        f.write(data.encode('utf-8'))
+        f.close()
+        return True
+    except Exception, e:
+        f.close()
+        return e

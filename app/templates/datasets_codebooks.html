@@ -11,6 +11,7 @@ ul.category h3 {
 
 div.dataset_description p {
     margin-bottom:0px;
+    font-size:.9rem;
 }
 
 div.dataset_description {
@@ -37,6 +38,7 @@ li.dataset {
 
 div.dataset-display {
     border-bottom: 1px solid #ccc;
+    padding-top: 5px;
 }
 
 div.dataset-display:hover > span.arrow i {
@@ -74,7 +76,11 @@ div.dataset-display:hover > span.arrow i {
 
 <h3>Datasets / Codebooks</h3>  
 
+    {% if intro.body %}
+    
+    {{ intro.body|safe }}
 
+    {% endif %}
 
     {% for category in categories %}
 

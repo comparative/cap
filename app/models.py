@@ -69,6 +69,7 @@ class Country(db.Model):
     about = db.Column(db.String(9000))
     embed_url = db.Column(db.String(200))
     slug = db.Column(db.String(80))
+    datasets_intro = db.Column(db.String(9000))
     
     def __repr__(self):
         return self.name

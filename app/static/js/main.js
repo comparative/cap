@@ -11,6 +11,7 @@ $(document).ready(function() {
     });
     
     $("ul.slider li").addClass('slideborder-off');
+    $("img#trends-tool").addClass('trends-tool-off');
 
 	$("#updates").focus(function() {
   		
@@ -57,6 +58,26 @@ $(document).ready(function() {
 	
 		$(this).removeClass('slideborder');
 		$(this).addClass('slideborder-off');
+	    
+	   // $(".orbit-caption a").removeClass('bold-link');
+	   $(".orbit-caption a").hide();
+	
+	});
+	
+	
+	$("img#trends-tool").hover(function() {
+	    
+	    $(this).removeClass('trends-tool-off');
+		$(this).addClass('trends-tool-on');
+		
+		//$(".orbit-caption a").addClass('bold-link');
+		$(".orbit-caption a").show();
+		
+	
+	}, function() {
+	
+		$(this).removeClass('trends-tool-on');
+		$(this).addClass('trends-tool-off');
 	    
 	   // $(".orbit-caption a").removeClass('bold-link');
 	   $(".orbit-caption a").hide();

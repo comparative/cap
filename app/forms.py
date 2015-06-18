@@ -64,7 +64,8 @@ class DatasetForm(Form):
     def validate(self):
         rv = Form.validate(self)
         if self.fieldnames:
-            required_fieldnames = ['id','year','majortopic','subtopic']
+            #required_fieldnames = ['id','year','majortopic','subtopic']
+            required_fieldnames = ['id','year','majortopic']
             for required_fieldname in required_fieldnames:
                 if required_fieldname not in self.fieldnames:
                     self.content.errors.append('The required column "' + required_fieldname + '" was not found in the data you uploaded.')
@@ -75,12 +76,13 @@ class DatasetForm(Form):
 
 class CountryForm(Form):
     name = StringField('name', validators=[DataRequired()])
-    short_name = StringField('name', validators=[DataRequired()])
+    short_name = StringField('short_name', validators=[DataRequired()])
     principal = StringField('principal')
     location = StringField('location')
     image = FileField('image',validators=[FileAllowed(IMAGES, 'Please choose an image file.')])
     heading = StringField('heading', validators=[DataRequired()])
     about = StringField('content', validators=[DataRequired()],widget=TextArea())
+    datasets_intro = StringField('datasets_intro', validators=[],widget=TextArea())
     embed_url = principal = StringField('embed_url')
     
 class UserForm(Form):

@@ -21,7 +21,7 @@
      	    
      	    <div class="medium-11 columns text-right">
      	        <a id="save-chart" ng-click="saveChart()" class="button tiny clickable">Pin chart</a>
-     	        <a id="clear-chart" ng-click="clearChart()" class="button tiny clickable">Clear chart</a>
+     	        <a id="clear-chart" ng-click="clearChart()" class="button tiny clickable">Reset tool</a>
      	    </div>
      	    
      	    <div class="tool-help medium-1 columns text-left">
@@ -58,7 +58,11 @@
             </dl>
             
             <div class="row">
-                <div id="chart"></div>
+                
+                <div style="display:none;" id="intro">To create a chart, select project(s), dataset type(s), and policy topic(s) from the list on the left.</div>
+                
+                <div id="chart">
+                </div>
           
             </div>
             
@@ -133,7 +137,7 @@
                          <td>{@ year @}</td>
                          <td ng-style="{@series.color@}" ng-repeat="series in chart.series">
                          <div class="text-center">
-                         <a class="clickable" ng-click="openDrilldown(series.filters,series.dataset,series.topic,year)">{@ series.alldata[series.measure][$parent.$index] @}</a>
+                         <a class="clickable" ng-click="openDrilldown(series.filters,series.dataset,series.topic,year)">{@ series.chartdata[series.measure][$parent.$index] @}</a>
                          </div>
                          </td>
                       </tr>
@@ -387,27 +391,6 @@
         
     </div>
     
-	<div id="thumbnailoptions" class="reveal-modal tiny" data-reveal>
-	  
-	<br/>
-	  
-	  <img class="thumb" src="/static/img/lilchart3.png">
-	  <br/>
-	  
-	 
-	<select class="from years" name="years_from" style="display: inline-block;">
-	<option selected="selected">&nbsp;</option>
-	<!--<option>Save</option>-->
-	<option>Download Image</option>
-	<option>Copy URL</option>
-	<option>Embed</option>
-	</select>
-   
-	<input id="pushme" class="left" type="button" value="recall">
-	  
-	  <a class="close-reveal-modal">&#215;</a>
-    
-    </div>
     
   </div>
 
@@ -636,10 +619,12 @@ var defaultOptions = {
     // These properties have HTML & don't survive serialization to db and back.. why?
     options.plotOptions.series.point.events['click'] = clickPoint;
     options.tooltip.formatter = tooltipFormatter;
-
      
 {% else %}
-
+    
+    $('#chart').hide();
+    $('#intro').show();
+    
     var options = $.extend(true, {}, defaultOptions); 
 
 {% endif %}

@@ -1,4 +1,11 @@
-
+div#intro {
+  text-align: center;
+  font-size: 1.7rem;
+  padding-top: 163px;
+  padding-bottom: 200px;
+  padding-left: 100px;
+  padding-right: 100px;
+}
 
 div#bluestripe {
     padding-top:10px;

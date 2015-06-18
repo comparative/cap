@@ -187,21 +187,26 @@ div#indexmenu {
 .orbit-container .orbit-slides-container li .orbit-caption{
 	top:0;
 	right:0;
-	height:30%;
-	width:40%;
-}
-
-.orbit-caption a {
-    display: none;
-}
-
-
-.orbit-caption {
-    border-left:1px solid #b2bcc8;
+	background-color: rgba(255,255,255,0.8);
+	border-left:1px solid #b2bcc8;
     border-right:1px solid #b2bcc8;
     border-bottom:1px solid #b2bcc8;
     border-top:0;
     padding-right:0px;
+    height:38%;
+	width:43%;
+	/*height:30%;
+	width:40%;*/
+}
+
+
+/*.orbit-caption a {
+    display: none;
+}*/
+
+
+li .orbit-caption {
+    
 }
 
 
@@ -234,4 +239,5 @@ div#countrystripe * {
 
 p.panel {
     font-size:.9rem;
+    font-weight:bold;
 }

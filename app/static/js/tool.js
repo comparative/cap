@@ -22,6 +22,7 @@ function Series (dataset,topic,name,filters) {
     this.color = undefined;
     
     this.alldata = [];
+    this.chartdata = [];
     this.alldata.years = [];
     this.alldata.count = [];
     this.alldata.percent_total = [];
@@ -281,48 +282,47 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     	
             result.color = $scope.getRgbaColor();
         
-            if ($scope.chart.stacked) {
-        
-                 switch($scope.chart.chartType) {
-        
-                    case "stacked_area_count":
-                        result.type = "area";
-                        result.measure = "count";
-                        break;
-                    case "stacked_area_percent_total":
-                        result.type = "area";
-                        result.measure = "percent_total";
-                        break;
-                    case "stacked_column_count":
-                        result.type = "column";
-                        result.measure = "count";
-                        break;
-                    case "stacked_column_percent_total":
-                        result.type = "column";
-                        result.measure = "percent_total";
-                        break;
-                    default:
-                        result.type = $scope.chart.chartType;
-                
-                }
-        
+             switch($scope.chart.chartType) {
+    
+                case "stacked_area_count":
+                    result.type = "area";
+                    result.measure = "count";
+                    break;
+                case "stacked_area_percent_total":
+                    result.type = "area";
+                    result.measure = "percent_total";
+                    break;
+                case "stacked_column_count":
+                    result.type = "column";
+                    result.measure = "count";
+                    break;
+                case "stacked_column_percent_total":
+                    result.type = "column";
+                    result.measure = "percent_total";
+                    break;
+                default:
+                    result.type = $scope.chart.chartType;
+            
             }
         
             $scope.chart.series.push(result);
-        
+            
             var url = baseUrl + '/api/measures/dataset/' + result.dataset.toString() + '/topic/' + result.topic.toString();
         
             $.getJSON(url, function (retval) {
             
                 // async... find the right series and assign the data
-            
+                
                 angular.forEach($scope.chart.series, function (series, index) { 
                     if (result.name == series.name) {
                         $scope.chart.series[index].alldata = retval;
+                        console.log($scope.chart.series[index].alldata);
                     }
                 });
             
                 // redraw the chart
+                
+                
             
                 $scope.drawChart(); 
             
@@ -372,7 +372,10 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     $scope.chartToOptions = function() {
         
         if ($scope.chart.series.length > 0) {
-        
+            
+            angular.element('#intro').hide();
+            angular.element('#chart').show();
+            
             // get years available for these series
 
             chartMax = 0;
@@ -409,6 +412,21 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             $scope.chart.yearsSelected = yearsSelected;
             
             
+            // CONSOLIDATE ON ONE AXIS IF STACKED
+            
+            /*
+            if ($scope.chart.stacked) {
+               
+                angular.forEach($scope.chart.series, function (series, index) {
+            
+                    series.yaxis = 0;
+            
+                });
+                
+            }
+            */
+            
+            
             if ($scope.chart.scatter) {
             
                 options = angular.copy(scatterOptions);
@@ -440,7 +458,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 if ($scope.chart.chartType == 'scatter_plot_regression') {
                     options.series[0].regression = true;
                 }
-            
             
             } else {
         
@@ -502,6 +519,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                         }
                         
                     }
+                    
+                    series.chartdata[series.measure] = chartdata;
                     
                     var s = {
                         /*
@@ -577,6 +596,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         } else {
         
             options = angular.copy(defaultOptions);
+            angular.element('#intro').show();
+            angular.element('#chart').hide();
             
         }
         
@@ -767,10 +788,12 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 angular.forEach($scope.chart.series, function (series, index) {
                    series.type = theType;  
                    if (theMeasure) series.measure = theMeasure;
+                   if ($scope.chart.stacked) series.yaxis = 0;
+                   
                 });
         
             }
-        
+            
             $scope.drawChart(); 
         
         }
@@ -788,13 +811,13 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             url: '/charts/save/' + $("#user").val() + '/' + $scope.chart.slug,
             data: strOptions,
             success: function() {
-                alert('chart pinned!');
+                alert('Chart pinned!\n\nClick "View History" to reload chart.');
                 item = new Saved( $scope.chart.slug, baseUrl + '/charts/' + $scope.chart.slug, strOptions );
                 $scope.saved.unshift(item);
                 $scope.$apply();
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) { 
-                alert('could not pin chart.  Already pinned?'); 
+                alert('Could not pin chart.  Already pinned?'); 
             }
              
         });
@@ -816,7 +839,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
 
     $scope.deletePinned = function(index) {
             
-        if (confirm('really unpin?')) {  
+        if (confirm('Really unpin?')) {  
         
              // DELETE CHART
             resp = $.ajax({
@@ -828,7 +851,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     $scope.$apply();
                 },
                 error: function(XMLHttpRequest, textStatus, errorThrown) { 
-                    alert('could not unpin'); 
+                    alert('Could not unpin.'); 
                 }
              
             });
@@ -917,6 +940,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         var save = false;
     
+        $scope.chart.exportOption = 0;
+    
         switch(option) {
 
             case 1:
@@ -927,7 +952,14 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     sourceWidth: 960,
                     },
                 
-                    {yAxis: [{
+                    {
+                    legend:{
+                        enabled: true,
+                        align: 'left',
+                        verticalAlign: 'top',
+                        floating: true 
+                    },
+                    yAxis: [{
                     gridLineWidth: 0,
                     minorGridLineWidth: 0,
                     labels: {
@@ -971,15 +1003,13 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 data: strOptions,
                 success: function() { },
                 error: function(XMLHttpRequest, textStatus, errorThrown) { 
-                    alert('error saving chart'); 
+                    alert('Error saving chart.'); 
                 }
              
             });
         
         }
-        
-        $scope.chart.exportOption = 0;
-        
+
         
     }
     
@@ -988,9 +1018,30 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
     $scope.clearChart = function() {
         
+        $scope.clearSearch();
         $scope.chart = new Chart();
         $scope.drawChart(false);
         
+    }
+    
+    
+    $scope.clearSearch = function() {
+        
+        
+        $scope.results = [];
+        
+        angular.element('div.picker input:checkbox').each(function() {
+            $(this).removeAttr('checked');
+        });
+        
+        /*
+        angular.element('#categories input:checked').each(function () {
+            var cat = $(this).attr('catid');
+            cats.push(cat);
+        });
+        */
+        
+    
     }
     
     // HELPERS

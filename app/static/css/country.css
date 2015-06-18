@@ -5,6 +5,7 @@ ul.category h3 {
 
 div.dataset_description p {
     margin-bottom:0px;
+    font-size:.9rem;
 }
 
 div.dataset_description {
@@ -31,6 +32,7 @@ li.dataset {
 
 div.dataset-display {
     border-bottom: 1px solid #ccc;
+    padding-top: 5px;
 }
 
 div.dataset-display:hover > span.arrow i {
@@ -142,6 +144,16 @@ div#countrystripe {
 
 #trends-tool {
     padding-top:21px;
+}
+
+.trends-tool-on {
+    opacity: 1;
+    /*border: 4px solid #b2bcc8;*/
+}
+
+.trends-tool-off {
+    opacity: .95;
+    /*border: 4px solid #3b4e6f;*/
 }
 
 div#countrystripe h1 {

@@ -179,11 +179,26 @@
 
 <div class="row">
 	<div class="small-1 columns">
-	  <label for="title" class="right inline">Embed URL</label>
+	  <label for="title" class="right inline">Datasets Intro</label>
 	</div>
 	<div class="small-11 columns">
 	  <label class="error">
-	  {{ form.embed_url(size=40) }}
+	  {{ form.datasets_intro(cols="35", rows="15") }}
+	  </label>
+	  {% for error in form.datasets_intro.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+<br>
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Left Img</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.embed_url(size=40,placeholder="Use 'Export chart URL' in trends tool.") }}
 	  </label>
 	  {% for error in form.embed_url.errors %}
 	  <small class="error">{{ error }}</small>
