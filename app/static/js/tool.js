@@ -17,7 +17,7 @@ function Series (dataset,topic,name,filters) {
     this.measure = "count";
     this.type = "line";
     this.yaxis = 0;
-    this.trump = false;
+    this.measure_on_multiple_axes = false;
     
     this.color = undefined;
     
@@ -112,6 +112,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     $scope.recent = [];
     
+    $scope.preserve_date_range = false;
 
     // LOAD SAVED CHARTS FROM DB BY USER COOKIE VAL
 
@@ -346,7 +347,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             $scope.chart.series[index].measure = "count";
             $scope.chart.series[index].type = "line";
             $scope.chart.series[index].yaxis = 0;
-            $scope.chart.series[index].trump = false; 	
+            $scope.chart.series[index].measure_on_multiple_axes = false; 	
         
             // REMOVE FROM CHART
             $scope.chart.series.splice(index,1);
@@ -400,9 +401,15 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
 
 
             // set years selected to default if blank
-            if ($scope.chart.yearFrom == 0 || $scope.chart.yearFrom < chartMin ) $scope.chart.yearFrom = chartMin;
-            if ($scope.chart.yearTo == 0 || $scope.chart.yearTo > chartMax) $scope.chart.yearTo = chartMax;
+            //if ($scope.chart.yearFrom == 0 || $scope.chart.yearFrom < chartMin ) $scope.chart.yearFrom = chartMin;
+            //if ($scope.chart.yearTo == 0 || $scope.chart.yearTo > chartMax) $scope.chart.yearTo = chartMax;
             
+            // set years selected if we haven't just changed year
+            if (!$scope.preserve_date_range) {
+                $scope.chart.yearFrom = chartMin;
+                $scope.chart.yearTo = chartMax;
+            }
+            $scope.preserve_date_range = false;
             
             // get years selected
             yearsSelected = [];
@@ -494,7 +501,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     // sort into yAxis by measure
                     for (var i = 0; i < $scope.chart.yaxes.length; i++) {
                        ax = $scope.chart.yaxes[i];
-                       if (series.measure == ax.measure && series.trump == false) {
+                       if (series.measure == ax.measure && series.measure_on_multiple_axes == false) {
                             series.yaxis = i;
                             break;
                         }
@@ -640,6 +647,15 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
     }
     
+    
+    $scope.changeYears = function() {
+    
+        $scope.preserve_date_range = true;
+        $scope.drawChart();
+        
+    }
+    
+    
     // DRAW CHART
     
     $scope.drawChart = function(burnThumb) {
@@ -690,6 +706,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         var theType;
         var theMeasure;
         var validation_err;
+        
+        $scope.preserve_date_range = true;
         
         switch($scope.chart.chartType) {
         
@@ -827,6 +845,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     $scope.editSeries = function(series) {
         
         // APPLY FILTERS (back to the data well!! closes modal and draws chart on finish)
+        $scope.preserve_date_range = true;
         $scope.applyFilters(series);
         
     };
@@ -865,6 +884,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         $scope.chart.slug = $scope.saved[index].slug;
         $scope.chart = JSON.parse($scope.saved[index].options).CAP_chart;
+        $scope.preserve_date_range = true;
         $scope.drawChart(false); 
     
     }
@@ -874,6 +894,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         $scope.chart.slug = $scope.recent[index].slug;
         $scope.chart = JSON.parse($scope.recent[index].options).CAP_chart;
+        $scope.preserve_date_range = true;
         $scope.drawChart(false);     
         
     }
@@ -916,17 +937,17 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
     }
     
-    $scope.setTrump = function(thisSeries) {
+    $scope.checkAxes = function(thisSeries) {
         
         angular.forEach($scope.chart.series, function (series, index) {
             
             if (series.measure == thisSeries.measure) {
-                series.trump = true;
+                series.measure_on_multiple_axes = true;
             } 
             
             
             else {
-                series.trump = false;
+                series.measure_on_multiple_axes = false;
             }
             
             
@@ -953,12 +974,12 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     },
                 
                     {
-                    legend:{
+                    /*legend:{
                         enabled: true,
                         align: 'left',
                         verticalAlign: 'top',
                         floating: true 
-                    },
+                    },*/
                     yAxis: [{
                     gridLineWidth: 0,
                     minorGridLineWidth: 0,
@@ -1125,6 +1146,11 @@ $(document).ready(function() {
         e.preventDefault();
         $('div.picker:visible').slideToggle('fast','linear');
         $(this).next('div').slideToggle('fast','linear');
+    });
+    
+    $('a.coming-soon').click(function(e) {
+        e.preventDefault();
+        alert('Feature coming soon!');
     });
     
                

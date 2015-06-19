@@ -55,7 +55,9 @@ class Dataset(db.Model):
     datasetfilename = db.Column(db.String(200))
     filters = db.Column(JSON)
     ready = db.Column(db.Boolean())
-    
+    stats_year_from = db.Column(db.Integer)
+    stats_year_to = db.Column(db.Integer)
+    stats_observations = db.Column(db.Integer)
     
 class Country(db.Model):
 
@@ -70,6 +72,11 @@ class Country(db.Model):
     embed_url = db.Column(db.String(200))
     slug = db.Column(db.String(80))
     datasets_intro = db.Column(db.String(9000))
+    stats_series = db.Column(db.Integer)
+    stats_year_from = db.Column(db.Integer)
+    stats_year_to = db.Column(db.Integer)
+    stats_observations = db.Column(db.Integer)
+    
     
     def __repr__(self):
         return self.name

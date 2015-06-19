@@ -1,7 +1,7 @@
 div#intro {
   text-align: center;
-  font-size: 1.7rem;
-  padding-top: 163px;
+  font-size: 1.4rem;
+  padding-top: 174px;
   padding-bottom: 200px;
   padding-left: 100px;
   padding-right: 100px;
@@ -31,13 +31,20 @@ div.thumb-container:hover > div.thumb-menu {
 div.thumb-menu {
     display:none;
     z-index:10;
+    padding-top:12%;
+    padding-left:10%;
+    padding-right:10%;
+    opacity: 1;
 }
 
+
+
+
 div.thumb-container {
-    width: 250px;
+    /*width: 250px;*/
     height: 180px;
     position: relative;
-    margin-left: 10px;
+    /*margin-left: 10px;*/
 }
 
 div.thumb-container-container {
@@ -183,8 +190,8 @@ a.button.tiny {
 img.thumb {
     display:block;
     margin: 0 auto 0 auto;
-    padding: 10px 5px 10px 5px;
-    width: 250px;
+    padding: 5%;
+    width: 95%;
 }
 
 ul {

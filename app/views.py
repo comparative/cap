@@ -116,7 +116,10 @@ def charts(slug,switch=None):
     if exists and switch != "embed":
         url = 'http://104.237.136.8:8080/highcharts-export-web/'
         values = {}
-        values['options'] = dumps(loads(exists.options))
+        myoptions = loads(exists.options)
+        #myoptions.update({'legend': {'enabled': 'true'}})        
+        #app.logger.debug(myoptions)
+        values['options'] = dumps(myoptions)
         values['type'] = 'image/png'
         values['width'] = '600'
         values['constr'] = 'Chart'
@@ -840,26 +843,24 @@ def admin_dataset_list(slug,page=1):
 @app.route('/admin/projects/<slug>/dataset/<id>', methods=['GET', 'POST'])
 @login_required
 def admin_dataset_item(slug,id):
+    newdata = False
     country = Country.query.filter_by(slug=slug).first()
     dataset = Dataset() if id == 'add' else Dataset.query.filter_by(id=id).first()
     form = DatasetForm()
     form.fieldnames=[]
     if 'content' in request.files and request.files['content'].filename != '':
-            datasetfilename = datasetfiles.save(request.files['content'])
-            datasetfilepath = datasetfiles.path(datasetfilename)
-            #try:
-            #    didit = convert_to_utf8(datasetfilepath)
-            #except:
-            #    flash('Something went wrong, dataset not converted to UTF-8 dude!')
-            #if (didit == False):
-            #    flash('Something went wrong, dataset not converted to UTF-8!')
-            #with codecs.open(datasetfilepath, "w", "utf-8-sig") as temp:
-            #    temp.write("hi mom\n")
-            #    temp.write(u"This has ")
-            csvfile = open(datasetfilepath, 'rU')
-            reader = csv.DictReader(csvfile)
-            reader.fieldnames = [item.lower() for item in reader.fieldnames]
-            form.fieldnames = reader.fieldnames
+        datasetfilename = datasetfiles.save(request.files['content'])
+        datasetfilepath = datasetfiles.path(datasetfilename)
+        try:
+            didit = convert_to_utf8(datasetfilepath)
+        except:
+            didit = False
+        if (didit == False):
+            flash('Dataset not converted to UTF-8!')
+        csvfile = open(datasetfilepath, 'rU')
+        reader = csv.DictReader(csvfile)
+        reader.fieldnames = [item.lower() for item in reader.fieldnames]
+        form.fieldnames = reader.fieldnames
     if form.validate_on_submit():
         if 'codebook' in request.files and request.files['codebook'].filename != '':
             codebookfilename = codebookfiles.save(request.files['codebook'])
@@ -875,6 +876,7 @@ def admin_dataset_item(slug,id):
             thedata = [ row for row in reader ]
             dataset.content = thedata
             dataset.ready = True
+            newdata = True
             #cur = db.session.connection().connection.cursor()
             #cur.execute("UPDATE dataset SET content=%s",dumps(thedata))
             #db.session.commit() 
@@ -890,10 +892,11 @@ def admin_dataset_item(slug,id):
         dataset.saved_date = datetime.utcnow()
         try:
             db.session.commit()
-            flash('Dataset "%s" saved' %
-                  (form.display.data))
+            flash('Dataset "%s" saved' % (form.display.data))
         except:
             flash('Something went wrong, dataset not saved!')
+        if newdata == True:
+            update_stats(db,dataset.id,country.id)
         return redirect(url_for('admin_dataset_list',slug=slug))
         
     else:
@@ -927,6 +930,19 @@ def admin_dataset_delete(slug,id):
         title = dataset.display
         db.session.delete(dataset)
         db.session.commit()
+        country_id = dataset.country_id
+        # update stats for the whole country
+        sql = """
+        UPDATE country SET 
+        stats_series = (SELECT COUNT(id) FROM dataset WHERE ready=true AND country_id=%s),
+        stats_year_from = COALESCE( (SELECT MIN(stats_year_from) FROM dataset WHERE ready=true AND country_id=%s), 0),
+        stats_year_to = COALESCE( (SELECT MAX(stats_year_to) FROM dataset WHERE ready=true AND country_id=%s), 0),
+        stats_observations = COALESCE( (SELECT SUM(stats_observations) FROM dataset WHERE ready=true AND country_id=%s), 0)
+        WHERE id = %s
+        """
+        cur = db.session.connection().connection.cursor()
+        cur.execute(sql,[country_id,country_id,country_id,country_id,country_id])
+        db.session.commit() 
         flash('Dataset "%s" deleted' %
               (title))
         return redirect(url_for('admin_dataset_list',slug=slug))
@@ -1195,7 +1211,7 @@ def api_measures(dataset,topic):
             i += 1
     data['percent_total'] = percent_total
     
-    return dumps(data)
+    #return dumps(data)
     
     # WRITE CACHE
     with open(cached_path, 'w') as outfile:
@@ -1245,10 +1261,61 @@ def research_item(slug,id):
     else:
         abort(404)
 
+def update_stats(db,dataset_id,country_id):
+
+    # get cursor
+    cur = db.session.connection().connection.cursor()
+    
+    # update stats for this dataset
+    sql = """
+    UPDATE dataset SET stats_year_from =
+    (
+    SELECT MIN(datarow->>'year')::int
+        from (
+        select json_array_elements(content)
+        from dataset WHERE dataset.id = %s
+        ) s(datarow)
+        WHERE datarow->>'year' ~ '^[0-9]'
+        AND datarow->>'year' != '0'
+    ),
+    stats_year_to = (
+    SELECT MAX(datarow->>'year')::int
+        from (
+        select json_array_elements(content)
+        from dataset WHERE dataset.id = %s
+        ) s(datarow)
+        WHERE datarow->>'year' ~ '^[0-9]'
+        AND datarow->>'year' != '0'
+    ),
+    stats_observations = (
+    SELECT COUNT(datarow->'id')::int
+        from (
+        select json_array_elements(content)
+        from dataset WHERE dataset.id = %s
+        ) s(datarow)
+        WHERE datarow->>'year' ~ '^[0-9]'
+        AND datarow->>'year' != '0'
+    )
+    WHERE id = %s
+    """   
+    cur.execute(sql,[dataset_id,dataset_id,dataset_id,dataset_id])
+
+    # update stats for the whole country
+    sql = """
+    UPDATE country SET 
+    stats_series = (SELECT COUNT(id) FROM dataset WHERE ready=true AND country_id=%s),
+    stats_year_from = (SELECT MIN(stats_year_from) FROM dataset WHERE ready=true AND country_id=%s),
+    stats_year_to = (SELECT MAX(stats_year_to) FROM dataset WHERE ready=true AND country_id=%s),
+    stats_observations = (SELECT SUM(stats_observations) FROM dataset WHERE ready=true AND country_id=%s) 
+    WHERE id = %s
+    """
+    cur.execute(sql,[country_id,country_id,country_id,country_id,country_id])
+    db.session.commit() 
+
 def convert_to_utf8(filename):
     # gather the encodings you think that the file may be
     # encoded inside a tuple
-    encodings = ('macintosh','windows-1250','iso-8859-1','iso-8859-2','utf-8','utf-7','ibm852','shift_jis','iso-2022-jp')
+    encodings = ('utf-8','macintosh','windows-1250','iso-8859-1','iso-8859-2','utf-7','ibm852','shift_jis','iso-2022-jp')
  
     # try to open the file and exit if some IOError occurs
     try:
