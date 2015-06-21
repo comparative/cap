@@ -1081,8 +1081,8 @@ def api_measures(dataset,topic):
     cached_path = '/var/www/cap/datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
     #app.logger.debug(cached_path);
     
-    if (os.path.isfile(cached_path)):
-        return send_file(cached_path)
+    #if (os.path.isfile(cached_path)):
+    #    return send_file(cached_path)
     
     # NO CACHE, GO TO THE DB!!
     
@@ -1204,7 +1204,7 @@ def api_measures(dataset,topic):
         if i < len(count):
             pt = float(count[i])/totals[i] if (totals[i] > 0) else None
             if pt is not None:
-                percent_total.append(float("{0:.2f}".format(100 * pt)))
+                percent_total.append(float("{0:.3f}".format(100 * pt)))
                 #percent_total.append(pt)
             else:
                 percent_total.append(None)
@@ -1214,8 +1214,8 @@ def api_measures(dataset,topic):
     #return dumps(data)
     
     # WRITE CACHE
-    with open(cached_path, 'w') as outfile:
-        dump(data, outfile)
+    #with open(cached_path, 'w') as outfile:
+    #    dump(data, outfile)
          
     return dumps(data)
 

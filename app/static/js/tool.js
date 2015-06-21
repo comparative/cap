@@ -527,7 +527,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                         
                     }
                     
-                    series.chartdata[series.measure] = chartdata;
+                    console.log('fiddlywinkos');
+                    $scope.chart.series[index].chartdata = chartdata;
                     
                     var s = {
                         /*
@@ -607,6 +608,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             angular.element('#chart').hide();
             
         }
+        
+        console.log($scope.chart);
         
         options.CAP_chart = $scope.chart;
         return options;
@@ -959,7 +962,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     $scope.chartExport = function(option) {
         
-        var save = false;
+        //var save = false;
     
         $scope.chart.exportOption = 0;
     
@@ -996,24 +999,24 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
   
             case 2:
                 window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/charts/" + $scope.chart.slug );
-                save = true;
+               // save = true;
                 break;
             
             case 3:
                 window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/tool/" + $scope.chart.slug );
-                save = true;
+               // save = true;
                 break;
                 
             case 4:
                 $('#embed_code').foundation('reveal', 'open');
-                save = true;
+               // save = true;
                 break;
                 
             default:
     
         }
         
-        if (save) {
+      //  if (save) {
         
             strOptions = JSON.stringify(options);
             
@@ -1029,7 +1032,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
              
             });
         
-        }
+      //  }
 
         
     }
@@ -1138,6 +1141,8 @@ $(document).ready(function() {
     }
     
     theScope.chart = options.CAP_chart;
+    
+    console.log(options.CAP_chart);
     
     // send options to highcharts
     theChart = new Highcharts.Chart(options);

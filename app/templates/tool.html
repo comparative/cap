@@ -155,7 +155,7 @@
                          <td>{@ year @}</td>
                          <td ng-style="{@series.color@}" ng-repeat="series in chart.series">
                          <div class="text-center">
-                         <a class="clickable" ng-click="openDrilldown(series.filters,series.dataset,series.topic,year)">{@ series.chartdata[series.measure][$parent.$index] @}</a>
+                         <a class="clickable" ng-click="openDrilldown(series.filters,series.dataset,series.topic,year)">{@ series.chartdata[$parent.$index] @}</a>
                          </div>
                          </td>
                       </tr>
@@ -632,6 +632,8 @@ var defaultOptions = {
 {% if options %}
 
     var options =  {{ options | safe }};
+    
+    console.log(options.CAP_chart);
     
     // These properties have HTML & don't survive serialization to db and back.. why?
     options.plotOptions.series.point.events['click'] = clickPoint;
