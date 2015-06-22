@@ -198,6 +198,11 @@ def datasets_codebooks():
             cats.append(category)
     return render_template("datasets_codebooks.html",intro=intro,countries=countries,categories=cats)
 
+@app.route('/codebook')
+def cap_codebook():
+    countries = Country.query.order_by(Country.name)
+    return render_template('codebook.html',countries=countries)  
+
 @app.route('/pages/<slug>')
 def page(slug):
     countries = Country.query.order_by(Country.name)
@@ -205,7 +210,7 @@ def page(slug):
     return render_template('page.html',page=page,countries=countries)
 
 @app.route('/files/<slug>')
-@nocache
+#@nocache
 def file(slug):
     file = File.query.filter_by(slug=slug).first()
     if file:
@@ -977,7 +982,7 @@ def admin_dataset_removecodebook(slug,id):
         return redirect(url_for('admin_dataset_item',slug=slug,id=id))
     flash('Dataset not found!')
     return redirect(url_for('admin'))
-    
+
 
 ######### API ROUTES
 
@@ -1081,8 +1086,8 @@ def api_measures(dataset,topic):
     cached_path = '/var/www/cap/datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
     #app.logger.debug(cached_path);
     
-    #if (os.path.isfile(cached_path)):
-    #    return send_file(cached_path)
+    if (os.path.isfile(cached_path)):
+        return send_file(cached_path)
     
     # NO CACHE, GO TO THE DB!!
     
@@ -1214,8 +1219,8 @@ def api_measures(dataset,topic):
     #return dumps(data)
     
     # WRITE CACHE
-    #with open(cached_path, 'w') as outfile:
-    #    dump(data, outfile)
+    with open(cached_path, 'w') as outfile:
+        dump(data, outfile)
          
     return dumps(data)
 

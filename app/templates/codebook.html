@@ -1,0 +1,530 @@
+{% extends "base.html" %}
+
+{% block head %}{% endblock %}
+
+{% block content %}
+
+
+<div id="bluestripe">
+     
+    <div class="row">
+     	<div id="slogan" class="medium-12 columns">
+     	The Comparative Agendas Project collects and organizes data from archived sources to track policy outcomes across countries.&nbsp;&nbsp;&nbsp;<a class="orange-link" href="pages/About">read more</a>
+     	</div>
+     </div>
+
+</div>
+
+
+
+
+<div class="row">
+
+<div class="medium-9 columns">
+
+
+
+<h3>CAP Codebook</h3>  
+
+<p>Observations in Comparative&nbsp;Agendas Project datasets are coded according to the guidelines and topic system described below. This codebook is an updated version of the original codebook created by Baumgartner and Jones. &nbsp;Each entry is coded into one of 21
+ major topics and 220 subtopics. &nbsp;In this codebook, we provide a series of general coding guidelines for classifying observations, a complete list of all major topics and subtopics, and examples of cases coded in each subtopic. &nbsp;Users should note that not all
+ the topic and subtopic numbers are consecutive and that the coding system is hierarchal: each subtopic falls within a single major topic. &nbsp;Analysts concerned with identifying each case dealing with a particular issue may want to use care in also examining
+ the textual summaries for cases in related subtopics and in the general subtopic, since these can include cases that discuss multiple subtopics.</p>
+<p>Also note that some Project datasets use limited additional codes, which are explained in their respective codebooks.</p>
+<ul>
+<li><strong>1. Macroeconomics</strong>
+<ul>
+<li>100: General<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to general domestic macroeconomic policy.</em>
+</li><li>101: Interest Rates<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to inflation, cost of living, prices, and interest rates</em>
+</li><li>103: Unemployment Rate<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to the unemployment rate, impact of unemployment</em>
+</li><li>104: Monetary Policy<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to the monetary policy, central bank, and the treasury</em>
+</li><li>105: National Budget<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description: Issues related to public debt, budgeting, and efforts to reduce deficits</em>
+</li><li>107: Tax Code<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>Description: Includes issues related to tax policy, the impact of taxes, and tax enforcement</em>
+</li><li>108: Industrial Policy<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Description: Includes issues related to manufacturing policy, industrial revitalization and growth</em>
+</li><li>110: Price Control<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description: Includes issues related to wage or price control, emergency price controls</em>
+</li><li>199: Other<br>
+&nbsp; &nbsp; &nbsp;<em> Description: Includes issues related to other macroeconomics subtopics</em>
+</li></ul>
+</li><li><strong>2. Civil Rights</strong>
+<ul>
+<li>200: General<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related generally to civil rights and minority rights</em>
+</li><li>201: Minority Discrimination<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Description: Includes issues related to minority, ethnic, and racial group descriminaton&nbsp;</em>
+</li><li>202: Gender Discrimination<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Description: Includes issues related to sex, gender, and sexual orientation discrimination</em>
+</li><li>204: Age Discrimination<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Description: Includes issues related to age discrimination, including mandatory retirement age policies</em>
+</li><li>205: Handicap Discrimination<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to handcap and disease discrimination</em>
+</li><li>206: Voting Rights<br>
+&nbsp; &nbsp; &nbsp; Description: Includes issues related to v<em>oting rights, expanding or contracting the franchise, participation and related issues</em>
+</li><li>207: Freedom of Speech<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description:&nbsp;Issues related to freedom of speech, religious freedoms, and other types of freedom of expression</em>
+</li><li>208: Right to Privacy<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to privacy rights, including privacy of records, access to government information, and abortion rights</em>
+</li><li>209: Anti-Government<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Description: Includes issues related to anti-government activity groups, such as the communist party and local insurgency groups</em>
+</li><li>299: Other<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Description: Includes issues related to other civil rights subtopics</em>
+</li></ul>
+</li><li><strong>3. Health</strong>
+<ul>
+<li>300: General<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Description: Includes issues related generally to health care, including appropriations for general health care government agencies</em>
+</li><li>301: Health Care Reform<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Description: Includes issues related to broad, comprehensive changes in the health care system</em>
+</li><li>302: Insurance<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description: Includes issues related to health insurance reform, regulation, availability, and cost</em>
+</li><li>321: Drug Industry<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description: Includes issues related to the regulation and promotion of pharaceuticals, medical devices, and clinical labs</em>
+</li><li>322: Medical Facilities<br>
+&nbsp; &nbsp; <em>&nbsp; Description:&nbsp;Issues related to facilities construction, regulaton and payments, including waitlists and ambulance services</em>
+</li><li>323: Insurance Providers<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to provider and insurer payments and regulation, including other types of benefits or multple benefits</em>
+</li><li>324: Medical Liability<br>
+&nbsp; &nbsp; &nbsp;<em> Description: Includes issues related to medical liability, malpractice issues, medical fraud and abuse, and unfair practices</em>
+</li><li>325: Manpower<br>
+&nbsp; &nbsp; &nbsp; <em>Description:&nbsp;Issues related to the supply and quantity of labor in the health care industry, training and licensing</em>
+</li><li>331: Disease Prevention<br>
+&nbsp; &nbsp; &nbsp; <em>Description:&nbsp;Issues related to disease prevention, treatment, and health promotion, including specific diseases not covered in other subtopics</em>
+</li><li>332: Infants and Children<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>Description: Includes issues related to infants and children, including coverage and quality of care, health promotion, and school health programs</em>
+</li><li>333: Mental<br>
+&nbsp; &nbsp; &nbsp; Description: Includes issues related to m<em>ental health care and mental health disease</em>
+</li><li>334: Long-term Care<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to long term care, home health care, the terminally ill, and rehabilitation services</em>
+</li><li>335: Drug Coverage and Cost<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Description: Includes issues related to prescription drug coverage, programs to pay for prescription drugs, and policy to reduce the cost of prescription drugs</em>
+</li><li>341: Tobacco Abuse<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to tobacco abuse, treatment, education, and health effects</em>
+</li><li>342: Drug and Alcohol Abuse<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Description: Includes issues related to alcohol and illegal drug abuse, treatment, education, and health effects</em>
+</li><li>398: R&amp;D<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to health care research and development</em>
+</li><li>399: Other<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>Description: Includes issues related to other health care topics</em> </li></ul>
+</li><li><strong>4. Agriculture</strong>
+<ul>
+<li>400: General<br>
+&nbsp; &nbsp; &nbsp;<em> Description: Includes issues related to general agriculture policy, including appropriations for general agriculture government agencies</em>
+</li><li>401: Trade<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to &nbsp;the regulation and impact of agricultural foreign trade</em>
+</li><li>402: Subsidies to Farmers<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to government subsidies to farmers and ranchers, including agricultural disaster insurance</em>
+</li><li>403: Food Inspection &amp; Safety<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to food inspection and safety, including seafood, and labeling requirements</em>
+</li><li>404: Marketing &amp; Promotion<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to efforts to provide information on agricultural products to consumers and the regulation of agricultural marketing</em>
+</li><li>405: Animal and Crop Disease<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to animal and crop disease, pest control and pesticide regulation, and welfare for domesticated animals</em>
+</li><li>408: Fisheries &amp; Fishing<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to fishing, commercial fishery regulation and conservation</em>
+</li><li>498: R&amp;D<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to agricultural research and development</em>
+</li><li>499: Other<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to other agricultural subtopics</em>
+</li></ul>
+</li><li><strong>5. Labor</strong>
+<ul>
+<li>500: General<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues generally related to labor, employment, and pensions, including appropriations for government agencies regulating labor policy</em>
+</li><li>501: Worker Safety<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to worker safety and protection and compensation for work-related injury and disease</em>
+</li><li>502: Employment Training<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description: Includes issues related to job training for adult workers, workforce development, and efforts to retrain displaced workers</em>
+</li><li>503: Employee Benefits<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to all employee benefits, pensions, and retirement accounts, including government-provided unemployment insurance</em>
+</li><li>504: Labor Unions<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to labor unions, collective bargaining, and employer-employee relations</em>
+</li><li>505: Fair Labor Standards<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to fair labor standards such as the minimum wage and overtime compensation, and labor law</em>
+</li><li>506: Youth Employment<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to youth employment, child labor and job training for youths</em>
+</li><li>529: Migrant and Seasonal<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>Description: Includes issues related to migrant, guest and seasonal workers</em>
+</li><li>599: Other<br>
+&nbsp; &nbsp; &nbsp; <em>Description:&nbsp;Issues related to other labor policy</em> </li></ul>
+</li><li><strong>6. Education</strong>
+<ul>
+<li>600: General<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>Description: Includes issues related to general education policy, including appropriations for government agencies regulating education policy</em>
+</li><li>601: Higher<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to higher education, student loans and education finance, and the regulation of colleges and universities</em>
+</li><li>602: Elementary &amp; Secondary<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description: Includes issues related to elementary and primary schools, school reform, safety in schools, and efforts to generally improve educational standards and outcomes</em>
+</li><li>603: Underprivileged<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to education of underprivileged students, including adult literacy programs, bilingual education needs, and rural education initiatives</em>
+</li><li>604: Vocational<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description: Includes issues related to vocational education for children and adults and their impact</em>
+</li><li>606: Special<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description: Includes issues related to special education and education for the physically or mentally handicapped</em>
+</li><li>607: Excellence<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description: Includes issues related to education excellence, including efforts to increase the quality of specific areas, such as math, science or foreign language skills</em>
+</li><li>698: R&amp;D<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to research and development in education</em>
+</li><li>699: Other<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to other subtopics in education policy</em>
+</li></ul>
+</li><li><strong>7. Environment</strong>
+<ul>
+<li>700: General<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to general environmental policy, including appropriations for government agencies regulating environmental policy</em>
+</li><li>701: Drinking Water<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>Description: Includes issues related to domestic drinking water safety, supply, polution, fluridation, and conservation</em>
+</li><li>703: Waste Disposal<br>
+&nbsp; &nbsp; &nbsp;&nbsp;<em>Description: Includes issues related to the disposal and treatment of wastewater, solid waste and runoff.&nbsp;</em>
+</li><li>704: Hazardous Waste<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to hazardous waste and toxic chemical regulation, treatment, and disposal</em>
+</li><li>705: Air Pollution<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to air pollution, climate change, and noise pollution</em>
+</li><li>707: Recycling<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>Description: Includes issues related to recycling, reuse, and resource conservation</em>
+</li><li>708: Indoor Hazards<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>Description: Includes issues related to indoor environmental hazards, indoor air contamination (including on airlines), and indoor hazardous substances such as asbestos</em>
+</li><li>709: Species &amp; Forest<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description: Includes issues related to species and forest protection, endangered species, control of the domestic illicit trade in wildlife products, and regulation of labratory or performance animals</em>
+</li><li><strong>711: Conservation</strong><br>
+<strong>&nbsp; &nbsp; &nbsp; <em>Description:&nbsp;</em></strong> </li><li>798: R&amp;D<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to research and development in environmental technology, not including alternative energy</em>
+</li><li>799: Other<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>Description: Includes issues related to other environmental subtopics</em>
+</li></ul>
+</li><li><strong>8. Energy</strong>
+<ul>
+<li>800: General<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues generally related to energy policy, including appropriations for government agencies regulating energy policy</em>
+</li><li>801: Nuclear<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to nuclear energy, safety and security, and disposal of nuclear waste</em>
+</li><li>802: Electricity<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to to general electricity, hydropower, and regulation of electrical utilities&nbsp;</em>
+</li><li>803: Natural Gas &amp; Oil<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to natural gas and oil, drilling, oil spills and flaring, oil and gas prices, shortages and gasoline regulation</em>
+</li><li>805: Coal<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to coal production, use, trade, and regulation, including coal gasification and clean coal technologies</em>
+</li><li>806: Alternative &amp; Renewable<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to alternative and renewable energy, biofuels, hydrogen and geothermal power</em>
+</li><li>807: Conservation<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to energy conservation and energy efficiency, including vehicles, homes, commerical use and government</em>
+</li><li>898: R&amp;D<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to energy research and development</em>
+</li><li>899: Other<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description: Includes issues related to other energy subtopics</em> </li></ul>
+</li><li><strong>9. Immigration</strong>
+<ul>
+<li>900: Immigration<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to immigration, refugees, and citizenship</em>
+</li></ul>
+</li><li><strong>10. Transportation</strong>
+<ul>
+<li>1000: General<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related generally to transportation, including appropriations for government agencies regulating transportation policy</em>
+</li><li>1001: Mass<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to mass transportation construction, regulation, safety, and availability</em>
+</li><li>1002: Highways<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to public highway construction, maintenance, and safety</em>
+</li><li>1003: Air Travel<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to air travel, regulation and safety of aviation, airports, air traffic control, pilot training, and aviation technology</em>
+</li><li>1005: Railroad Travel<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to railroads, rail travel, rail freight, and the development and deployment of new rail technologies</em>
+</li><li>1007: Maritime<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to maritime transportation, including martime freight and shipping, safety and security, and inland waterways and channels</em>
+</li><li>1010: Infrastructure<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description: Includes issues related to infrastructure and public works, including employment intiatives</em>
+</li><li>1098: R&amp;D<br>
+&nbsp; &nbsp; &nbsp; <em>Description: Includes issues related to transportation research and development</em>
+</li><li>1099: Other<br>
+&nbsp; &nbsp; &nbsp;<em> Description: Includes issues related to other transportation subtopics</em>
+</li></ul>
+</li><li><strong>12. Law and Crime</strong>
+<ul>
+<li>1200: General<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description: Includes issues related to general law, crime, and family issues</em>
+</li><li>1201: Agencies<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp; Description: Includes issues related to all law enforcement agencies, including border, customs, and other specialized enforcement agencies and their appropriations</em>
+</li><li>1202: White Collar Crime<br>
+&nbsp;&nbsp;&nbsp;<em>&nbsp; &nbsp;Description: Includes issues related to white collar crime, organized crime, counterfeitting and fraud, cyber-crime, and money laundering</em>
+</li><li>1203: Illegal Drugs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Descripton: Issues related to illegal drug crime and enforcement, criminal penalties for drug crimes, including international efforts to combat drug trafficking&nbsp;</em>
+</li><li>1204: Court Administration<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description: Includes issues related to court administration, judiciary appropriations, guidelines for bail, pre-release, fines and legal representation</em>
+</li><li>1205: Prisons<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description: Includes issues related to prisons and jails, parole systems, and appropriations</em>
+</li><li>1206: Juvenile Crime<br>
+&nbsp;<em>&nbsp; &nbsp; &nbsp;Description: Includes issues related to juvenile crime and justice, juvenile prisons and jails, and efforts to reduce juvenile crime and recidivism</em>
+</li><li>1207: Child Abuse<br>
+&nbsp;&nbsp;&nbsp;<em>&nbsp; &nbsp;Description: Includes issues related to child abuse, child pornography, sexual exploitation of children and parental kidnapping</em>
+</li><li>1208: Family Issues<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to family issues, domestic violence, child welfare, family law</em>
+</li><li>1210: Criminal &amp; Civil Code<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to domestic criminal and civil codes, including crimes not mentioned in other subtopics</em>
+</li><li>1211: Crime Control<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to&nbsp;the control, prevention, and impact of crime</em>
+</li><li>1227: Police<br>
+&nbsp;&nbsp;&nbsp;<em>&nbsp; &nbsp;Description: Includes issues related to Police and other general domestic security responses to terrorism, such as special police</em>
+</li><li>1299: Other<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to other law, crime, and family subtopics</em>
+</li></ul>
+</li><li><strong>13. Social Welfare</strong>
+<ul>
+<li>1300: General<br>
+&nbsp;&nbsp;&nbsp;<em>&nbsp; &nbsp;Description: Includes issues generally related to social welfare policy</em>
+</li><li>1302: Low-Income Assistance<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to poverty assitance for low-income families, including food assitance programs, programs to assess or alleviate welfare dependency and tax credits directed at low income families</em>
+</li><li>1303: Elderly Assistance<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to elderly issues and elderly assitance, including government pensions</em>
+</li><li>1304: Disabled Assistance<br>
+&nbsp;<em>&nbsp; &nbsp; &nbsp;Description: Includes issues related to aid for people with physical or mental disabilities</em>
+</li><li>1305: Volunteer Associations<br>
+&nbsp;<em>&nbsp; &nbsp; &nbsp;Description: Includes issues related to domestic volunteer associations, charities, and youth organizations</em>
+</li><li>1308: Child Care<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to parental leave and child care</em>
+</li><li>1399: Other<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to other social welfare policy subtopics</em>
+</li></ul>
+</li><li><strong>14. Housing</strong>
+<ul>
+<li>1400: General<br>
+&nbsp;&nbsp;&nbsp;<em>&nbsp; &nbsp;Description: Includes issues related generally to housing and urban affairs</em>
+</li><li>1401: Community Development<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to housing and community development, neighborhood development, and national housing policy</em>
+</li><li>1403: Urban Development<br>
+<em>&nbsp; &nbsp; &nbsp;Description: Includes issues related to urban development and general urban issues</em>
+</li><li>1404: Rural Housing<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to rural housing</em> </li><li>1405: Rural Development<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to non-housing rural economic development</em>
+</li><li>1406: Low-Income Assistance<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to housing for low-income individuals and families, including public housing projects and housing affordability programs</em>
+</li><li>1407: Veterans<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to housing for military veterans and their families, including subsidies for veterans</em>
+</li><li>1408: Elderly<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to housing for the elderly, including housing facilities for the handicapped elderly</em>
+</li><li>1409: Homeless<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to housing for the homeless and efforts to reduce homelessness&nbsp;</em>
+</li><li>1498: R&amp;D<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to housing and community development research and development</em>
+</li><li>1499: Other<br>
+&nbsp;&nbsp;<em>&nbsp; &nbsp; Description: Other issues related to housing and community development</em>
+</li></ul>
+</li><li><strong>15. Domestic Commerce</strong>
+<ul>
+<li>1500: General<br>
+&nbsp;&nbsp;<em>&nbsp; &nbsp; Description: Includes issues generally related to domestic commerce, including approprations for government agencies regulating domstic commerce</em>
+</li><li>1501: Banking<br>
+&nbsp;&nbsp;<em>&nbsp; &nbsp;&nbsp;Description: Includes issues related to the regulation of national banking systems and other non-bank financial institutions</em>
+</li><li>1502: Securities &amp; Commodities<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to the regulation and facilitation of securities and commodities trading, regulation of investments and related industries, and exchanges</em>
+</li><li>1504: Consumer Finance<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to consumer finance, mortages, credit cards, access to credit records, and consumer credit fraud</em>
+</li><li>1505: Insurance Regulation<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to insurance regulation, fraud and abuse in the insurance industry, the financial health of the insurance industry, and insurance availability and cost</em>
+</li><li>1507: Bankruptcy<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to personal, commercial, and municipal bankruptcies</em>
+</li><li>1520: Corporate Management<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to corporate mergers, antitrust regulation, corporate accounting and governance, and corporate &nbsp;management</em>
+</li><li>1521: Small Businesses<br>
+&nbsp;&nbsp;<em>&nbsp; &nbsp; Description: Includes issues related to small businesses, including programs to promote and subsidize small businesses</em>
+</li><li>1522: Copyrights and Patents<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp;Description: Includes issues related to copyrights and patents, patent reform, and intellectual property</em>
+</li><li>1523: Disaster Relief<br>
+&nbsp;<em>&nbsp; &nbsp; &nbsp;Description: Includes issues related to domestic natual disaster relief, disaster or flood insurance, and natural disaster preparedness</em>
+</li><li>1524: Tourism<br>
+<em>&nbsp; &nbsp; &nbsp; Decription: Issues related to tourism regulation, promotion, and impact</em>
+</li><li>1525: Consumer Safety<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp; Description: Includes issues related to consumer fraud and safety in domestic commerce&nbsp;</em>
+</li><li>1526: Sports Regulation<br>
+&nbsp;&nbsp;<em>&nbsp; &nbsp; Description: Includes issues related to the regulation&nbsp;and promotion&nbsp;of sports, gambling, and personal fitness</em>
+</li><li>1598: R&amp;D<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to domestic commerce research and development</em>
+</li><li>1599: Other<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to other domestic commerce policy subtopics</em>
+</li></ul>
+</li><li><strong>16. Defense</strong>
+<ul>
+<li>1600: General<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related generally to defense policy, and appropriations for agencies that oversee general defense policy</em>
+</li><li>1602: Alliances<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to defense alliance and agreement, security assistance, and UN peacekeeping activities</em>
+</li><li>1603: Intelligence<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to military intelligence, espionage, and covert operations</em>
+</li><li>1604: Readiness<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to military readiness, coordination of armed services air support and sealift capabilities, and national stockpiles of strategic materials.</em>
+</li><li>1605: Nuclear Arms<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to nuclear weapons, nuclear proliferation, moderization of nuclear equipment</em>
+</li><li>1606: Military Aid<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to military aid to other countries and the control of arms sales to other countries</em>
+</li><li>1608: Personnel Issues<br>
+&nbsp;<em>&nbsp; &nbsp; &nbsp;Description: Includes issues related to military manpower, military personel and their defendents, military courts, and general veterans issues</em>
+</li><li>1610: Procurement<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to military procurement, conversion of old equipment, and weapons systems evaluation</em>
+</li><li>1611: Installations &amp; Land<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to military installations, construction, and land transfers</em>
+</li><li>1612: Reserve Forces<br>
+<em>&nbsp; &nbsp; &nbsp; Description; Issues related to military reserves and reserve affairs</em>
+</li><li>1614: Hazardous Waste<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to military nuclear and hazardous waste disposal and military environmental compliance</em>
+</li><li>1615: Civil<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to domestic civil defense, national security responses to terrorism, and other issues related to homeland security</em>
+</li><li>1616: Civilian Personnel<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to non-contractor civilian personell, civilian employment in the defense industry, and military base closings</em>
+</li><li>1617: Contractors<br>
+&nbsp;<em>&nbsp; &nbsp; &nbsp;Description: Includes issues related to military contractors and contracting, oversight of military contrators and fraud by military contractors</em>
+</li><li>1619: Foreign Operations<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to direct war-related foreign military operations, prisoners of war and collateral damage to civilian populations</em>
+</li><li>1620: Claims against Military<br>
+&nbsp;&nbsp;&nbsp;<em>&nbsp; &nbsp;Description: Includes issues related to claims against the military, settlements for military dependents, and compensation for civilizans injured in military operations</em>
+</li><li>1698: R&amp;D<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to defense&nbsp;research and development</em>
+</li><li>1699: Other<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<em>&nbsp; Description: Includes issues related to other defense policy subtopics</em>
+</li></ul>
+</li><li><strong>17. Technology</strong>
+<ul>
+<li>1700: General<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to general space, science, technology, and communications</em>
+</li><li>1701: Space<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to the government use of space and space resource exploitation agreements, government space programs and space exploration, military use of space</em>
+</li><li>1704: Commercial Use of Space<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to the regulation and promotion of commerical use of space, commercial satellite technology, and government efforts to encourage commercial space development</em>
+</li><li>1705: Science Transfer<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to science and technology transfer and international science cooperation</em>
+</li><li>1706: Telecommunications<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to telephone and telecommunication regulation, infrastructure for high speed internet, and other forms fo telecommunication</em>
+</li><li>1707: Broadcast<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to the regulation of the newspaper, publishing, radio, and broadcast televsion industries</em>
+</li><li>1708: Weather Forecasting<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to weather forecasting, oceanography, geological surveys, and weather forecasting research and technology</em>
+</li><li>1709: Computers<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related generally to the computer industry, regulation of the internet, and computer security</em>
+</li><li>1798: R&amp;D<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to space, science, technology, and communication research and development not mentioned in other subtopics.</em>
+</li><li>1799: Other<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to other space, science, technology, and communication research and development</em>
+</li></ul>
+</li><li><strong>18. Foreign Trade</strong>
+<ul>
+<li>1800: General<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues generally related to foreign trade and appropriations for government agencies generally regulating foreign trade</em>
+</li><li>1802: Trade Agreements<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to trade negotiatons, disputes, and agreements, including tax treaties</em>
+</li><li>1803: Exports<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to export regulation, subsidies, promotion, and control</em>
+</li><li>1804: Private Investments<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to international private business investment and corporate development</em>
+</li><li>1806: Competitiveness<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to productivity of competitiveness of domestic businsses and balance of payments issues</em>
+</li><li>1807: Tariff &amp; Imports<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to tariffs and other barriers to imports, import regulation and impact of imports on domestic industries</em>
+</li><li>1808: Exchange Rates<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to exchange rate and related issues</em>
+</li><li>1899: Other<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to other foreign trade policy subtopics</em>
+</li></ul>
+</li><li><strong>19. International Affairs</strong>
+<ul>
+<li>1900: General<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to general international affairs and foreign aid, including appropriations for general government foreign affairs agencies</em>
+</li><li>1901: Foreign Aid<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to foreign aid not directly targeting at increasing international development</em>
+</li><li>1902: Resources Exploitation<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to international resources exploitation and resources agreements, law of the sea and international ocean conservation efforts</em>
+</li><li>1905: Developing Countries<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related specifically to developing countriesDeveloping Countries Issues (for Financial Issues see 1906)</em>
+</li><li>1906: International Finance<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to international finance and economic development, the World Bank and International Monetary Fund, regional development banks, sovereign debt and implications for international lending instututions</em>
+</li><li>1910: Western Europe<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to Western Europe and the European Union</em>
+</li><li>1921: Specific Country<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related specifically to a foreign country or region not codable using other codes, assessment of political issues in other countries, relations between individual countries</em>
+</li><li>1925: Human Rights<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to human rights, human rights violations, human rights treaties and conventions, UN reports on human rights, crimes associated with genocide or crimes against humanitity</em>
+</li><li>1926: Organizations<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: International organizations other than finance, NGOs, the United Nations, International Red Cross, UNESCO, International Olympic Committee, International Criminal Court</em>
+</li><li>1927: Terrorism<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to international terrorism, hijacking, and acts of piracy in other countries, efforts to fight international terrorism, international legal mechanisms to combat terrorism</em>
+</li><li>1929: Diplomats<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to diplomats, diplomacy, embassies, citizens abroad, foreign diplomats in the country, visas and passports</em>
+</li><li>1999: Other<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to other international affairs policy subtopics</em>
+</li></ul>
+</li><li><strong>20. Government Operations</strong>
+<ul>
+<li>2000: General<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to general government operations, including appropriations for multiple government agencies</em>
+</li><li>2001: Intergovernmental Relations<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to intergovernmental relations, local government issues</em>
+</li><li>2002: Bureaucracy<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to general government efficiencies and bureaucratic oversight</em>
+</li><li>2003: Postal Service<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to postal services, regulation of mail, and post civil service</em>
+</li><li>2004: Employees<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to&nbsp;civil employees not mentioned in other subtopics, government pensions and general civil service issues</em>
+</li><li>2005: Appointments<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to nomations and appointments not mentioned elsewhere</em>
+</li><li>2006: Currency<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related the currency, natonal mints, medals, and commemorative coins</em>
+</li><li>2007: Procurement &amp; Contractors<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to government procurement, government contractors, contractor and procurement fraud, and procurement processes and systems</em>
+</li><li>2008: Property Management<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to government property management, construction, and regulation</em>
+</li><li>2009: Tax Administration<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to tax administration, enforcement, and auditing for both individuals and corporations</em>
+</li><li>2010: Scandals<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to public scandal and impeachment</em>
+</li><li>2011: Branch Relations<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to government branch relatons, administrative issues, and constitutional reforms</em>
+</li><li>2012: Political Compaigns<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to the regulation of political campaigns, campaign finance, political advertising and voter registration</em>
+</li><li>2013: Census &amp; Statistics<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to census and statistics collection by government</em>
+</li><li>2014: Capital City<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to the capital city</em> </li><li>2015: Claims against<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to claims againt the government, compensation for the victims of terrorist attacks, compensation policies without other substantive provisions</em>
+</li><li>2030: National Holidays<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to national holidays and their observation</em>
+</li><li>2099: Other<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to other government operations subtopics</em>
+</li></ul>
+</li><li><strong>21. Public Lands</strong>
+<ul>
+<li>2100: General<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to general public lands, water management, and terrorial issues</em>
+</li><li>2101: National Parks<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to national parks, memorials, historic sites, and recreation, including the management and staffing of cultural sites</em>
+</li><li>2102: Indigenous Affairs<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to indigenous affairs, indigenous lands, and assistance to indigenous people</em>
+</li><li>2103: Public Lands<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to natural resources, public lands, and forest management, including forest fires, livestock grazing</em>
+</li><li>2104: Water Resources<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to water resources, water resource development and civil works, flood control, and research</em>
+</li><li>2105: Dependencies &amp; Territories<br>
+<em>&nbsp; &nbsp; &nbsp; Description: Includes issues related to terroritial and dependency issues and devolution</em>
+</li><li>2199: Other<br>
+<em>&nbsp; &nbsp; &nbsp;&nbsp;Description: Includes issues related to other public lands policy subtopics</em>
+</li></ul>
+</li></ul>
+
+
+
+</div>
+
+<div class="medium-3 columns left">
+
+{% include "sidebar.html" %}
+
+</div>
+
+</div>
+
+{% endblock %}    
+
+{% block scripts %}{% endblock %}
+
