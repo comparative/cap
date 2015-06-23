@@ -862,6 +862,7 @@ def admin_dataset_item(slug,id):
             didit = False
         if (didit == False):
             flash('Dataset not converted to UTF-8!')
+            return redirect(url_for('admin_dataset_list',slug=slug))
         csvfile = open(datasetfilepath, 'rU')
         reader = csv.DictReader(csvfile)
         reader.fieldnames = [item.lower() for item in reader.fieldnames]
@@ -893,13 +894,18 @@ def admin_dataset_item(slug,id):
         dataset.category = form.category.data        
         if id == 'add':
             dataset.country_id = country.id
-            db.session.add(dataset)  
+            try:
+                db.session.add(dataset) 
+            except:
+                flash('Something went wrong, dataset not saved!')
+                return redirect(url_for('admin_dataset_list',slug=slug))
         dataset.saved_date = datetime.utcnow()
         try:
             db.session.commit()
             flash('Dataset "%s" saved' % (form.display.data))
         except:
             flash('Something went wrong, dataset not saved!')
+            return redirect(url_for('admin_dataset_list',slug=slug))
         if newdata == True:
             update_stats(db,dataset.id,country.id)
         return redirect(url_for('admin_dataset_list',slug=slug))
