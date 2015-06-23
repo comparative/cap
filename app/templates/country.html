@@ -266,9 +266,11 @@
                                 <p>
                                 {% if country.principal %}<strong>Principal Investigator:</strong>&nbsp;{{ country.principal }}<br/>{% endif %}
                                 {% if country.location %}<strong>Location:</strong>&nbsp;{{ country.location }}<br/>{% endif %}
+                                {% if country.stats_observations %}
                                 <strong>Downloadable Data Series:</strong>&nbsp;{{ country.stats_series }}<br/>
                                 <strong>Time Span:</strong>&nbsp;{{ country.stats_year_from }}-{{ country.stats_year_to }}<br/>
                                 <strong>Total Observations:</strong>&nbsp;{{ "{:,}".format(country.stats_observations) }}<br/>
+                                {% endif %}
                                 </p>
                                 
                                <!-- <img class="supporting-institutions" src="http://baconmockup.com/300/75"/>
