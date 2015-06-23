@@ -30,6 +30,12 @@ li.dataset {
     margin-left:30px;
 }
 
+div.dataset-country-display span {
+    margin-left: 30px;
+    border-bottom: 1px solid #ccc;
+    padding-top: 5px;
+}
+
 div.dataset-display {
     border-bottom: 1px solid #ccc;
     padding-top: 5px;

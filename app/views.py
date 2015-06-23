@@ -187,14 +187,48 @@ def datasets_codebooks():
     countries = Country.query.order_by(Country.name)
     categories = Category.query.all()
     cats = []
+    cur = db.session.connection().connection.cursor()
     for category in categories:
-        datasets = []
-        for u in Dataset.query.filter_by(category_id=category.id).filter_by(ready=True).all():
-            dataset = u.__dict__
-            dataset['country'] = u.country.name
-            datasets.append(dataset)
-        if len(datasets) > 0:
-            setattr(category, 'datasets', datasets)
+        countries_for_category = []
+        #for u in db.session.query(Dataset,Country).filter(Dataset.country_id == Country.id).filter(Dataset.category_id == category.id).filter(Dataset.ready==True).all():
+        
+        sql = """
+        SELECT DISTINCT country.id AS id, country.name AS name FROM dataset INNER JOIN country on dataset.country_id = country.id WHERE dataset.category_id = %s    
+        """
+        #app.logger.debug(sql)
+        cur.execute(sql,[category.id])
+        for kuntry in cur.fetchall():
+            
+            c = {}
+            
+            kuntry_id = kuntry[0]
+            kuntry_name = kuntry[1]
+            
+            
+            kuntry_datasets = []
+            for u in Dataset.query.filter_by(category_id=category.id).filter_by(country_id=kuntry_id).filter_by(ready=True).all():
+                kuntry_datasets.append(u.__dict__)
+            #app.logger.debug(kuntry_datasets)
+            
+            
+            c['name'] = kuntry_name
+            c['datasets'] = kuntry_datasets
+            #setattr(c, 'datasets', kuntry_datasets)
+            
+            countries_for_category.append(c)
+        
+        
+        #countries_for_category = [ for r, in cur.fetchall().self.materials.itervalues():]
+        #for kuntry in countries_for_category:
+        #    sql2 = """
+        #    SELECT dataset.display AS display, dataset.description AS description FROM dataset WHERE country_id = %s AND category_id = %s    
+        #    """
+        #    cur.execute(sql2,[kuntry.id, category.id])
+        #    datasets = [r for r, in cur.fetchall()]
+        #    setattr(kuntry, 'datasets', datasets)
+            
+        if len(countries_for_category) > 0:
+            setattr(category, 'countries', countries_for_category)
             cats.append(category)
     return render_template("datasets_codebooks.html",intro=intro,countries=countries,categories=cats)
 

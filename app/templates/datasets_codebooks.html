@@ -87,27 +87,50 @@ div.dataset-display:hover > span.arrow i {
     <ul class="category">
     <h5>{{category.name}}</h5>
 
-    {% for dataset in category.datasets %}
+    {% for country in category.countries %}
 
     <li class="dataset">
     
-        <a class="line-item clickable" href="#congressional_hearings">
-            <div class="dataset-display clearfix">
-            <span class="left">{{dataset.country}}: {{dataset.display}}</span>
+        <a class="line-item clickable" href="#">
+            <div class="clearfix dataset-display">
+            <span class="left">{{country.name}}</span>
             <span class="arrow right"><i class="fi-arrow-down"></i><i style="display:none;" class="fi-arrow-up ng-hide"></i></span>
             </div>
         </a>
-    
+        
+        <div class="dataset_description" style="margin-left:30px; display: none;">
+        
+        
+        {% for dataset in country.datasets %}
+        <!--<h1></h1>-->
+        
+        
+        
+        <a class="line-item clickable" href="#">
+            <div class="clearfix dataset-display">
+            <span class="left">{{dataset.display}}</span>
+            <span class="arrow right"><i class="fi-arrow-down"></i><i style="display:none;" class="fi-arrow-up ng-hide"></i></span>
+            </div>
+        </a>
+        
         <div class="dataset_description" style="display: none;">
-    
-        {{dataset.description | safe}}
-        <a class="clickable" href="/_uploads/datasetfiles/{{dataset.datasetfilename}}">download dataset</a>
-    
-        {% if dataset.codebookfilename %}
-        &nbsp;&nbsp;<a class="clickable" href="/_uploads/codebookfiles/{{dataset.codebookfilename}}" target="_new">download codebook</a>
-        {% endif %}
-    
+            
+            {{dataset.description | safe}}
+            <br/>
+            {{dataset.stats_observations}} observations spanning the years {{dataset.stats_year_from}} to {{dataset.stats_year_to}}
+            
         </div>
+        
+        
+        
+        {% endfor %}
+       
+        
+        
+        </div>
+        
+        
+
     
     </li>
 
@@ -117,7 +140,8 @@ div.dataset-display:hover > span.arrow i {
 
     {% endfor %}
 
-
+    <br/>
+    <br/>
 
 </div>
 
@@ -137,7 +161,7 @@ div.dataset-display:hover > span.arrow i {
         $(document).ready(function() {
                 
             $("li.dataset a.line-item").click(function(event) {
-                $(this).siblings("div.dataset_description").slideToggle(200);
+                $(this).next("div.dataset_description").slideToggle(200);
                 $(this).find("i.fi-arrow-down").toggle();
                 $(this).find("i.fi-arrow-up").toggle();
                 event.preventDefault();
@@ -147,6 +171,3 @@ div.dataset-display:hover > span.arrow i {
 
 </script>
 {% endblock %}
-
-
-
