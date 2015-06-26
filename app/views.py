@@ -483,7 +483,6 @@ def admin_country_list():
                            countries=countries)
                                                
 @app.route('/admin/projects/<slug>', methods=['GET', 'POST'])
-@login_required
 def admin_country_item(slug):
     country = Country() if slug == 'add' else Country.query.filter_by(slug=slug).first()
     form = CountryForm()
@@ -1360,7 +1359,7 @@ def update_stats(db,dataset_id,country_id):
 def convert_to_utf8(filename):
     # gather the encodings you think that the file may be
     # encoded inside a tuple
-    encodings = ('utf-8','macintosh','windows-1250','iso-8859-1','iso-8859-2','utf-7','ibm852','shift_jis','iso-2022-jp')
+    encodings = ('utf-8','macintosh','windows-1250','iso-8859-1','iso-8859-2','utf-16','utf-7','ibm852','shift_jis','iso-2022-jp')
  
     # try to open the file and exit if some IOError occurs
     try:

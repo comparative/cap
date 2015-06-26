@@ -47,7 +47,7 @@ class StaffForm(Form):
     institution = StringField('institution')
     sort_order = IntegerField('sort_order', [NumberRange(min=0, max=10)])
     image = FileField('image',validators=[FileAllowed(IMAGES, 'Please choose an image file.')])
-    body = StringField('content', validators=[DataRequired()],widget=TextArea()) 
+    body = StringField('content', validators=[],widget=TextArea()) 
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True) 
 
 class DatasetForm(Form):
@@ -56,8 +56,10 @@ class DatasetForm(Form):
     description = StringField('content', validators=[DataRequired()],widget=TextArea())
     unit = StringField('unit')
     source = StringField('source')
-    content = FileField('content',validators=[FileAllowed(['csv'], 'Data must be formatted as .csv')])
-    codebook = FileField('codebook',validators=[FileAllowed(['pdf'], 'Codebook must be formatted as .csv')])
+    #content = FileField('content',validators=[FileAllowed(['csv'], 'Data must be formatted as .csv')])
+    #codebook = FileField('codebook',validators=[FileAllowed(['pdf'], 'Codebook must be formatted as .csv')])
+    content = FileField('content')
+    codebook = FileField('codebook')
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
     category = QuerySelectField(query_factory=categories_factory,allow_blank=True) 
     
@@ -76,7 +78,7 @@ class DatasetForm(Form):
 
 class CountryForm(Form):
     name = StringField('name', validators=[DataRequired()])
-    short_name = StringField('short_name', validators=[DataRequired()])
+    short_name = StringField('short_name', validators=[])
     principal = StringField('principal')
     location = StringField('location')
     image = FileField('image',validators=[FileAllowed(IMAGES, 'Please choose an image file.')])

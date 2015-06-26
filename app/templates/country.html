@@ -141,8 +141,14 @@
                                     <div class="dataset_description" style="display: none;">
                                     
                                     {{dataset.description | safe}}
-                                    <a class="clickable" href="/_uploads/datasetfiles/{{dataset.datasetfilename}}">download dataset</a>
                                     
+                                    <br/>
+                                    {{dataset.stats_observations}} observations spanning the years {{dataset.stats_year_from}} to {{dataset.stats_year_to}}
+                                    
+                                    <br/>
+                                    
+                                    <a class="clickable" href="/_uploads/datasetfiles/{{dataset.datasetfilename}}">download dataset</a>
+                                                                        
                                     {% if dataset.codebookfilename %}
                                     &nbsp;&nbsp;<a class="clickable" href="/_uploads/codebookfiles/{{dataset.codebookfilename}}" target="_new">download codebook</a>
                                     {% endif %}

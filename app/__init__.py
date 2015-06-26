@@ -20,8 +20,8 @@ researchfiles = UploadSet('researchfiles', 'pdf')
 researchimages = UploadSet('researchimages', IMAGES)
 adhocfiles = UploadSet('adhocfiles', ALL)
 slideimages = UploadSet('slideimages', ALL)
-codebookfiles = UploadSet('codebookfiles', 'pdf')
-datasetfiles = UploadSet('datasetfiles', 'csv')
+codebookfiles = UploadSet('codebookfiles', ALL)
+datasetfiles = UploadSet('datasetfiles', ALL)
 configure_uploads(app, (newsimages,countryimages,staffimages,researchfiles,researchimages,adhocfiles,slideimages,codebookfiles,datasetfiles))
 
 from app import views, models
