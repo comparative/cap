@@ -32,7 +32,11 @@
     </div>
     <div class="medium-8 columns text-right">
     {% if current_user.is_authenticated() %}
-    Hi {{ current_user.name }}! <a href="{{ url_for('logout') }}">Logout</a>
+    
+    Hi {{ current_user.name }}!
+    &bull;&nbsp;<a href="{{ url_for('admin_password') }}">Change Password</a>
+    &bull;&nbsp;<a href="{{ url_for('logout') }}">Logout</a>
+    
     {% endif %}
     </div>
     </div>
