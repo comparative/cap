@@ -598,7 +598,11 @@ def admin_password():
     if form.validate_on_submit():
         user.password = form.password.data
         db.session.commit()
+<<<<<<< HEAD
     	flash('Password changed to "%s" -- please remember it!' % (user.password))
+=======
+    	flash('Password changed.')
+>>>>>>> 833d982ea0fb2b2bf72e82f65b3ca7469b48521d
         return redirect(url_for('admin'))
     return render_template('admin/password.html', 
                            id=user.id,
