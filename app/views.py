@@ -589,7 +589,22 @@ def admin_user_item(id):
     return render_template('admin/user_item.html', 
                            id=user.id,
                            form=form)
+
+@app.route('/admin/password', methods=['GET', 'POST'])
+@login_required
+def admin_password():
+    user = current_user
+    form = UserForm()
+    if form.validate_on_submit():
+        user.password = form.password.data
+        db.session.commit()
+    	flash('Password changed to "%s" -- please remember it!' % (user.password))
+        return redirect(url_for('admin'))
+    return render_template('admin/password.html', 
+                           id=user.id,
+                           form=form)
                            
+                         
 @app.route('/admin/users/delete/<id>')
 @login_required
 def admin_user_delete(id):

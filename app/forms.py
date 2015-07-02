@@ -88,9 +88,9 @@ class CountryForm(Form):
     embed_url = principal = StringField('embed_url')
     
 class UserForm(Form):
-    name = StringField('name', validators=[DataRequired()])
-    email = StringField('email', validators=[DataRequired()])
-    password = PasswordField('password', validators=[DataRequired()])
+    name = StringField('name', validators=[])
+    email = StringField('email', validators=[])
+    password = StringField('password', validators=[DataRequired()])
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
     
 class SlideForm(Form):
