@@ -874,6 +874,21 @@ def admin_dataset_list(slug,page=1):
     return render_template('admin/dataset_list.html',
                            country=country,
                            datasets=datasets)
+
+@app.route('/admin/dataset/upload', methods=['POST'])
+@login_required
+def admin_dataset_upload():
+    #dataset = Dataset.query.filter_by(id=id).first()
+    #if dataset is not None:
+    
+    retval = {}
+    datasetfilename = datasetfiles.save(request.files['file'])
+    datasetfilepath = datasetfiles.path(datasetfilename)
+    retval['filename'] = datasetfilename
+    retval['filepath'] = datasetfilepath
+    return dumps(retval)
+    
+    
                     
 @app.route('/admin/projects/<slug>/dataset/<id>', methods=['GET', 'POST'])
 @login_required
@@ -952,7 +967,7 @@ def admin_dataset_item(slug,id):
             form.source.data = dataset.source
             form.category.data = dataset.category
     
-    return render_template('admin/dataset_item.html', 
+    return render_template('admin/dataset_item_dev.html', 
                            id=dataset.id,
                            country=country,
                            slug=slug,
