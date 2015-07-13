@@ -9,7 +9,7 @@ from sqlalchemy import desc
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
 from functools import wraps, update_wrapper
-from flask import render_template, flash, redirect, url_for, request, make_response, send_file, abort, send_from_directory
+from flask import Response, render_template, flash, redirect, url_for, request, make_response, send_file, abort, send_from_directory
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from werkzeug import secure_filename
 from json import dump, dumps, loads
@@ -884,11 +884,11 @@ def admin_dataset_upload():
     retval = {}
     datasetfilename = datasetfiles.save(request.files['file'])
     datasetfilepath = datasetfiles.path(datasetfilename)
-    retval['filename'] = datasetfilename
-    retval['filepath'] = datasetfilepath
-    return dumps(retval)
-    
-    
+    #retval['filename'] = datasetfilename
+    #retval['filepath'] = datasetfilepath
+    retval['error'] = 'What??? Not this file!!'
+    resp = Response(dumps(retval), status=417, mimetype='application/json')
+    return resp
                     
 @app.route('/admin/projects/<slug>/dataset/<id>', methods=['GET', 'POST'])
 @login_required
