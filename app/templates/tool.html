@@ -42,6 +42,7 @@
 <input type="hidden" id="user" name="user" value="{{user}}" />
 <input type="hidden" id="slug" name="slug" value="{{slug}}" />
 
+<!-- BEGIN chart region -->
 <div class="large-9 medium-9 push-3 columns">
          
         <div class="row">
@@ -53,8 +54,6 @@
             <dl class="tabs" data-tab>
               <dd class="active"><a class="clickable" href="#graph-view">Edit</a></dd>
               <dd><a class="clickable" href="#data-view">Explore</a></dd>
-              <!--<dd class="right"><a class="clickable" href="#data-view" id="save-chart" ng-click="saveChart()" style="margin-bottom:10px;" class="button tiny">Pin chart</a></dd>
-              <dd class="right"><a class="clickable" href="#data-view"id="clear-chart" ng-click="clearChart()" style="margin-bottom:10px;" class="button tiny">Clear chart</a></dd>-->
             </dl>
             
             <div class="row">
@@ -177,18 +176,22 @@
         </div>
          
 </div>
-            
+<!-- END chart region -->
+
+<!-- BEGIN left sidebar -->  
 <div class="large-3 medium-3 pull-9 columns">
+
      
 <dl class="tabs" data-tab>
-  <dd class="active"><a class="clickable" href="#panel1">Add series</a></dd>
-  <dd><a class="clickable" href="#panel2">View history</a></dd>
+  <dd class="active"><a class="clickable" href="#panel1">Policies</a></dd>
+  <dd><a class="clickable" href="#panel3">Budgets</a></dd>
+  <dd><a class="clickable" href="#panel2">History</a></dd>
 </dl>
 <div class="tabs-content contained">
+
+  <!-- BEGIN policies panel -->
   <div class="content active" id="panel1">
-    
-   
-    <!--h4>Find datasets</h4>-->
+        
     <h5 class="picker-label clickable">Select projects<span ng-show="countryCount() > 0" class="selection_count">{@countryCount()@}</span></h5>
     <div id="projects" class="picker" style="display:block">
     <div ng-repeat="country in countries">
@@ -197,8 +200,6 @@
     </div>
     </div>
    
-
-
 	<h5 class="picker-label clickable">Select dataset types<span ng-show="categoryCount() > 0" class="selection_count">{@categoryCount()@}</span></h5>
     <div id="categories" class="picker">
     <div ng-repeat="category in categories">
@@ -207,11 +208,10 @@
     </div>
     </div>
    
-
     <h5 class="picker-label clickable">Select policy topics<span ng-show="topicCount() > 0" class="selection_count">{@topicCount()@}</span></h5>
     <div id="topics" class="picker">
 
-        <ol id="menutree">
+        <ol class="menutree">
         
             <li ng-repeat="topic in topics">
             <label class="menu_label" for="t{@topic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@topic.id@}" ng-click="doFacets()"><span class="major_topic clickable">{@topic.name | limitTo:33 @}</span><span style="float:right;"><i ng-hide="isOpen" class="fi-arrow-down"></i><i ng-show="isOpen" class="fi-arrow-up"></i></span></label>
@@ -244,7 +244,53 @@
     
 
   </div>
+  <!-- END policies panel -->
+  
+  
+  <!-- BEGIN budget panel -->
+  <div class="content" id="panel3">
+    
+    <h5 class="picker-label clickable">Select projects<span ng-show="topicCount() > 0" class="selection_count">{@topicCount()@}</span></h5>
+    <div id="topics" class="picker">
 
+        <ol class="menutree">
+        
+            <li style="margin:3px 3px 3px 3px;" ng-repeat="budget in budgets">
+            <label class="menu_label" for="b{@budget.id@}"><!--<input type="checkbox" class="choose_budget" budget="{@budget.id@}">--><span class="major_topic clickable">{@budget.name | limitTo:33 @}</span><span style="float:right;"><i ng-hide="isOpen" class="fi-arrow-down"></i><i ng-show="isOpen" class="fi-arrow-up"></i></span></label>
+            <input ng-click="isOpen = ! isOpen" type="checkbox" id="b{@budget.id@}"/>
+                <ol>
+                    <li ng-repeat="topic in budget.topics">
+                    <label class="menu_label" for="s{@topic.id@}"><input type="checkbox" class="choose_budget" budget="{@topic.id@}" ng-click="doBudge()"><span>{@topic.name | limitTo:33 @}</span></label>
+                    <input type="checkbox" id="s{@topic.id@}"/>
+                    </li>
+                </ol>
+            </li>
+                        
+        </ol>
+    
+    </div>
+   
+   
+    <h5 ng-show="budgetProjectCount() > 0 && budgetTopicCount() > 0" class="picker-label">Add series to chart</h5>
+    <p class="no_results" ng-show="noBudgetResults()">No available series matching your selections.</p>
+    <p class="no_results" ng-hide="noBudgetResults() || budgetProjectCount() == 0 || budgetTopicCount() == 0">Click on a series below to add it to the chart.</p>
+    
+    <div title="Click to add!" ng-repeat="result in budgetResults" class="dataset">
+    <p ng-hide="isSelected(result.name)" ng-click="addToChart(result)" class="panel series">
+    <!--<span style="clear:both;">{@result.name@}</span>-->
+    <span class="addseries clearfix">
+    <span style="float:left; width:90%;">{@result.name@}</span>
+    <span style="float:right"><i class="fi-check"></i></span>
+    </span>
+    </p>
+    </div>
+    
+
+  </div>
+  <!-- END budget panel -->
+
+
+  <!-- BEGIN history panel -->
   <div class="content" id="panel2">
   
     <h5>Pinned</h5>
@@ -283,31 +329,21 @@
         
     </div>
     </div>
-    
-    
-    
-    
-    
-    
-    <!--<img class="thumb clickable" ng-click="recallRecent($index)" ng-repeat="thumb in recent | orderBy: 'id':true" ng-src="{@thumb.imgsrc@}">-->
-    
-    
-    
-    
+   
     
     </div>
-    
+     
   </div>
-  
+  <!-- END history panel -->
+ 
 </div>
          
             
 </div>
+<!-- END left sidebar -->  
         
 </div>
        
-  
-            
 <div id="embed_code" class="reveal-modal small" data-reveal>
     
     <p>To embed this mighty CAP chart copy the following code and slap it up on a web page:</p>
@@ -324,11 +360,8 @@
     </textarea>
 
 </div>  
-    
-    
-    
-      
-    <div ng-repeat="series in chart.series" id="seriesoptions-{@series.dataset@}-{@series.topic@}" class="reveal-modal small" data-reveal>
+           
+<div ng-repeat="series in chart.series" id="seriesoptions-{@series.dataset@}-{@series.topic@}" class="reveal-modal small" data-reveal>
         
         <div class="active_controls">
             
@@ -342,8 +375,6 @@
             <select ng-disabled="chart.stacked" ng-change="checkAxes(series)" ng-model="series.yaxis" ng-options="axis.num as axis.display for axis in yaxischoices | filter:choiceIsVisible(series)"></select>
         
         </div>
-        
-
         
         <div style="float:left">
         
@@ -377,7 +408,7 @@
     
     </div>
       
-    <div id="datapoints" class="reveal-modal small" data-reveal>
+<div id="datapoints" class="reveal-modal small" data-reveal>
         
         <p>&nbsp;</p>
         
@@ -407,9 +438,8 @@
         </div>
         
     </div>
-    
-    
-  </div>
+        
+</div>
 
 </div>
 
@@ -417,7 +447,7 @@
 
 {% endblock %}
 
-     {% block scripts %}
+{% block scripts %}
           
 <script src="/static/js/highcharts.js"></script>
 <script src="http://code.highcharts.com/modules/exporting.js"></script>

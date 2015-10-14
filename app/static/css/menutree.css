@@ -1,22 +1,22 @@
 /* Minimal css for clickable pure CSS collapsible tree menu */
 /* As specific as possible to prevent interference with other code */
 
-#menutree input[type=checkbox] {
+.menutree input[type=checkbox] {
     height:14px;
     width:14px;
     margin-bottom:5px;
     margin-left:5px;
 }
 
-#menutree label {
+.menutree label {
     vertical-align:middle;
 }
 
-#menutree li {
+.menutree li {
    list-style: none;          /* all list item li dots invisible */
          }
 
-#menutree li .menu_label + input[type=checkbox] {
+.menutree li .menu_label + input[type=checkbox] {
       position: absolute;
       display: none;
                               /* checkboxes invisible and use no space */
@@ -28,22 +28,22 @@
 
 /* cursor changes when you mouse over this class */
 /* could add the many user-select: none; commands here 
-#menutree li .menu_label {
+.menutree li .menu_label {
       cursor: pointer;        
     }                         
 */
 
-#menutree li .menu_label + input[type=checkbox] input.choose_topic + span + span
+.menutree li .menu_label + input[type=checkbox] input.choose_topic + span + span
          {
             background-color: red;
          }
 
-#menutree li .menu_label + input[type=checkbox] + ol > li
+.menutree li .menu_label + input[type=checkbox] + ol > li
          {
             display: none;    /* prevents sublists below unchecked labels from displaying */
          }
 
-#menutree li .menu_label + input[type=checkbox]:checked + ol > li
+.menutree li .menu_label + input[type=checkbox]:checked + ol > li
          {
            display: block;    /* display submenu on click */
          }

@@ -71,7 +71,11 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     // INIT VARS
     
-   // $scope.years = year_list;
+     $scope.budgets = [
+        {"id":"1","name":"US","topics":[{"id":"2","name":"Money"},{"id":"2","name":"Pain"},{"id":"3","name":"Church"}]},
+        {"id":"2","name":"Belgium","topics":[{"id":"2","name":"Money"},{"id":"2","name":"Pain"},{"id":"3","name":"Sleep"}]},
+        {"id":"3","name":"Hungary","topics":[{"id":"2","name":"Sleep"},{"id":"2","name":"Pain"},{"id":"3","name":"Church"}]},
+    ];
     
     $scope.measures = [
         {"measure":"count","display":"Count"},
@@ -257,6 +261,22 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         return angular.element('#topics input.choose_topic:checked').length;
         
     }
+    
+    
+    
+    $scope.budgetProjectCount = function() {
+        
+        //return angular.element('#projects input[type="checkbox"]:checked').length;
+        return 0;
+        
+    }
+    
+    $scope.budgetTopicCount = function() {
+        
+        //return angular.element('#topics input.choose_topic:checked').length;
+        return 0;
+    }
+
     
     $scope.lessThan = function( what ) {
         return function( item ) {
