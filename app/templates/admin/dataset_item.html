@@ -1,6 +1,13 @@
 <!-- extend from base layout -->
 {% extends "admin/base.html" %}
 
+{% block head %}
+
+<script src="https://rawgit.com/enyo/dropzone/master/dist/dropzone.js"></script>
+<link rel="stylesheet" href="https://rawgit.com/enyo/dropzone/master/dist/dropzone.css">
+
+{% endblock %}
+
 {% block content %}
 
 <h4>
@@ -18,20 +25,38 @@
 	  <label for="title" class="right inline">Data [.csv]</label>
 	</div>
 	<div class="small-10 columns">
+	
 	  {% if ready %}
+	  
 	      <p>
 	      <a href="{{ dataseturl }}" target="_new">{{ datasetfilename }}</a>
 	      <br>
 	      <a href="{{ url_for('admin_dataset_removecontent',slug=slug,id=id) }}">update</a>
 	      </p>
+	      
       {% else %}
+          
+          {% if content %}
+          
+          <p>
+          {{ content }}
+          <br>
+	      <a href="{{ url_for('admin_dataset_item',slug=slug,id=id) }}">update</a>
+          </p>
+          
+          <input type="hidden" name="content" id="content" value="{{ content }}">
+          
+          {% else %}
+          
           <label class="error">
-          {{ form.content(size=40) }}
+          <div id="datasetdropzone" class="dropzone" style="border: 1px solid black; color: black; margin-bottom: 20px; width: 200px; height: 200px; text-align: center;"></div>
           </label>
-          {% for error in form.content.errors %}
-          <small class="error">{{ error }}</small>
-          {% endfor %}
+          <input type="hidden" name="content" id="content" value="">
+          
+          {% endif %}
+          
       {% endif %}
+      
 	</div>
 </div>
 
@@ -165,5 +190,27 @@
 
 
 </form>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+
+Dropzone.options.datasetdropzone = {
+url: "/admin/dataset/upload",
+maxFiles:1,
+init: function() {
+          this.on("maxfilesexceeded", function(file) {
+                this.removeAllFiles();
+                this.addFile(file);
+          });
+      },
+success: function( file, response ){
+        console.log(response.filename);
+        $("#content").val(response.filename);
+    }
+
+};
 
 {% endblock %}

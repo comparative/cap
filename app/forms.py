@@ -56,24 +56,25 @@ class DatasetForm(Form):
     description = StringField('content', validators=[DataRequired()],widget=TextArea())
     unit = StringField('unit')
     source = StringField('source')
-    #content = FileField('content',validators=[FileAllowed(['csv'], 'Data must be formatted as .csv')])
-    #codebook = FileField('codebook',validators=[FileAllowed(['pdf'], 'Codebook must be formatted as .csv')])
-    content = FileField('content')
-    codebook = FileField('codebook')
+    content = FileField('content',validators=[FileAllowed(['csv'], 'Data must be formatted as .csv')])
+    codebook = FileField('codebook',validators=[FileAllowed(['pdf'], 'Codebook must be formatted as .pdf')])
+    #content = FileField('content')
+    #codebook = FileField('codebook')
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
     category = QuerySelectField(query_factory=categories_factory,allow_blank=True) 
     
-    def validate(self):
-        rv = Form.validate(self)
-        if self.fieldnames:
-            required_fieldnames = ['id','year','majortopic','subtopic']
-            #required_fieldnames = ['id','year','majortopic']
-            for required_fieldname in required_fieldnames:
-                if required_fieldname not in self.fieldnames:
-                    self.content.errors.append('The required column "' + required_fieldname + '" was not found in the data you uploaded.')
-        if len(self.content.errors) > 0:
-            return False
-        return True
+    #def validate(self):
+    #    rv = Form.validate(self)
+    #    if rv==False: return False
+    #    if self.fieldnames:
+    #        required_fieldnames = ['id','year','majortopic','subtopic']
+    #        #required_fieldnames = ['id','year','majortopic']
+    #        for required_fieldname in required_fieldnames:
+    #            if required_fieldname not in self.fieldnames:
+    #                self.content.errors.append('The required column "' + required_fieldname + '" was not found in the data you uploaded.')
+    #    if len(self.content.errors) > 0:
+    #        return False
+    #    return True
     
 
 class CountryForm(Form):
