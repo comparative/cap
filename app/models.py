@@ -1,5 +1,5 @@
 from app import db
-from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.dialects.postgresql import JSON,JSONB
 from sqlalchemy.orm import deferred
 import datetime
 
@@ -45,7 +45,7 @@ class Dataset(db.Model):
     description = db.Column(db.String(9000))
     unit = db.Column(db.String(80))
     source = db.Column(db.String(80))
-    content = deferred(db.Column(JSON))
+    content = deferred(db.Column(JSONB))
     country_id = db.Column(db.Integer,db.ForeignKey('country.id'))
     country = db.relationship('Country',backref=db.backref('datasets', lazy='dynamic'))
     category_id = db.Column(db.Integer,db.ForeignKey('category.id'))

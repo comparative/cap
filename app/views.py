@@ -5,6 +5,7 @@ import psycopg2
 import urllib
 import urllib2
 import csv
+import time
 from sqlalchemy import desc
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
@@ -880,57 +881,90 @@ def admin_dataset_list(slug,page=1):
 def admin_dataset_upload():
     #dataset = Dataset.query.filter_by(id=id).first()
     #if dataset is not None:
-    
     retval = {}
     datasetfilename = datasetfiles.save(request.files['file'])
     datasetfilepath = datasetfiles.path(datasetfilename)
+    didit = convert_to_utf8(datasetfilepath)
+    csvfile = open(datasetfilepath, 'rU')
+    reader = csv.DictReader(csvfile)
+    reader.fieldnames = [item.lower() for item in reader.fieldnames]
+    errors = ''
+    
+    if reader.fieldnames:
+        #required_fieldnames = ['id','year','majortopic','subtopic']
+        required_fieldnames = ['id','year','majortopic']
+        for required_fieldname in required_fieldnames:
+            if required_fieldname not in reader.fieldnames:
+                errors += 'The required column "' + required_fieldname + '" was not found in the data you uploaded. '
+    if len(errors) > 0: #validation failed
+        retval['error'] = errors
+        resp = Response(dumps(retval), status=412, mimetype='application/json')
+        return resp
+    
+    #validation succeeded
+    retval['filename'] = datasetfilename
+    resp = Response(dumps(retval), status=200, mimetype='application/json')
+    return resp
+    
+    
+    
+    
+    #app.logger.debug(reader.fieldnames[0]);
+    
+    #thedata = [ row for row in reader ]
+    #cur = db.session.connection().connection.cursor()
+    #cur.execute("UPDATE dataset SET content=%s WHERE id=23",dumps(thedata))
+    #db.session.commit()
+    
+    
+    
+    
+    #dataset = Dataset.query.filter_by(id=23).first()
+    #dataset.content = thedata
+    #db.session.commit()
+    
     #retval['filename'] = datasetfilename
     #retval['filepath'] = datasetfilepath
-    retval['error'] = 'What??? Not this file!!'
-    resp = Response(dumps(retval), status=417, mimetype='application/json')
-    return resp
+    
+    
                     
 @app.route('/admin/projects/<slug>/dataset/<id>', methods=['GET', 'POST'])
 @login_required
 def admin_dataset_item(slug,id):
+
     newdata = False
     country = Country.query.filter_by(slug=slug).first()
     dataset = Dataset() if id == 'add' else Dataset.query.filter_by(id=id).first()
     form = DatasetForm()
-    form.fieldnames=[]
-    if 'content' in request.files and request.files['content'].filename != '':
-        datasetfilename = datasetfiles.save(request.files['content'])
-        datasetfilepath = datasetfiles.path(datasetfilename)
-        try:
-            didit = convert_to_utf8(datasetfilepath)
-        except:
-            didit = False
-        if (didit == False):
-            flash('Dataset not converted to UTF-8!')
-            return redirect(url_for('admin_dataset_list',slug=slug))
-        csvfile = open(datasetfilepath, 'rU')
-        reader = csv.DictReader(csvfile)
-        reader.fieldnames = [item.lower() for item in reader.fieldnames]
-        form.fieldnames = reader.fieldnames
+    
+    content = False
+    if 'content' in request.form and request.form['content'] != '':
+        content = request.form['content']
+        
     if form.validate_on_submit():
+    
         if 'codebook' in request.files and request.files['codebook'].filename != '':
+        
             codebookfilename = codebookfiles.save(request.files['codebook'])
             dataset.codebookfilename = codebookfilename
-        if 'content' in request.files and request.files['content'].filename != '':
+            
+        if content:
+        
+            datasetfilepath = datasetfiles.path(content)
+            csvfile = open(datasetfilepath, 'rU')
+            reader = csv.DictReader(csvfile)
+            reader.fieldnames = [item.lower() for item in reader.fieldnames]
             filters = []
             for fieldname in reader.fieldnames:
                 if fieldname.split('_')[0] == 'filter':
-                    #filtername = fieldname[7:].replace("_"," ")
                     filters.append(fieldname)
             dataset.filters = filters
-            dataset.datasetfilename = datasetfilename
+            dataset.datasetfilename = content
             thedata = [ row for row in reader ]
             dataset.content = thedata
             dataset.ready = True
             newdata = True
-            #cur = db.session.connection().connection.cursor()
-            #cur.execute("UPDATE dataset SET content=%s",dumps(thedata))
-            #db.session.commit() 
+            
         dataset.display = form.display.data
         dataset.short_display = form.short_display.data
         dataset.description = form.description.data
@@ -967,7 +1001,7 @@ def admin_dataset_item(slug,id):
             form.source.data = dataset.source
             form.category.data = dataset.category
     
-    return render_template('admin/dataset_item_dev.html', 
+    return render_template('admin/dataset_item.html', 
                            id=dataset.id,
                            country=country,
                            slug=slug,
@@ -976,7 +1010,8 @@ def admin_dataset_item(slug,id):
                            datasetfilename=dataset.datasetfilename,
                            codebookurl=codebookurl,
                            codebookfilename=dataset.codebookfilename,
-                           form=form)
+                           form=form,
+                           content=content)
 
 @app.route('/admin/projects/<slug>/dataset/delete/<id>')
 @login_required
@@ -1117,7 +1152,7 @@ def api_instances(dataset,topic,year):
     sql = """
     select datarow->>'source' as source, datarow->>'description' as description
     from (
-      select json_array_elements(content)
+      select jsonb_array_elements(content)
       from dataset WHERE dataset.id = %s
     ) s(datarow)
     where datarow->>'""" + topic_col + "' = %s AND datarow->>'year' = %s"
@@ -1170,7 +1205,7 @@ def api_measures(dataset,topic):
     SELECT yt.year::int, yt.total::int FROM (
     select datarow->>'year' AS year, COUNT(datarow->'id') as total
     from (
-      select json_array_elements(content)
+      select jsonb_array_elements(content)
       from dataset WHERE dataset.id = %s
     ) s(datarow)
     WHERE 1=1"""
@@ -1206,7 +1241,7 @@ def api_measures(dataset,topic):
     SELECT yc.year::int, yc.cnt::int FROM (
     select datarow->>'year' AS year, COUNT(datarow->'id') as cnt
     from (
-    select json_array_elements(content)
+    select jsonb_array_elements(content)
     from dataset WHERE dataset.id = %s
     ) s(datarow)
     where datarow->>'""" + topic_col + "' = %s"
@@ -1326,7 +1361,7 @@ def update_stats(db,dataset_id,country_id):
     (
     SELECT MIN(datarow->>'year')::int
         from (
-        select json_array_elements(content)
+        select jsonb_array_elements(content)
         from dataset WHERE dataset.id = %s
         ) s(datarow)
         WHERE datarow->>'year' ~ '^[0-9]'
@@ -1335,7 +1370,7 @@ def update_stats(db,dataset_id,country_id):
     stats_year_to = (
     SELECT MAX(datarow->>'year')::int
         from (
-        select json_array_elements(content)
+        select jsonb_array_elements(content)
         from dataset WHERE dataset.id = %s
         ) s(datarow)
         WHERE datarow->>'year' ~ '^[0-9]'
@@ -1344,7 +1379,7 @@ def update_stats(db,dataset_id,country_id):
     stats_observations = (
     SELECT COUNT(datarow->'id')::int
         from (
-        select json_array_elements(content)
+        select jsonb_array_elements(content)
         from dataset WHERE dataset.id = %s
         ) s(datarow)
         WHERE datarow->>'year' ~ '^[0-9]'
