@@ -58,6 +58,9 @@ class Dataset(db.Model):
     stats_year_from = db.Column(db.Integer)
     stats_year_to = db.Column(db.Integer)
     stats_observations = db.Column(db.Integer)
+    aggregation_level = db.Column(db.Integer)
+    topics = db.Column(JSON)
+    budget = db.Column(db.Boolean(),default=False)
     
 class Country(db.Model):
 

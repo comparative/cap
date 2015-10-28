@@ -867,14 +867,35 @@ def admin_analytics(slug):
 ## DATASETS
 
 @app.route('/admin/projects/<slug>/datasets')
-@app.route('/admin/projects/<slug>/datasets/p/<int:page>')
+@app.route('/admin/projects/<slug>/datasets/<int:tab>/p/<int:page>')
 @login_required
-def admin_dataset_list(slug,page=1):
+def admin_dataset_list(slug,tab=1,page=1):
     country = Country.query.filter_by(slug=slug).first()
-    datasets = Dataset.query.filter_by(country_id=country.id).order_by(desc(Dataset.saved_date)).paginate(page, 10, False)
+    datasets_policy = Dataset.query.filter_by(country_id=country.id).filter_by(budget=False).order_by(desc(Dataset.saved_date)).paginate(page, 10, False)
+    datasets_budget = Dataset.query.filter_by(country_id=country.id).filter_by(budget=True).order_by(desc(Dataset.saved_date)).paginate(page, 10, False)
+    datasets_download = []
     return render_template('admin/dataset_list.html',
                            country=country,
-                           datasets=datasets)
+                           datasets_policy=datasets_policy,
+                           datasets_budget=datasets_budget,
+                           datasets_download=datasets_download)
+
+
+@app.route('/admin/projects/<slug>/datasetcustom/<id>', methods=['GET', 'POST'])
+@login_required
+def admin_datasetcustom_item(slug,id):
+    return
+    
+@app.route('/admin/projects/<slug>/datasetdownload/<id>', methods=['GET', 'POST'])
+@login_required
+def admin_datasetdownload_item(slug,id):
+    return
+
+
+
+
+
+
 
 @app.route('/admin/dataset/upload', methods=['POST'])
 @login_required

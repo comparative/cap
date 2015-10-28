@@ -9,19 +9,85 @@
 {% endif %}
 <a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> Datasets
 </h4>
+
+
+
+<dl class="tabs" data-tab>
+  <dd class="active"><a class="clickable" href="#panel1">Policy</a></dd>
+  <dd><a class="clickable" href="#panel2">Budget</a></dd>
+  <dd><a class="clickable" href="#panel3">Download</a></dd>
+</dl>
+
+<div class="tabs-content">
+
+<div class="content active" id="panel1">
+
 <table>
-{% for item in datasets.items %}
+{% for item in datasets_policy.items %}
+<tr><td><a href="{{ url_for('admin_dataset_item', slug=country.slug, id=item.id) }}">edit</a></td><td>{{ item.display }}</td></tr>
+{% endfor %}
+</table>
+
+{% if datasets_policy.has_prev or datasets_policy.has_next %}
+<p>
+{% if datasets_policy.has_prev %}<a href="{{ url_for('admin_dataset_list', slug=country.slug, tab=1, page=datasets_policy.prev_num) }}">&lt;&lt; Newer</a>{% else %}&lt;&lt; Newer{% endif %} | 
+{% if datasets_policy.has_next %}<a href="{{ url_for('admin_dataset_list', slug=country.slug, tab=1, page=datasets_policy.next_num) }}">Older &gt;&gt;</a>{% else %}Older &gt;&gt;{% endif %}
+</p>
+{% endif %}
+
+<a href="{{ url_for('admin_dataset_item',slug=country.slug,id='add') }}">Add policy dataset</a>
+
+</div>
+<div class="content" id="panel2">
+
+<table>
+{% for item in datasets_budget.items %}
 <tr><td><a href="{{ url_for('admin_dataset_item',slug=country.slug,id=item.id) }}">edit</a></td><td>{{ item.display }}</td></tr>
 {% endfor %}
 </table>
 
-{% if datasets.has_prev or datasets.has_next %}
+{% if datasets_budget.has_prev or datasets_budget.has_next %}
 <p>
-{% if datasets.has_prev %}<a href="{{ url_for('admin_dataset_list', slug=country.slug, page=datasets.prev_num) }}">&lt;&lt; Newer</a>{% else %}&lt;&lt; Newer{% endif %} | 
-{% if datasets.has_next %}<a href="{{ url_for('admin_dataset_list', slug=country.slug, page=datasets.next_num) }}">Older &gt;&gt;</a>{% else %}Older &gt;&gt;{% endif %}
+{% if datasets_budget.has_prev %}<a href="{{ url_for('admin_dataset_list', slug=country.slug, tab=2, page=datasets.prev_num) }}">&lt;&lt; Newer</a>{% else %}&lt;&lt; Newer{% endif %} | 
+{% if datasets_budget.has_next %}<a href="{{ url_for('admin_dataset_list', slug=country.slug, tab=2, page=datasets.next_num) }}">Older &gt;&gt;</a>{% else %}Older &gt;&gt;{% endif %}
 </p>
 {% endif %}
 
-<a href="{{ url_for('admin_dataset_item',slug=country.slug,id='add') }}">Add dataset</a>
+<a href="{{ url_for('admin_datasetcustom_item',slug=country.slug,id='add') }}">Add budget dataset</a>
+
+</div>
+<div class="content" id="panel3">
+
+<table>
+{% for item in datasets_download.items %}
+<tr><td><a href="{{ url_for('admin_dataset_item',slug=country.slug,id=item.id) }}">edit</a></td><td>{{ item.display }}</td></tr>
+{% endfor %}
+</table>
+
+{% if datasets_download.has_prev or datasets_download.has_next %}
+<p>
+{% if datasets_download.has_prev %}<a href="{{ url_for('admin_dataset_list', slug=country.slug, tab=3, page=datasets.prev_num) }}">&lt;&lt; Newer</a>{% else %}&lt;&lt; Newer{% endif %} | 
+{% if datasets_download.has_next %}<a href="{{ url_for('admin_dataset_list', slug=country.slug, tab=3, page=datasets.next_num) }}">Older &gt;&gt;</a>{% else %}Older &gt;&gt;{% endif %}
+</p>
+{% endif %}
+
+<a href="{{ url_for('admin_datasetdownload_item',slug=country.slug,id='add') }}">Add download dataset</a>
+
+</div>
+
+</div>
+
+
+
+{% endblock %}
+
+
+{% block scripts %}
+
+$(document).ready(function() {
+
+    $(document).foundation();
+
+});
 
 {% endblock %}
