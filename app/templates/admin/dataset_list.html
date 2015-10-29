@@ -13,14 +13,14 @@
 
 
 <dl class="tabs" data-tab>
-  <dd class="active"><a class="clickable" href="#panel1">Policy</a></dd>
-  <dd><a class="clickable" href="#panel2">Budget</a></dd>
-  <dd><a class="clickable" href="#panel3">Download</a></dd>
+  <dd {% if tab != 2 and tab != 3 %}class="active"{% endif %}><a class="clickable" href="#panel1">Policy</a></dd>
+  <dd {% if tab == 2 %}class="active"{% endif %}><a class="clickable" href="#panel2">Budget</a></dd>
+  <dd {% if tab == 3 %}class="active"{% endif %}><a class="clickable" href="#panel3">Download</a></dd>
 </dl>
 
 <div class="tabs-content">
 
-<div class="content active" id="panel1">
+<div class="content{% if tab != 2 and tab != 3 %} active{% endif %}" id="panel1">
 
 <table>
 {% for item in datasets_policy.items %}
@@ -38,7 +38,7 @@
 <a href="{{ url_for('admin_dataset_item',slug=country.slug,id='add') }}">Add policy dataset</a>
 
 </div>
-<div class="content" id="panel2">
+<div class="content{% if tab == 2 %} active{% endif %}" id="panel2">
 
 <table>
 {% for item in datasets_budget.items %}
@@ -53,10 +53,10 @@
 </p>
 {% endif %}
 
-<a href="{{ url_for('admin_datasetcustom_item',slug=country.slug,id='add') }}">Add budget dataset</a>
+<a href="{{ url_for('admin_dataset_item',slug=country.slug,id='addbudget') }}">Add budget dataset</a>
 
 </div>
-<div class="content" id="panel3">
+<div class="content{% if tab == 3 %} active{% endif %}" id="panel3">
 
 <table>
 {% for item in datasets_download.items %}

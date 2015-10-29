@@ -73,9 +73,56 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
      $scope.budgetCountries = [
         {"id":"1","name":"US","topics":[{"id":"2","name":"Money","subtopics":[{"id":"23","name":"Tons of money"},{"id":"24","name":"Wads of money"}]},{"id":"3","name":"Pain"},{"id":"4","name":"Church"}]},
-        {"id":"2","name":"Belgium","topics":[{"id":"5","name":"Money"},{"id":"6","name":"Pain","subtopics":[{"id":"63","name":"Emotional"},{"id":"64","name":"Referred"}]},{"id":"7","name":"Sleep"}]},
+        {"id":"8","name":"Brasil","topics":[{"id":"5","name":"Money"},{"id":"6","name":"Pain","subtopics":[{"id":"63","name":"Emotional"},{"id":"64","name":"Referred"}]},{"id":"7","name":"Sleep"}]},
         {"id":"3","name":"Hungary","topics":[{"id":"8","name":"Sleep","subtopics":[{"id":"85","name":"Deep Sleep"},{"id":"86","name":"Naps"}]},{"id":"9","name":"Pain"},{"id":"10","name":"Church","subtopics":[{"id":"33","name":"Popes"},{"id":"34","name":"Steeples"}]}]},
     ];
+    
+    $scope.budgetCategories = [
+        {"category_id": 1, "id": 1, "name": "Appropriations"}, 
+        {"category_id": 2, "id": 2, "name": "Expeditures"}, 
+        {"category_id": 3, "id": 3, "name": "Miscellaneous"}, 
+    ];
+    
+    /*
+    $scope.budgetDatasets = [
+        {"category": 1, "country": "Denmark", "id": 37, "filters": "[\"filter_opening_debate_etc\", \"filter_eu\"]", "name": "Accounts"}, 
+        {"category": 1, "country": "UK", "id": 46, "filters": "[]", "name": "Acts"}, 
+        {"category": 1, "country": "Pennsylvania", "id": 22, "filters": "[\"filter_act\", \"filter_veto\", \"filter_lineitem\", \"filter_overridden\", \"filter_nosignature\", \"filter_signed\", \"filter_taxes\", \"filter_elderly\"]", "name": "Bills"},
+        {"category": 1, "country": "Denmark", "id": 45, "filters": "[\"filter_eu\"]", "name": "Bills"}, 
+        {"category": 1, "country": "belgium", "id": 18, "filters": "[]", "name": "Bills"}, 
+        {"category": 3, "country": "belgium", "id": 86, "filters": "[]", "name": "Blah"}, 
+        {"category": 1, "country": "US", "id": 24, "filters": "[]", "name": "CQ Almanac"}, 
+        {"category": 3, "country": "belgium", "id": 76, "filters": "[]", "name": "DS"}, 
+        {"category": 2, "country": "US", "id": 27, "filters": "[]", "name": "Exec Orders"}, 
+        {"category": 1, "country": "Florida", "id": 65, "filters": "[]", "name": "Florida Bills 2011"}, 
+        {"category": 2, "country": "belgium", "id": 19, "filters": "[]", "name": "Gov Agree"}, 
+        {"category": 3, "country": "Brazil ", "id": 85, "filters": "[]", "name": "hear"}, 
+        {"category": 1, "country": "Pennsylvania", "id": 73, "filters": "[\"filter_budget\", \"filter_harrisburg\"]", "name": "Hearings"}, 
+        {"category": 1, "country": "US", "id": 20, "filters": "[\"filter_referral\", \"filter_approp\", \"filter_agency\", \"filter_program\", \"filter_admin\"]", "name": "Hearings"}, 
+        {"category": 1, "country": "Denmark", "id": 42, "filters": "[\"filter_eu\", \"filter_concluding_debate_etc\", \"filter_debate_is_carried_through \"]", "name": "Interpellations"}, 
+        {"category": 1, "country": "Hungary", "id": 67, "filters": "[]", "name": "Interpellations"}, 
+        {"category": 1, "country": "Switzerland", "id": 32, "filters": "[\"filter_enacted_legislation\"]", "name": "Legislation"}, 
+        {"category": 3, "country": "belgium", "id": 33, "filters": "[]", "name": "Manifestos"}, 
+        {"category": 3, "country": "Denmark", "id": 40, "filters": "[\"filter_eu\"]", "name": "Manifestos"}, 
+        {"category": 2, "country": "Switzerland", "id": 29, "filters": "[\"filter_swiss_news\", \"filter_swiss_subnational\"]", "name": "Media"}, 
+        {"category": 1, "country": "Denmark", "id": 41, "filters": "[\"filter_eu\"]", "name": "Motions"}, 
+        {"category": 3, "country": "Brazil ", "id": 84, "filters": "[]", "name": "ooo"}, 
+        {"category": 2, "country": "Denmark", "id": 44, "filters": "[\"filter_eu\"]", "name": "PM Closing Speeches"}, 
+        {"category": 2, "country": "Denmark", "id": 43, "filters": "[\"filter_eu\"]", "name": "PM Opening Speeches"}, 
+        {"category": 1, "country": "US", "id": 25, "filters": "[\"filter_democrat\", \"filter_vetoed\", \"filter_commemorative\"]", "name": "Public Laws"}, 
+        {"category": 1, "country": "belgium", "id": 74, "filters": "[]", "name": "Q & I"}, 
+        {"category": 1, "country": "Denmark", "id": 39, "filters": "[\"filter_eu\"]", "name": "Questions Hour"}, 
+        {"category": 1, "country": "Denmark", "id": 38, "filters": "[\"filter_eu\"]", "name": "Questions Wednesdays"}, 
+        {"category": 1, "country": "Switzerland", "id": 31, "filters": "[]", "name": "Reports"}, 
+        {"category": 1, "country": "US", "id": 26, "filters": "[]", "name": "Roll Call"}, 
+        {"category": 2, "country": "US", "id": 21, "filters": "[]", "name": "SOTU"}, 
+        {"category": 2, "country": "UK", "id": 35, "filters": "[\"filter_policy\", \"filter_executive_agenda\"]", "name": "Speeches"}, 
+        {"category": 1, "country": "US", "id": 28, "filters": "[\"filter_vac\", \"filter_dis\", \"filter_gd\"]", "name": "Supreme Court"}, 
+        {"category": 4, "country": "belgium", "id": 75, "filters": "[]", "name": "TV"}, 
+        {"category": 5, "country": "Switzerland", "id": 30, "filters": "[\"filter_enacted_legislation\", \"filter_referendum_mandatory\", \"filter_referendum_optional\", \"filter_popular_initiative\", \"filter_counter_proposal\"]", "name": "Votes"}
+    ];
+    */
+    
     
     $scope.measures = [
         {"measure":"count","display":"Count"},
@@ -132,7 +179,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     });
     
     
-    // FACETED SEARCH (left sidebar)
+    // POLICY FACETED SEARCH (left sidebar)
           
     $http.get(baseUrl + '/api/projects').success(function(data){
         
@@ -264,6 +311,14 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     
     
+    // BUDGET FACETED SEARCH (left sidebar)
+    
+    $http.get(baseUrl + '/api/datasets/budget').success(function(data){
+    
+        $scope.budgetDatasets = data;
+    
+    });
+    
     $scope.budgetProjectCount = function() {
         
         //return angular.element('#projects input[type="checkbox"]:checked').length;
@@ -277,12 +332,49 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         return 0;
     }
 
-    $scope.doBudge = function(country) {
+    $scope.doBudge = function() { 
         
-        //country.selected = 'true';
+        $scope.budgetResults = [];
+        
+        var budgetCats = [];
+        angular.element('#budget_categories input:checked').each(function () {
+            var cat = $(this).attr('catid');
+            budgetCats.push(cat);
+        });
+        
+        angular.forEach($scope.budgetDatasets, function (dataset, index) {
+        
+            if (budgetCats.indexOf(dataset.category.toString()) > -1) {
+        
+                var country = $(this).attr('country');
+                
+               // var country = 'Country Music Hall of Fame';
+                                
+                angular.element('.choose_budget_topic:checked').each(function () {
+                   var $this = $(this);
+                   if ($this.length) {
+                    var selText = $this.next('span').text();
+                    var parentText = $this.closest('ol').siblings('label').children('span').text();
+                    if (parentText.length) {
+                        selText = parentText + ': ' + selText;
+                    }
+                    var subtopic = $this.attr('subtopic');
+                    //if (country == dataset.country) {
+                    
+                        // ADD TO SEARCH RESULTS
+                        dataset_name = dataset.country + ': ' + dataset.name + ' #' + selText;
+                        var searchResult = new Series(dataset.id,subtopic,dataset_name,JSON.parse(dataset.filters));
+                        $scope.budgetResults.push(searchResult);
+                                       
+                    //}
+                   }
+                });
+                  
+            }
+            
+        });
         
     }
-    
     
     
     $scope.lessThan = function( what ) {

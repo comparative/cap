@@ -6,7 +6,7 @@ from wtforms.validators import DataRequired, Length, NumberRange
 from wtforms.widgets import TextArea
 from wtforms.ext.sqlalchemy.orm import model_form
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
-from models import Country, Category
+from models import Country, Category, Budgetcategory
 from app import app
 
 def countries_factory():
@@ -14,6 +14,9 @@ def countries_factory():
     
 def categories_factory():
     return Category.query.all()
+    
+def budgetcategories_factory():
+    return Budgetcategory.query.all()
 
 class LoginForm(Form):
     email = StringField('username', validators=[DataRequired()])
@@ -62,6 +65,7 @@ class DatasetForm(Form):
     #codebook = FileField('codebook')
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
     category = QuerySelectField(query_factory=categories_factory,allow_blank=True) 
+    budgetcategory = QuerySelectField(query_factory=budgetcategories_factory,allow_blank=True) 
     
     #def validate(self):
     #    rv = Form.validate(self)

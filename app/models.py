@@ -61,6 +61,8 @@ class Dataset(db.Model):
     aggregation_level = db.Column(db.Integer)
     topics = db.Column(JSON)
     budget = db.Column(db.Boolean(),default=False)
+    budgetcategory_id = db.Column(db.Integer,db.ForeignKey('budgetcategory.id'))
+    budgetcategory = db.relationship('Budgetcategory',backref=db.backref('budget_categories', lazy='dynamic'))
     
 class Country(db.Model):
 
@@ -91,6 +93,15 @@ class Category(db.Model):
     
     def __repr__(self):
         return self.name 
+
+class Budgetcategory(db.Model):
+    
+    id = db.Column(db.Integer, primary_key=True)    
+    name = db.Column(db.String(80))
+    
+    def __repr__(self):
+        return self.name 
+
 
 class Research(db.Model):
 

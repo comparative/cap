@@ -160,7 +160,7 @@ def index():
 
 @app.route('/news')
 @app.route('/news/<int:page>')
-def news(page=1):
+def news(page = 1):
     countries = Country.query.order_by(Country.name)
     news = News.query.order_by(desc(News.saved_date)).paginate(page, 3, False)
     for item in news.items:
@@ -867,6 +867,7 @@ def admin_analytics(slug):
 ## DATASETS
 
 @app.route('/admin/projects/<slug>/datasets')
+@app.route('/admin/projects/<slug>/datasets/<int:tab>')
 @app.route('/admin/projects/<slug>/datasets/<int:tab>/p/<int:page>')
 @login_required
 def admin_dataset_list(slug,tab=1,page=1):
@@ -876,6 +877,7 @@ def admin_dataset_list(slug,tab=1,page=1):
     datasets_download = []
     return render_template('admin/dataset_list.html',
                            country=country,
+                           tab=tab,
                            datasets_policy=datasets_policy,
                            datasets_budget=datasets_budget,
                            datasets_download=datasets_download)
@@ -955,7 +957,7 @@ def admin_dataset_item(slug,id):
 
     newdata = False
     country = Country.query.filter_by(slug=slug).first()
-    dataset = Dataset() if id == 'add' else Dataset.query.filter_by(id=id).first()
+    dataset = Dataset() if (id == 'add' or id=='addbudget') else Dataset.query.filter_by(id=id).first()
     form = DatasetForm()
     
     content = False
@@ -999,6 +1001,16 @@ def admin_dataset_item(slug,id):
             except:
                 flash('Something went wrong, dataset not saved!')
                 return redirect(url_for('admin_dataset_list',slug=slug))
+                
+        if id == 'addbudget':
+            dataset.budget = True
+            dataset.country_id = country.id
+            try:
+                db.session.add(dataset) 
+            except:
+                flash('Something went wrong, dataset not saved!')
+                return redirect(url_for('admin_dataset_list',slug=slug,tab=2))
+        
         dataset.saved_date = datetime.utcnow()
         try:
             db.session.commit()
@@ -1022,7 +1034,9 @@ def admin_dataset_item(slug,id):
             form.source.data = dataset.source
             form.category.data = dataset.category
     
-    return render_template('admin/dataset_item.html', 
+    template = 'admin/budget_dataset_item.html' if (dataset.budget or id=='addbudget') else 'admin/dataset_item.html'
+    
+    return render_template(template, 
                            id=dataset.id,
                            country=country,
                            slug=slug,
@@ -1138,11 +1152,29 @@ SELECT Concat(Trim(To_char(m.majortopic, '999')), '_', m.shortname)
     return dumps(cur.fetchall())
 
 @app.route('/api/datasets')
-def api_datasets():
+@app.route('/api/datasets/<flag>')
+def api_datasets(flag = None):
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
     #cur.execute("""SELECT category, short_display as name FROM datasets WHERE controller IS NOT NULL ORDER BY short_display""")
-    cur.execute("""SELECT d.id, d.category_id AS category, d.short_display as name, c.short_name as country, d.filters as filters FROM dataset d INNER join country c ON d.country_id = c.id WHERE d.ready=true ORDER BY d.short_display""")
+    sql = """
+    SELECT d.id,
+       d.category_id AS category,
+       d.short_display AS name,
+       c.short_name AS country,
+       d.filters AS filters
+    FROM dataset d
+    INNER JOIN country c ON d.country_id = c.id
+    WHERE d.ready=TRUE
+    AND d.budget=
+    """
+    if (flag == 'budget'):
+       sql += " TRUE"
+    else:
+        sql += " FALSE"
+    sql += " ORDER BY d.short_display"
+    
+    cur.execute(sql)
     return dumps(cur.fetchall())
 
 @app.route('/api/instances/<dataset>/<topic>/<year>')
