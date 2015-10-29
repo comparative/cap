@@ -250,24 +250,42 @@
   <!-- BEGIN budget panel -->
   <div class="content" id="panel3">
     
-    <h5 class="picker-label clickable">Select projects<span ng-show="topicCount() > 0" class="selection_count">{@topicCount()@}</span></h5>
-    <div id="topics" class="picker">
+    <h5 class="picker-label clickable">Select projects<span ng-show="budgetProjectCount() > 0" class="selection_count">{@budgetProjectCount()@}</span></h5>
+    <div id="budget_projects" class="picker" style="display:block">
+    <div ng-repeat="country in budgetCountries">
+    <input ng-model="country.selected" type="checkbox">
+    <label>{@country.name | limitTo : 27@}</label>
+    </div>
+    </div>
+   
+    <div ng-repeat="country in budgetCountries">
+    <div ng-show="country.selected">
+    
+    <h5 class="picker-label clickable">Select topics: {@country.name@}<span ng-show="topicCount() > 0" class="selection_count">{@topicCount()@}</span></h5>
+    <div class="picker">
 
         <ol class="menutree">
         
-            <li style="margin:3px 3px 3px 3px;" ng-repeat="budget in budgets">
-            <label class="menu_label" for="b{@budget.id@}"><!--<input type="checkbox" class="choose_budget" budget="{@budget.id@}">--><span class="major_topic clickable">{@budget.name | limitTo:33 @}</span><span style="float:right;"><i ng-hide="isOpen" class="fi-arrow-down"></i><i ng-show="isOpen" class="fi-arrow-up"></i></span></label>
-            <input ng-click="isOpen = ! isOpen" type="checkbox" id="b{@budget.id@}"/>
+            <li ng-repeat="topic in country.topics">
+            <label class="menu_label" for="{@country.id@}b{@topic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@topic.id@}" ng-click="doBudge()"><span class="major_topic" ng-class="{clickable: topic.subtopics.length>0}">{@topic.name | limitTo:33 @}</span>
+            <span ng-show="topic.subtopics.length>0" style="float:right;"><i ng-hide="isOpen" class="fi-arrow-down"></i><i ng-show="isOpen" class="fi-arrow-up"></i></span>
+            </label>
+            <input ng-click="isOpen = ! isOpen" type="checkbox" id="{@country.id@}b{@topic.id@}"/>
                 <ol>
-                    <li ng-repeat="topic in budget.topics">
-                    <label class="menu_label" for="s{@topic.id@}"><input type="checkbox" class="choose_budget" budget="{@topic.id@}" ng-click="doBudge()"><span>{@topic.name | limitTo:33 @}</span></label>
-                    <input type="checkbox" id="s{@topic.id@}"/>
+                    <li ng-repeat="subtopic in topic.subtopics">
+                    <label class="menu_label" for="{@country.id@}b{@topic.id@}s{@subtopic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@subtopic.id@}" ng-click="doBudge()"><span>{@subtopic.name | limitTo:33 @}</span></label>
+                    <input type="checkbox" id="{@country.id@}b{@topic.id@}s{@subtopic.id@}"/>
                     </li>
                 </ol>
             </li>
                         
         </ol>
     
+    </div>
+    
+    
+
+    </div>
     </div>
    
    

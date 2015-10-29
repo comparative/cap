@@ -71,10 +71,10 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     // INIT VARS
     
-     $scope.budgets = [
-        {"id":"1","name":"US","topics":[{"id":"2","name":"Money"},{"id":"2","name":"Pain"},{"id":"3","name":"Church"}]},
-        {"id":"2","name":"Belgium","topics":[{"id":"2","name":"Money"},{"id":"2","name":"Pain"},{"id":"3","name":"Sleep"}]},
-        {"id":"3","name":"Hungary","topics":[{"id":"2","name":"Sleep"},{"id":"2","name":"Pain"},{"id":"3","name":"Church"}]},
+     $scope.budgetCountries = [
+        {"id":"1","name":"US","topics":[{"id":"2","name":"Money","subtopics":[{"id":"23","name":"Tons of money"},{"id":"24","name":"Wads of money"}]},{"id":"3","name":"Pain"},{"id":"4","name":"Church"}]},
+        {"id":"2","name":"Belgium","topics":[{"id":"5","name":"Money"},{"id":"6","name":"Pain","subtopics":[{"id":"63","name":"Emotional"},{"id":"64","name":"Referred"}]},{"id":"7","name":"Sleep"}]},
+        {"id":"3","name":"Hungary","topics":[{"id":"8","name":"Sleep","subtopics":[{"id":"85","name":"Deep Sleep"},{"id":"86","name":"Naps"}]},{"id":"9","name":"Pain"},{"id":"10","name":"Church","subtopics":[{"id":"33","name":"Popes"},{"id":"34","name":"Steeples"}]}]},
     ];
     
     $scope.measures = [
@@ -277,6 +277,13 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         return 0;
     }
 
+    $scope.doBudge = function(country) {
+        
+        //country.selected = 'true';
+        
+    }
+    
+    
     
     $scope.lessThan = function( what ) {
         return function( item ) {
