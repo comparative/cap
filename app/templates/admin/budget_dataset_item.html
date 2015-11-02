@@ -84,6 +84,20 @@
 
 <div class="row">
 	<div class="small-2 columns">
+	  <label for="title" class="right inline">Topics</label>
+	</div>
+	<div class="small-10 columns">
+	  <label class="error">
+	  {{ form.topics(size=200) }}
+	  </label>
+	  {% for error in form.topics.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-2 columns">
 	  <label for="title" class="right inline">Display</label>
 	</div>
 	<div class="small-10 columns">

@@ -893,12 +893,6 @@ def admin_datasetcustom_item(slug,id):
 def admin_datasetdownload_item(slug,id):
     return
 
-
-
-
-
-
-
 @app.route('/admin/dataset/upload', methods=['POST'])
 @login_required
 def admin_dataset_upload():
@@ -928,26 +922,6 @@ def admin_dataset_upload():
     retval['filename'] = datasetfilename
     resp = Response(dumps(retval), status=200, mimetype='application/json')
     return resp
-    
-    
-    
-    
-    #app.logger.debug(reader.fieldnames[0]);
-    
-    #thedata = [ row for row in reader ]
-    #cur = db.session.connection().connection.cursor()
-    #cur.execute("UPDATE dataset SET content=%s WHERE id=23",dumps(thedata))
-    #db.session.commit()
-    
-    
-    
-    
-    #dataset = Dataset.query.filter_by(id=23).first()
-    #dataset.content = thedata
-    #db.session.commit()
-    
-    #retval['filename'] = datasetfilename
-    #retval['filepath'] = datasetfilepath
     
     
                     
@@ -993,39 +967,40 @@ def admin_dataset_item(slug,id):
         dataset.description = form.description.data
         dataset.unit = form.unit.data
         dataset.source = form.source.data
-        dataset.category = form.category.data        
-        if id == 'add':
-            dataset.country_id = country.id
-            try:
-                db.session.add(dataset) 
-            except:
-                flash('Something went wrong, dataset not saved!')
-                return redirect(url_for('admin_dataset_list',slug=slug))
-                
+        dataset.budgetcategory = form.budgetcategory.data
+        dataset.category = form.category.data
+        dataset.topics = form.topics.data
+        
         if id == 'addbudget':
             dataset.budget = True
+        
+        tab = 2 if dataset.budget else 1
+        
+        if id == 'add' or id == 'addbudget':
             dataset.country_id = country.id
             try:
                 db.session.add(dataset) 
             except:
                 flash('Something went wrong, dataset not saved!')
-                return redirect(url_for('admin_dataset_list',slug=slug,tab=2))
-        
+                return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
+                
         dataset.saved_date = datetime.utcnow()
+        
         try:
             db.session.commit()
             flash('Dataset "%s" saved' % (form.display.data))
         except:
             flash('Something went wrong, dataset not saved!')
-            return redirect(url_for('admin_dataset_list',slug=slug))
+            return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
+            
         if newdata == True:
             update_stats(db,dataset.id,country.id)
-        return redirect(url_for('admin_dataset_list',slug=slug))
+            
+        return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
         
     else:
         dataseturl= datasetfiles.url(dataset.datasetfilename) if dataset.datasetfilename else None
         codebookurl = codebookfiles.url(dataset.codebookfilename) if dataset.codebookfilename else None
-        url = None
         if request.method == 'GET':
             form.display.data = dataset.display
             form.short_display.data = dataset.short_display
@@ -1033,6 +1008,8 @@ def admin_dataset_item(slug,id):
             form.unit.data = dataset.unit
             form.source.data = dataset.source
             form.category.data = dataset.category
+            form.budgetcategory.data = dataset.budgetcategory
+            form.topics.data = dataset.topics
     
     template = 'admin/budget_dataset_item.html' if (dataset.budget or id=='addbudget') else 'admin/dataset_item.html'
     

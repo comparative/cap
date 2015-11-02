@@ -66,6 +66,7 @@ class DatasetForm(Form):
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
     category = QuerySelectField(query_factory=categories_factory,allow_blank=True) 
     budgetcategory = QuerySelectField(query_factory=budgetcategories_factory,allow_blank=True) 
+    topics = StringField('topics')
     
     #def validate(self):
     #    rv = Form.validate(self)
