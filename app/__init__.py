@@ -22,7 +22,8 @@ adhocfiles = UploadSet('adhocfiles', ALL)
 slideimages = UploadSet('slideimages', ALL)
 codebookfiles = UploadSet('codebookfiles', ALL)
 datasetfiles = UploadSet('datasetfiles', ALL)
-configure_uploads(app, (newsimages,countryimages,staffimages,researchfiles,researchimages,adhocfiles,slideimages,codebookfiles,datasetfiles))
+topicsfiles = UploadSet('topicsfiles', ALL)
+configure_uploads(app, (newsimages,countryimages,staffimages,researchfiles,researchimages,adhocfiles,slideimages,codebookfiles,datasetfiles,topicsfiles))
 
 from app import views, models
 

@@ -15,7 +15,7 @@ from flask.ext.login import login_user, logout_user, current_user, login_require
 from werkzeug import secure_filename
 from json import dump, dumps, loads
 from slugify import slugify
-from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles, slideimages, codebookfiles, datasetfiles
+from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles, slideimages, codebookfiles, datasetfiles, topicsfiles
 from .models import User, News, Country, Research, Staff, Page, File, Slide, Chart, Dataset, Category
 from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm, SlideForm, DatasetForm
 from datetime import datetime
@@ -937,13 +937,50 @@ def admin_dataset_item(slug,id):
     content = False
     if 'content' in request.form and request.form['content'] != '':
         content = request.form['content']
-        
+   
     if form.validate_on_submit():
-    
+        
         if 'codebook' in request.files and request.files['codebook'].filename != '':
         
             codebookfilename = codebookfiles.save(request.files['codebook'])
             dataset.codebookfilename = codebookfilename
+         
+        if 'topics' in request.files and request.files['topics'].filename != '':
+        
+            topicsfilename = topicsfiles.save(request.files['topics'])
+            dataset.topicsfilename = topicsfilename
+            topicsfilepath = topicsfiles.path(topicsfilename)
+            csvfile = open(topicsfilepath, 'rU')
+            reader = csv.DictReader(csvfile)
+            
+            thedata = []
+            majorfunctions=[]
+            subfunctions=[]
+            for row in reader:
+                if row['subfunction'] == '':
+                    majorfunctions.append(row)
+                else:
+                    subfunctions.append(row)
+            
+            for row in majorfunctions:
+                therow = {}
+                therow['id'] = row['majorfunction']
+                therow['name'] = row['shortname']
+                thesubs = []
+                for subrow in subfunctions:
+                    if subrow['majorfunction'] == row['majorfunction']:
+                        thesub = {}
+                        thesub['id'] = subrow['subfunction']
+                        thesub['name'] = subrow['shortname']
+                        thesubs.append(thesub)
+                if len(thesubs) > 0:
+                    therow['subtopics'] = thesubs
+                
+                thedata.append(therow)
+            
+            app.logger.debug(thedata)
+            dataset.topics = thedata
+
             
         if content:
         
@@ -962,6 +999,7 @@ def admin_dataset_item(slug,id):
             dataset.ready = True
             newdata = True
             
+            
         dataset.display = form.display.data
         dataset.short_display = form.short_display.data
         dataset.description = form.description.data
@@ -969,7 +1007,8 @@ def admin_dataset_item(slug,id):
         dataset.source = form.source.data
         dataset.budgetcategory = form.budgetcategory.data
         dataset.category = form.category.data
-        dataset.topics = form.topics.data
+        #dataset.topics = form.topics.data
+        dataset.aggregation_level = form.aggregation_level.data
         
         if id == 'addbudget':
             dataset.budget = True
@@ -999,8 +1038,10 @@ def admin_dataset_item(slug,id):
         return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
         
     else:
+    
         dataseturl= datasetfiles.url(dataset.datasetfilename) if dataset.datasetfilename else None
         codebookurl = codebookfiles.url(dataset.codebookfilename) if dataset.codebookfilename else None
+        topicsurl = topicsfiles.url(dataset.topicsfilename) if dataset.topicsfilename else None
         if request.method == 'GET':
             form.display.data = dataset.display
             form.short_display.data = dataset.short_display
@@ -1010,7 +1051,8 @@ def admin_dataset_item(slug,id):
             form.category.data = dataset.category
             form.budgetcategory.data = dataset.budgetcategory
             form.topics.data = dataset.topics
-    
+            form.aggregation_level.data = str(dataset.aggregation_level)
+            
     template = 'admin/budget_dataset_item.html' if (dataset.budget or id=='addbudget') else 'admin/dataset_item.html'
     
     return render_template(template, 
@@ -1022,6 +1064,8 @@ def admin_dataset_item(slug,id):
                            datasetfilename=dataset.datasetfilename,
                            codebookurl=codebookurl,
                            codebookfilename=dataset.codebookfilename,
+                           topicsurl=topicsurl,
+                           topicsfilename=dataset.topicsfilename,
                            form=form,
                            content=content)
 
@@ -1081,6 +1125,19 @@ def admin_dataset_removecodebook(slug,id):
     flash('Dataset not found!')
     return redirect(url_for('admin'))
 
+@app.route('/admin/projects/<slug>/topics/remove/<id>')
+@login_required
+def admin_dataset_removetopics(slug,id):
+    #return redirect(url_for('admin_dataset_item',slug=slug,id=id))
+    dataset = Dataset.query.filter_by(id=id).first()
+    if dataset is not None:
+        path = topicsfiles.path(dataset.topicsfilename)
+        if os.path.isfile(path):
+            os.remove(path)
+        dataset.topicsfilename = None
+        db.session.commit()
+        return redirect(url_for('admin_dataset_item',slug=slug,id=id))
+    flash('Dataset not found!')
 
 ######### API ROUTES
 
@@ -1095,7 +1152,15 @@ def api_charts(user):
 def api_countries():
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""SELECT DISTINCT(c.*) FROM country c INNER JOIN dataset d ON c.id = d.country_id ORDER BY c.name""")
+    cur.execute("""SELECT DISTINCT ON (c.name) c.* FROM country c INNER JOIN dataset d ON c.id = d.country_id ORDER BY c.name""")
+    #cur.execute("""SELECT * FROM country ORDER BY name""")
+    return dumps(cur.fetchall())
+
+@app.route('/api/budgetprojects')
+def api_budgetcountries():
+    conn = psycopg2.connect(app.config['CONN_STRING'])
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("""SELECT DISTINCT ON (c.name) c.* FROM country c INNER JOIN dataset d ON c.id = d.country_id WHERE d.budget=True ORDER BY c.name""")
     #cur.execute("""SELECT * FROM country ORDER BY name""")
     return dumps(cur.fetchall())
 
@@ -1136,9 +1201,14 @@ def api_datasets(flag = None):
     #cur.execute("""SELECT category, short_display as name FROM datasets WHERE controller IS NOT NULL ORDER BY short_display""")
     sql = """
     SELECT d.id,
-       d.category_id AS category,
+    """
+    if (flag == 'budget'):
+       sql += "d.budgetcategory_id AS category, d.topics AS topics,"
+    else:
+        sql += "d.category_id AS category,"   
+    sql += """
        d.short_display AS name,
-       c.short_name AS country,
+       c.name AS country,
        d.filters AS filters
     FROM dataset d
     INNER JOIN country c ON d.country_id = c.id

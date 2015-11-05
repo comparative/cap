@@ -1,7 +1,7 @@
 from flask.ext.uploads import IMAGES
 from flask.ext.wtf import Form
 from flask.ext.wtf.file import FileField, FileAllowed
-from wtforms import StringField, BooleanField, PasswordField, IntegerField
+from wtforms import StringField, BooleanField, PasswordField, IntegerField, SelectField
 from wtforms.validators import DataRequired, Length, NumberRange
 from wtforms.widgets import TextArea
 from wtforms.ext.sqlalchemy.orm import model_form
@@ -61,12 +61,14 @@ class DatasetForm(Form):
     source = StringField('source')
     content = FileField('content',validators=[FileAllowed(['csv'], 'Data must be formatted as .csv')])
     codebook = FileField('codebook',validators=[FileAllowed(['pdf'], 'Codebook must be formatted as .pdf')])
+    topics = FileField('topics',validators=[FileAllowed(['csv'], 'Data must be formatted as .csv')])
     #content = FileField('content')
     #codebook = FileField('codebook')
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
     category = QuerySelectField(query_factory=categories_factory,allow_blank=True) 
     budgetcategory = QuerySelectField(query_factory=budgetcategories_factory,allow_blank=True) 
-    topics = StringField('topics')
+    aggregation_level = SelectField(u'Aggregation Level', choices=[('0', 'raw'), ('1', 'count'), ('2', 'percent')])
+    #aggregation_level = IntegerField('aggregation_level')
     
     #def validate(self):
     #    rv = Form.validate(self)
@@ -92,6 +94,7 @@ class CountryForm(Form):
     about = StringField('content', validators=[DataRequired()],widget=TextArea())
     datasets_intro = StringField('datasets_intro', validators=[],widget=TextArea())
     embed_url = principal = StringField('embed_url')
+    budget_topics = StringField('budget_topics')
     
 class UserForm(Form):
     name = StringField('name', validators=[])

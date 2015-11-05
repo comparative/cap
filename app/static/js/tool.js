@@ -71,17 +71,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     // INIT VARS
     
-     $scope.budgetCountries = [
-        {"id":"1","name":"US","topics":[{"id":"2","name":"Money","subtopics":[{"id":"23","name":"Tons of money"},{"id":"24","name":"Wads of money"}]},{"id":"3","name":"Pain"},{"id":"4","name":"Church"}]},
-        {"id":"8","name":"Brasil","topics":[{"id":"5","name":"Money"},{"id":"6","name":"Pain","subtopics":[{"id":"63","name":"Emotional"},{"id":"64","name":"Referred"}]},{"id":"7","name":"Sleep"}]},
-        {"id":"3","name":"Hungary","topics":[{"id":"8","name":"Sleep","subtopics":[{"id":"85","name":"Deep Sleep"},{"id":"86","name":"Naps"}]},{"id":"9","name":"Pain"},{"id":"10","name":"Church","subtopics":[{"id":"33","name":"Popes"},{"id":"34","name":"Steeples"}]}]},
-    ];
-    
-    $scope.budgetCategories = [
-        {"category_id": 1, "id": 1, "name": "Appropriations"}, 
-        {"category_id": 2, "id": 2, "name": "Expeditures"}, 
-        {"category_id": 3, "id": 3, "name": "Miscellaneous"}, 
-    ];
+
     
     /*
     $scope.budgetDatasets = [
@@ -313,8 +303,36 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     // BUDGET FACETED SEARCH (left sidebar)
     
+    
+    $http.get(baseUrl + '/api/budgetprojects').success(function(data){
+        
+        console.log('hi');
+        console.log(data);
+        
+        $scope.budgetCountries = data;
+                        
+    });
+    
+    /*
+    $scope.budgetCountries = [
+        {"id":"1","name":"US","topics":[{"id":"2","name":"Money","subtopics":[{"id":"23","name":"Tons of money"},{"id":"24","name":"Wads of money"}]},{"id":"3","name":"Pain"},{"id":"4","name":"Church"}]},
+        {"id":"8","name":"Brazil","topics":[{"id":"5","name":"Money"},{"id":"6","name":"Pain","subtopics":[{"id":"63","name":"Emotional"},{"id":"64","name":"Referred"}]},{"id":"7","name":"Sleep"}]},
+        {"id":"3","name":"Hungary","topics":[{"id":"8","name":"Sleep","subtopics":[{"id":"85","name":"Deep Sleep"},{"id":"86","name":"Naps"}]},{"id":"9","name":"Pain"},{"id":"10","name":"Church","subtopics":[{"id":"33","name":"Popes"},{"id":"34","name":"Steeples"}]}]},
+    ];
+    */
+    
+   // console.log($scope.budgetCountries01);
+   // console.log($scope.budgetCountries);
+    
+    $scope.budgetCategories = [
+        {"category_id": 1, "id": 1, "name": "Appropriations"}, 
+        {"category_id": 2, "id": 2, "name": "Expeditures"}, 
+        {"category_id": 3, "id": 3, "name": "Miscellaneous"}, 
+    ];
+    
     $http.get(baseUrl + '/api/datasets/budget').success(function(data){
     
+        console.log(data);
         $scope.budgetDatasets = data;
     
     });
@@ -336,19 +354,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         $scope.budgetResults = [];
         
-        var budgetCats = [];
-        angular.element('#budget_categories input:checked').each(function () {
-            var cat = $(this).attr('catid');
-            budgetCats.push(cat);
-        });
-        
         angular.forEach($scope.budgetDatasets, function (dataset, index) {
-        
-            if (budgetCats.indexOf(dataset.category.toString()) > -1) {
-        
-                var country = $(this).attr('country');
-                
-               // var country = 'Country Music Hall of Fame';
                                 
                 angular.element('.choose_budget_topic:checked').each(function () {
                    var $this = $(this);
@@ -359,18 +365,15 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                         selText = parentText + ': ' + selText;
                     }
                     var subtopic = $this.attr('subtopic');
-                    //if (country == dataset.country) {
-                    
+                
                         // ADD TO SEARCH RESULTS
                         dataset_name = dataset.country + ': ' + dataset.name + ' #' + selText;
                         var searchResult = new Series(dataset.id,subtopic,dataset_name,JSON.parse(dataset.filters));
                         $scope.budgetResults.push(searchResult);
-                                       
-                    //}
+
                    }
                 });
                   
-            }
             
         });
         

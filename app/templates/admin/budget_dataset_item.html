@@ -14,11 +14,14 @@
 {% if not current_user.country %}
     <a href="{{ url_for('admin_country_list') }}">Projects</a> >>
 {% endif %}
-<a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> <a href="{{ url_for('admin_dataset_list',slug=country.slug,tab=2) }}">Budget Datasets</a>
+<a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> <a href="{{ url_for('admin_dataset_list',slug=country.slug,tab=2) }}">Datasets
 </h4>
 
 <form action="" method="post" name="login" enctype="multipart/form-data">
 {{ form.hidden_tag() }}
+
+<input type="hidden" name="aggregation_level" id="aggregation_level" value="0">
+
 
 <div class="row">
 	<div class="small-2 columns">
@@ -84,15 +87,23 @@
 
 <div class="row">
 	<div class="small-2 columns">
-	  <label for="title" class="right inline">Topics</label>
+	  <label for="title" class="right inline">Topics [.csv]</label>
 	</div>
 	<div class="small-10 columns">
-	  <label class="error">
-	  {{ form.topics(size=200) }}
-	  </label>
-	  {% for error in form.topics.errors %}
-	  <small class="error">{{ error }}</small>
-      {% endfor %}
+	  {% if topicsurl %}
+	      <p>
+	      <a href="{{ topicsurl }}" target="_new">{{ topicsfilename }}</a>
+	      <br>
+	      <a href="{{ url_for('admin_dataset_removetopics',slug=slug,id=id) }}">remove</a>
+	      </p>
+      {% else %}
+          <label class="error">
+          {{ form.topics(size=40) }}
+          </label>
+          {% for error in form.topics.errors %}
+          <small class="error">{{ error }}</small>
+          {% endfor %}
+      {% endif %}
 	</div>
 </div>
 

@@ -14,7 +14,7 @@
 {% if not current_user.country %}
     <a href="{{ url_for('admin_country_list') }}">Projects</a> >>
 {% endif %}
-<a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> <a href="{{ url_for('admin_dataset_list',slug=country.slug) }}">Policy Datasets</a>
+<a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> <a href="{{ url_for('admin_dataset_list',slug=country.slug) }}">Datasets</a>
 </h4>
 
 <form action="" method="post" name="login" enctype="multipart/form-data">
@@ -168,6 +168,20 @@
 	  {{ form.category }}
 	  </label>
 	  {% for error in form.category.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-2 columns">
+	  <label for="title" class="right inline">Aggregation Level</label>
+	</div>
+	<div class="small-10 columns">
+	  <label class="error">
+	  {{ form.aggregation_level }}
+	  </label>
+	  {% for error in form.aggregation_level.errors %}
 	  <small class="error">{{ error }}</small>
       {% endfor %}
 	</div>
