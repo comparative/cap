@@ -71,49 +71,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     // INIT VARS
     
-
-    
-    /*
-    $scope.budgetDatasets = [
-        {"category": 1, "country": "Denmark", "id": 37, "filters": "[\"filter_opening_debate_etc\", \"filter_eu\"]", "name": "Accounts"}, 
-        {"category": 1, "country": "UK", "id": 46, "filters": "[]", "name": "Acts"}, 
-        {"category": 1, "country": "Pennsylvania", "id": 22, "filters": "[\"filter_act\", \"filter_veto\", \"filter_lineitem\", \"filter_overridden\", \"filter_nosignature\", \"filter_signed\", \"filter_taxes\", \"filter_elderly\"]", "name": "Bills"},
-        {"category": 1, "country": "Denmark", "id": 45, "filters": "[\"filter_eu\"]", "name": "Bills"}, 
-        {"category": 1, "country": "belgium", "id": 18, "filters": "[]", "name": "Bills"}, 
-        {"category": 3, "country": "belgium", "id": 86, "filters": "[]", "name": "Blah"}, 
-        {"category": 1, "country": "US", "id": 24, "filters": "[]", "name": "CQ Almanac"}, 
-        {"category": 3, "country": "belgium", "id": 76, "filters": "[]", "name": "DS"}, 
-        {"category": 2, "country": "US", "id": 27, "filters": "[]", "name": "Exec Orders"}, 
-        {"category": 1, "country": "Florida", "id": 65, "filters": "[]", "name": "Florida Bills 2011"}, 
-        {"category": 2, "country": "belgium", "id": 19, "filters": "[]", "name": "Gov Agree"}, 
-        {"category": 3, "country": "Brazil ", "id": 85, "filters": "[]", "name": "hear"}, 
-        {"category": 1, "country": "Pennsylvania", "id": 73, "filters": "[\"filter_budget\", \"filter_harrisburg\"]", "name": "Hearings"}, 
-        {"category": 1, "country": "US", "id": 20, "filters": "[\"filter_referral\", \"filter_approp\", \"filter_agency\", \"filter_program\", \"filter_admin\"]", "name": "Hearings"}, 
-        {"category": 1, "country": "Denmark", "id": 42, "filters": "[\"filter_eu\", \"filter_concluding_debate_etc\", \"filter_debate_is_carried_through \"]", "name": "Interpellations"}, 
-        {"category": 1, "country": "Hungary", "id": 67, "filters": "[]", "name": "Interpellations"}, 
-        {"category": 1, "country": "Switzerland", "id": 32, "filters": "[\"filter_enacted_legislation\"]", "name": "Legislation"}, 
-        {"category": 3, "country": "belgium", "id": 33, "filters": "[]", "name": "Manifestos"}, 
-        {"category": 3, "country": "Denmark", "id": 40, "filters": "[\"filter_eu\"]", "name": "Manifestos"}, 
-        {"category": 2, "country": "Switzerland", "id": 29, "filters": "[\"filter_swiss_news\", \"filter_swiss_subnational\"]", "name": "Media"}, 
-        {"category": 1, "country": "Denmark", "id": 41, "filters": "[\"filter_eu\"]", "name": "Motions"}, 
-        {"category": 3, "country": "Brazil ", "id": 84, "filters": "[]", "name": "ooo"}, 
-        {"category": 2, "country": "Denmark", "id": 44, "filters": "[\"filter_eu\"]", "name": "PM Closing Speeches"}, 
-        {"category": 2, "country": "Denmark", "id": 43, "filters": "[\"filter_eu\"]", "name": "PM Opening Speeches"}, 
-        {"category": 1, "country": "US", "id": 25, "filters": "[\"filter_democrat\", \"filter_vetoed\", \"filter_commemorative\"]", "name": "Public Laws"}, 
-        {"category": 1, "country": "belgium", "id": 74, "filters": "[]", "name": "Q & I"}, 
-        {"category": 1, "country": "Denmark", "id": 39, "filters": "[\"filter_eu\"]", "name": "Questions Hour"}, 
-        {"category": 1, "country": "Denmark", "id": 38, "filters": "[\"filter_eu\"]", "name": "Questions Wednesdays"}, 
-        {"category": 1, "country": "Switzerland", "id": 31, "filters": "[]", "name": "Reports"}, 
-        {"category": 1, "country": "US", "id": 26, "filters": "[]", "name": "Roll Call"}, 
-        {"category": 2, "country": "US", "id": 21, "filters": "[]", "name": "SOTU"}, 
-        {"category": 2, "country": "UK", "id": 35, "filters": "[\"filter_policy\", \"filter_executive_agenda\"]", "name": "Speeches"}, 
-        {"category": 1, "country": "US", "id": 28, "filters": "[\"filter_vac\", \"filter_dis\", \"filter_gd\"]", "name": "Supreme Court"}, 
-        {"category": 4, "country": "belgium", "id": 75, "filters": "[]", "name": "TV"}, 
-        {"category": 5, "country": "Switzerland", "id": 30, "filters": "[\"filter_enacted_legislation\", \"filter_referendum_mandatory\", \"filter_referendum_optional\", \"filter_popular_initiative\", \"filter_counter_proposal\"]", "name": "Votes"}
-    ];
-    */
-    
-    
     $scope.measures = [
         {"measure":"count","display":"Count"},
         {"measure":"percent_total","display":"Percent Total"},
@@ -140,7 +97,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         {"num":2,"display":"tertiary"}
     ];
     
-     $scope.export_options = [
+    $scope.export_options = [
         {"num":0,"display":""},
         {"num":1,"display":"Download Image"},
         {"num":2,"display":"Copy Image URL"},
@@ -155,6 +112,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     $scope.preserve_date_range = false;
 
+
     // LOAD SAVED CHARTS FROM DB BY USER COOKIE VAL
 
     $http.get(baseUrl + '/api/charts/' + $("#user").val() ).success(function(data){
@@ -166,7 +124,23 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         });
         $scope.saved = saved;
         
-    });
+    }); 
+    
+    
+    // OPEN THE SEARCH BOX I CLICKED, CLOSE OTHERS
+    
+    if( event.target.tagName === "LABEL" ) {
+         alert('clicked');
+    }
+    
+    
+    $scope.budgetPickerLabel = function(e) {
+              
+       angular.element('div.picker:visible').slideToggle('fast','linear');        
+       angular.element(e.target).next('div').slideToggle('fast','linear');
+               
+    };
+    
     
     
     // POLICY FACETED SEARCH (left sidebar)
@@ -331,9 +305,14 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     ];
     
     $http.get(baseUrl + '/api/datasets/budget').success(function(data){
-    
-        console.log(data);
-        $scope.budgetDatasets = data;
+        
+        retval = data;
+        for (index = 0; index < data.length; ++index) {
+            data[index];
+            retval[index].topics = JSON.parse(data[index].topics);
+        }
+        
+        $scope.budgetDatasets = retval;
     
     });
     
@@ -350,11 +329,32 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         return 0;
     }
 
-    $scope.doBudge = function() { 
+    $scope.budgetResults = [];
+
+    $scope.doBudgetResults = function(dataset,topic,name) { 
         
-        $scope.budgetResults = [];
+        var idx;
+        var found_it = false;
+        for (idx = 0; idx < $scope.budgetResults.length; idx++) {
+            if ($scope.budgetResults[idx].topic === topic.id && $scope.budgetResults[idx].dataset === dataset.id) {
+                $scope.budgetResults.splice(idx, 1);
+                found_it = true;
+            }
+        }
+
+        // is newly selected
+        if (found_it==false) {            
+          dataset_name = dataset.country + ': ' + dataset.name + ' #' + name;
+          var obj = new Series(dataset.id,topic.id,dataset_name,JSON.parse(dataset.filters));
+          $scope.budgetResults.push(obj);
+        }
         
-        angular.forEach($scope.budgetDatasets, function (dataset, index) {
+       // console.log($scope.selection);
+        
+        
+        
+        /*
+        angular.forEach($scope.budgetDatasets,function (dataset, index) {
                                 
                 angular.element('.choose_budget_topic:checked').each(function () {
                    var $this = $(this);
@@ -364,6 +364,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     if (parentText.length) {
                         selText = parentText + ': ' + selText;
                     }
+                    
+                    
+                    
                     var subtopic = $this.attr('subtopic');
                 
                         // ADD TO SEARCH RESULTS
@@ -376,6 +379,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                   
             
         });
+        */
+        
         
     }
     
@@ -405,7 +410,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     	
             result.color = $scope.getRgbaColor();
         
-             switch($scope.chart.chartType) {
+            switch($scope.chart.chartType) {
     
                 case "stacked_area_count":
                     result.type = "area";
@@ -431,7 +436,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             $scope.chart.series.push(result);
             
             var url = baseUrl + '/api/measures/dataset/' + result.dataset.toString() + '/topic/' + result.topic.toString();
-        
+            
+            console.log(url);
+            
             $.getJSON(url, function (retval) {
             
                 // async... find the right series and assign the data
@@ -649,7 +656,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                         
                     }
                     
-                    console.log('fiddlywinkos');
                     $scope.chart.series[index].chartdata = chartdata;
                     
                     var s = {
@@ -1270,9 +1276,12 @@ $(document).ready(function() {
     theChart = new Highcharts.Chart(options);
 
     $('h5.picker-label').click(function(e) {
+    
         e.preventDefault();
         $('div.picker:visible').slideToggle('fast','linear');
         $(this).next('div').slideToggle('fast','linear');
+        
+        
     });
     
     $('a.coming-soon').click(function(e) {

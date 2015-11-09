@@ -1281,10 +1281,10 @@ def api_measures(dataset,topic):
     cur = conn.cursor(cursor_factory=RealDictCursor)
     data = {}
     
-    # FILTERS
+    # retrieve dataset metadata (FILTERS, AGGREGATION LEVEL) for use in subsequent queries
     
     sql = """
-    select filters from dataset WHERE dataset.id = %s
+    select filters, aggregation_level from dataset WHERE dataset.id = %s
     """
     cur.execute(sql,[dataset])
     r = cur.fetchone()
@@ -1296,14 +1296,19 @@ def api_measures(dataset,topic):
         if (filterval != None):
             filter_predicates.append("datarow->>'" + filter + "'='" + filterval + "'")
     
+    
+    
     topic_col = 'majortopic' if int(topic) < 100 else 'subtopic'
     
+    # modify sql expressions for total and count if this is not a 'raw observations' dataset (aggregation_level = 0)
+    total_exp = "SUM(datarow->'amount')" if r["aggregation_level"] == 1 else "COUNT(datarow->'id')"
+    count_exp = "COUNT(datarow->'id')" if r["aggregation_level"] == 1 else "datarow->'amount'" 
     
     # TOTALS ALL TOPICS
     
     sql = """
     SELECT yt.year::int, yt.total::int FROM (
-    select datarow->>'year' AS year, COUNT(datarow->'id') as total
+    select datarow->>'year' AS year, """ + total_exp + """ as total
     from (
       select jsonb_array_elements(content)
       from dataset WHERE dataset.id = %s
@@ -1327,6 +1332,7 @@ def api_measures(dataset,topic):
     for i, total in enumerate(d['total'] for d in rows): 
         totals.append(total)
     
+    
     # years for which this dataset "has data" (for ANY topic)
     years = []   
     for i, year in enumerate(d['year'] for d in rows): 
@@ -1339,7 +1345,7 @@ def api_measures(dataset,topic):
     
     sql = """
     SELECT yc.year::int, yc.cnt::int FROM (
-    select datarow->>'year' AS year, COUNT(datarow->'id') as cnt
+    select datarow->>'year' AS year, """ + count_exp + """ as cnt
     from (
     select jsonb_array_elements(content)
     from dataset WHERE dataset.id = %s
@@ -1353,7 +1359,14 @@ def api_measures(dataset,topic):
     sql = sql + """
     AND datarow->>'year' ~ '^[0-9]'
     AND datarow->>'year' != '0'
-    GROUP BY year) AS yc ORDER by year
+    """
+    
+    # add group by clause if it is a 'raw observations' dataset
+    if count_exp == "COUNT(datarow->'id')":
+        sql = sql + " GROUP BY year"
+    
+    sql = sql + """
+    ) AS yc ORDER by year
     """
    
     #app.logger.debug(sql)
@@ -1405,8 +1418,8 @@ def api_measures(dataset,topic):
     #return dumps(data)
     
     # WRITE CACHE
-    with open(cached_path, 'w') as outfile:
-        dump(data, outfile)
+    #with open(cached_path, 'w') as outfile:
+    #    dump(data, outfile)
          
     return dumps(data)
 
