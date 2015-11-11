@@ -3,7 +3,7 @@
 
 {% block head %}
 
-<script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
+<!--<script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>-->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dropzone.css') }}">
 
 {% endblock %}
@@ -22,7 +22,7 @@
 
 <input type="hidden" name="aggregation_level" id="aggregation_level" value="0">
 
-
+<!--
 <div class="row">
 	<div class="small-2 columns">
 	  <label for="title" class="right inline">Data [.csv]</label>
@@ -62,6 +62,30 @@
       
 	</div>
 </div>
+-->
+
+<div class="row">
+	<div class="small-2 columns">
+	  <label for="title" class="right inline">Dataset [.csv]</label>
+	</div>
+	<div class="small-10 columns">
+	  {% if dataseturl %}
+	      <p>
+	      <a href="{{ codebookurl }}" target="_new">{{ datasetfilename }}</a>
+	      <br>
+	      <a href="{{ url_for('admin_dataset_removecontent',slug=slug,id=id) }}">remove</a>
+	      </p>
+      {% else %}
+          <label class="error">
+          {{ form.content(size=40) }}
+          </label>
+          {% for error in form.content.errors %}
+          <small class="error">{{ error }}</small>
+          {% endfor %}
+      {% endif %}
+	</div>
+</div>
+
 
 <div class="row">
 	<div class="small-2 columns">
@@ -219,23 +243,3 @@
 {% endblock %}
 
 
-{% block scripts %}
-
-
-Dropzone.options.datasetdropzone = {
-url: "/admin/dataset/upload",
-maxFiles:1,
-init: function() {
-          this.on("maxfilesexceeded", function(file) {
-                this.removeAllFiles();
-                this.addFile(file);
-          });
-      },
-success: function( file, response ){
-        console.log(response.filename);
-        $("#content").val(response.filename);
-    }
-
-};
-
-{% endblock %}

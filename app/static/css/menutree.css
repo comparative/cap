@@ -33,10 +33,10 @@
     }                         
 */
 
-.menutree li .menu_label + input[type=checkbox] input.choose_topic + span + span
+/*.menutree li .menu_label 
          {
             background-color: red;
-         }
+         }*/
 
 .menutree li .menu_label + input[type=checkbox] + ol > li
          {

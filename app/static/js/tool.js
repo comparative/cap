@@ -194,6 +194,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
               
     $scope.doFacets = function() { 
         
+        
+        //console.log($scope.datasets);
+        
         $scope.results = [];
         
         var cats = [];
@@ -206,7 +209,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             if (cats.indexOf(dataset.category.toString()) > -1) {
                 angular.element('#projects input:checked').each(function () {
                     var country = $(this).attr('country');
+
                     angular.element('.choose_topic:checked').each(function () {
+                       
                        var $this = $(this);
                        if ($this.length) {
                         var selText = $this.next('span').text();
@@ -216,7 +221,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                         }
                         var subtopic = $this.attr('subtopic');
                         if (country == dataset.country) {
-                        
+                            
                             // ADD TO SEARCH RESULTS
                             dataset_name = dataset.country + ': ' + dataset.name + ' #' + selText;
                             var searchResult = new Series(dataset.id,subtopic,dataset_name,JSON.parse(dataset.filters));
@@ -232,7 +237,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     }
     
     $scope.noResults = function() {
-    
+        
+       // console.log($scope.results);
+        
         var unhidden_results = [];
         angular.forEach($scope.results, function (result, index) {
             var add = true;
@@ -280,23 +287,16 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     $http.get(baseUrl + '/api/budgetprojects').success(function(data){
         
-        console.log('hi');
-        console.log(data);
+        for (i = 0; i < data.length; ++i) {
+            for (j = 0; j < data[i].datasets.length; ++j) {
+                data[i].datasets[j].topics = JSON.parse(data[i].datasets[j].topics);
+            }
+        }
         
-        $scope.budgetCountries = data;
+        $scope.budgetProjects = data;
                         
     });
     
-    /*
-    $scope.budgetCountries = [
-        {"id":"1","name":"US","topics":[{"id":"2","name":"Money","subtopics":[{"id":"23","name":"Tons of money"},{"id":"24","name":"Wads of money"}]},{"id":"3","name":"Pain"},{"id":"4","name":"Church"}]},
-        {"id":"8","name":"Brazil","topics":[{"id":"5","name":"Money"},{"id":"6","name":"Pain","subtopics":[{"id":"63","name":"Emotional"},{"id":"64","name":"Referred"}]},{"id":"7","name":"Sleep"}]},
-        {"id":"3","name":"Hungary","topics":[{"id":"8","name":"Sleep","subtopics":[{"id":"85","name":"Deep Sleep"},{"id":"86","name":"Naps"}]},{"id":"9","name":"Pain"},{"id":"10","name":"Church","subtopics":[{"id":"33","name":"Popes"},{"id":"34","name":"Steeples"}]}]},
-    ];
-    */
-    
-   // console.log($scope.budgetCountries01);
-   // console.log($scope.budgetCountries);
     
     $scope.budgetCategories = [
         {"category_id": 1, "id": 1, "name": "Appropriations"}, 
@@ -304,6 +304,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         {"category_id": 3, "id": 3, "name": "Miscellaneous"}, 
     ];
     
+    /*
     $http.get(baseUrl + '/api/datasets/budget').success(function(data){
         
         retval = data;
@@ -313,8 +314,13 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         }
         
         $scope.budgetDatasets = retval;
+        
+        console.log('hi');
+        console.log(retval);
+        
     
     });
+    */
     
     $scope.budgetProjectCount = function() {
         
@@ -332,6 +338,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     $scope.budgetResults = [];
 
     $scope.doBudgetResults = function(dataset,topic,name) { 
+        
+        //console.log('did');
         
         var idx;
         var found_it = false;

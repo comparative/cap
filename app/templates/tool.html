@@ -195,7 +195,7 @@
     <h5 class="picker-label clickable">Select projects<span ng-show="countryCount() > 0" class="selection_count">{@countryCount()@}</span></h5>
     <div id="projects" class="picker" style="display:block">
     <div ng-repeat="country in countries">
-    <input id="{@country.slug@}" ng-attr-country="{@country.short_name@}" type="checkbox" ng-click="doFacets()">
+    <input id="{@country.slug@}" ng-attr-country="{@country.name@}" type="checkbox" ng-click="doFacets()">
     <label>{@country.name | limitTo : 27@}</label>
     </div>
     </div>
@@ -252,58 +252,35 @@
     
     <h5 class="clickable" ng-click="budgetPickerLabel($event)">Select projects<span ng-show="budgetProjectCount() > 0" class="selection_count">{@budgetProjectCount()@}</span></h5>
     <div id="budget_projects" class="picker" style="display:block">
-    <div ng-repeat="country in budgetCountries">
+    <div ng-repeat="country in budgetProjects">
     <input ng-model="country.selected" type="checkbox">
     <label>{@country.name | limitTo : 27@}</label>
     </div>
     </div>
 
     
-    <div ng-repeat="country in budgetCountries">
+    <div ng-repeat="country in budgetProjects">
     <div ng-show="country.selected">
     
-    <div ng-repeat="dataset in budgetDatasets" ng-show="country.name==dataset.country">
+    <div ng-repeat="dataset in country.datasets">
 
     
-    <h5 ng-click="budgetPickerLabel($event)" class="clickable">Select topics: {@country.name@} {@dataset.name@}<span ng-show="topicCount() > 0" class="selection_count">{@topicCount()@}</span></h5>
-    <!--<div class="picker">
-
-        <ol class="menutree">
-        
-            <li ng-repeat="topic in dataset.topics">
-            <label class="menu_label" for="bt{@topic.id@}">
-            <input type="checkbox" class="choose_budget_topic" ng-click="doBudge($event)">
-            <span ng-click="doFuckU($event)" class="major_topic" ng-class="{clickable: topic.subtopics.length>0}">{@topic.name | limitTo:33 @}</span>
-            <span ng-show="topic.subtopics.length>0" style="float:right;"><i ng-hide="isOpen" class="fi-arrow-down"></i><i ng-show="isOpen" class="fi-arrow-up"></i></span>
-            </label>
-            <input ng-click="isOpen = ! isOpen" type="checkbox" id="bt{@topic.id@}"/>
-                <ol>
-                    <li ng-repeat="subtopic in topic.subtopics">
-                    <label class="menu_label"><input type="checkbox" class="choose_budget_topic" ng-click="doBudge($event)"><span>{@subtopic.name | limitTo:33 @}</span></label>
-                    <input type="checkbox" id=""/>
-                    </li>
-                </ol>
-            </li>
-                        
-        </ol>
+    <h5 ng-click="budgetPickerLabel($event)" class="clickable">Select topics: {@country.name@} {@dataset.name@}<span ng-show="budgetTopicCount() > 0" class="selection_count">{@budgetTopicCount()@}</span></h5>    
     
-    </div>-->
-    
-    
-    <div id="topics" class="picker">
+    <div id="{@dataset.id@}_budget_topics" class="picker">
 
         <ol class="menutree">
         
             <li ng-repeat="topic in dataset.topics">
-            <label class="menu_label" for="bt{@topic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@topic.id@}" ng-click="doBudgetResults(dataset,topic,topic.name)"><span class="major_topic" ng-class="{clickable: topic.subtopics.length>0}">{@topic.name | limitTo:33 @}</span><span style="float:right;" ng-show="topic.subtopics.length>0"><i ng-hide="isOpen" class="fi-arrow-down"></i><i ng-show="isOpen" class="fi-arrow-up"></i></span></label>
-            <input ng-click="isOpen = ! isOpen" type="checkbox" id="bt{@topic.id@}"/>
+            <label class="menu_label" for="{@dataset.id@}t{@topic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@topic.id@}" ng-click="doBudgetResults(dataset,topic,topic.name)"><span class="major_topic" ng-class="{clickable: topic.subtopics.length>0}">{@topic.name | limitTo:33 @}</span><span style="float:right;" ng-show="topic.subtopics.length>0"><i ng-hide="topic.isOpen" class="fi-arrow-down"></i><i ng-show="topic.isOpen" class="fi-arrow-up"></i></span></label>
+            <input ng-click="topic.isOpen = ! topic.isOpen" type="checkbox" id="{@dataset.id@}t{@topic.id@}"/>
                 <ol>
                     <li ng-repeat="subtopic in topic.subtopics">
-                    <label class="menu_label" for="bs{@subtopic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@subtopic.id@}" ng-click="doBudgetResults(dataset,subtopic,topic.name + ': ' + subtopic.name)"><span>{@subtopic.name | limitTo:33 @}</span></label>
-                    <input type="checkbox" id="bs{@subtopic.id@}"/>
+                    <label class="menu_label" for="{@dataset.id@}s{@subtopic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@subtopic.id@}" ng-click="doBudgetResults(dataset,subtopic,topic.name + ': ' + subtopic.name)"><span>{@subtopic.name | limitTo:33 @}</span></label>
+                    <input type="checkbox" id="{@dataset.id@}s{@subtopic.id@}"/>
                     </li>
                 </ol>
-            </li>
+            </li>               
                         
         </ol>
     
@@ -722,6 +699,8 @@ var defaultOptions = {
     var options = $.extend(true, {}, defaultOptions); 
 
 {% endif %}
+      
+     // alert('gawd');
       
 </script>
         

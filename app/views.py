@@ -928,16 +928,17 @@ def admin_dataset_upload():
 @app.route('/admin/projects/<slug>/dataset/<id>', methods=['GET', 'POST'])
 @login_required
 def admin_dataset_item(slug,id):
-
+    
+    #app.logger.debug(id);
+    
     newdata = False
     country = Country.query.filter_by(slug=slug).first()
     dataset = Dataset() if (id == 'add' or id=='addbudget') else Dataset.query.filter_by(id=id).first()
     form = DatasetForm()
     
-    content = False
-    if 'content' in request.form and request.form['content'] != '':
-        content = request.form['content']
-   
+    #content = False
+    
+        
     if form.validate_on_submit():
         
         if 'codebook' in request.files and request.files['codebook'].filename != '':
@@ -981,10 +982,13 @@ def admin_dataset_item(slug,id):
             app.logger.debug(thedata)
             dataset.topics = thedata
 
-            
-        if content:
+        if 'content' in request.files and request.files['content'] != '':
         
-            datasetfilepath = datasetfiles.path(content)
+            app.logger.debug('found me');
+            
+            datasetfilename = datasetfiles.save(request.files['content'])
+            dataset.datasetfilename = datasetfilename
+            datasetfilepath = datasetfiles.path(datasetfilename)
             csvfile = open(datasetfilepath, 'rU')
             reader = csv.DictReader(csvfile)
             reader.fieldnames = [item.lower() for item in reader.fieldnames]
@@ -993,7 +997,7 @@ def admin_dataset_item(slug,id):
                 if fieldname.split('_')[0] == 'filter':
                     filters.append(fieldname)
             dataset.filters = filters
-            dataset.datasetfilename = content
+            #dataset.datasetfilename = content
             thedata = [ row for row in reader ]
             dataset.content = thedata
             dataset.ready = True
@@ -1066,8 +1070,7 @@ def admin_dataset_item(slug,id):
                            codebookfilename=dataset.codebookfilename,
                            topicsurl=topicsurl,
                            topicsfilename=dataset.topicsfilename,
-                           form=form,
-                           content=content)
+                           form=form)
 
 @app.route('/admin/projects/<slug>/dataset/delete/<id>')
 @login_required
@@ -1157,12 +1160,33 @@ def api_countries():
     return dumps(cur.fetchall())
 
 @app.route('/api/budgetprojects')
-def api_budgetcountries():
+def api_budgetprojects():
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("""SELECT DISTINCT ON (c.name) c.* FROM country c INNER JOIN dataset d ON c.id = d.country_id WHERE d.budget=True ORDER BY c.name""")
-    #cur.execute("""SELECT * FROM country ORDER BY name""")
-    return dumps(cur.fetchall())
+    countries = cur.fetchall()
+    
+    for country in countries:
+        sql = """
+        SELECT 
+            d.id,
+            d.budgetcategory_id AS category,
+            d.topics AS topics,
+            d.short_display AS name,
+            c.name AS country,
+            d.filters AS filters
+        FROM dataset d
+        INNER JOIN country c ON d.country_id = c.id
+        WHERE d.country_id = %(country_id)s 
+        AND d.ready=TRUE
+        AND d.budget= TRUE
+        ORDER BY d.short_display
+        """
+        cur.execute(sql,{"country_id": country['id']})
+        datasets = cur.fetchall()
+        country['datasets'] = datasets
+        
+    return dumps(countries)
 
 @app.route('/api/categories')
 def api_categories():
@@ -1194,33 +1218,21 @@ SELECT Concat(Trim(To_char(m.majortopic, '999')), '_', m.shortname)
     return dumps(cur.fetchall())
 
 @app.route('/api/datasets')
-@app.route('/api/datasets/<flag>')
 def api_datasets(flag = None):
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    #cur.execute("""SELECT category, short_display as name FROM datasets WHERE controller IS NOT NULL ORDER BY short_display""")
     sql = """
     SELECT d.id,
-    """
-    if (flag == 'budget'):
-       sql += "d.budgetcategory_id AS category, d.topics AS topics,"
-    else:
-        sql += "d.category_id AS category,"   
-    sql += """
-       d.short_display AS name,
-       c.name AS country,
-       d.filters AS filters
+    d.category_id AS category,  
+    d.short_display AS name,
+    c.name AS country,
+    d.filters AS filters
     FROM dataset d
     INNER JOIN country c ON d.country_id = c.id
     WHERE d.ready=TRUE
-    AND d.budget=
+    AND d.budget=FALSE
+    ORDER BY d.short_display
     """
-    if (flag == 'budget'):
-       sql += " TRUE"
-    else:
-        sql += " FALSE"
-    sql += " ORDER BY d.short_display"
-    
     cur.execute(sql)
     return dumps(cur.fetchall())
 
@@ -1281,10 +1293,9 @@ def api_measures(dataset,topic):
     cur = conn.cursor(cursor_factory=RealDictCursor)
     data = {}
     
-    # retrieve dataset metadata (FILTERS, AGGREGATION LEVEL) for use in subsequent queries
-    
+    # RETRIEVE METADATA
     sql = """
-    select filters, aggregation_level from dataset WHERE dataset.id = %s
+    select filters, aggregation_level, budget from dataset WHERE dataset.id = %s
     """
     cur.execute(sql,[dataset])
     r = cur.fetchone()
@@ -1296,95 +1307,158 @@ def api_measures(dataset,topic):
         if (filterval != None):
             filter_predicates.append("datarow->>'" + filter + "'='" + filterval + "'")
     
+    if r["budget"]:
+    
+        topic_col = 'majortopic' if float(topic) % 10 == 0 else 'subtopic'
+    
+        # TOTALS ALL TOPICS
+    
+        sql = """
+        SELECT yt.year::int, SUM(yt.amount::int) as total FROM (
+        select datarow->>'year' AS year, datarow->>'amount' as amount
+        FROM (
+          select jsonb_array_elements(content)
+          from dataset WHERE dataset.id = %s
+         ) s(datarow)
+        WHERE 1=1"""
+        
+        if len(filter_predicates) > 0:
+            for pred in filter_predicates:
+                sql = sql + " AND " + pred 
+        
+        sql = sql + """
+        AND datarow->>'year' ~ '^[0-9]'
+        AND datarow->>'year' != '0'
+        ) yt
+    
+        GROUP BY yt.year  ORDER by yt.year
+        """
+    
+        cur.execute(sql,[dataset])
+        rows = cur.fetchall()
+    
+        totals = []
+        for i, total in enumerate(d['total'] for d in rows): 
+            totals.append(total)
     
     
-    topic_col = 'majortopic' if int(topic) < 100 else 'subtopic'
-    
-    # modify sql expressions for total and count if this is not a 'raw observations' dataset (aggregation_level = 0)
-    total_exp = "SUM(datarow->'amount')" if r["aggregation_level"] == 1 else "COUNT(datarow->'id')"
-    count_exp = "COUNT(datarow->'id')" if r["aggregation_level"] == 1 else "datarow->'amount'" 
-    
-    # TOTALS ALL TOPICS
-    
-    sql = """
-    SELECT yt.year::int, yt.total::int FROM (
-    select datarow->>'year' AS year, """ + total_exp + """ as total
-    from (
-      select jsonb_array_elements(content)
-      from dataset WHERE dataset.id = %s
-    ) s(datarow)
-    WHERE 1=1"""
-    
-    if len(filter_predicates) > 0:
-        for pred in filter_predicates:
-            sql = sql + " AND " + pred 
-    
-    sql = sql + """
-    AND datarow->>'year' ~ '^[0-9]'
-    AND datarow->>'year' != '0'
-    GROUP BY year) AS yt ORDER by year
-    """
-    
-    cur.execute(sql,[dataset])
-    rows = cur.fetchall()
-    
-    totals = []
-    for i, total in enumerate(d['total'] for d in rows): 
-        totals.append(total)
-    
-    
-    # years for which this dataset "has data" (for ANY topic)
-    years = []   
-    for i, year in enumerate(d['year'] for d in rows): 
-        years.append(year)
+        # CALCULATE years for which this dataset "has data" (for ANY topic)
+        years = []
+        for i, year in enumerate(d['year'] for d in rows): 
+            years.append(year)
          
-    data['years'] = years
+        data['years'] = years
     
     
-    # COUNT THIS TOPIC
+        # COUNT THIS TOPIC
     
-    sql = """
-    SELECT yc.year::int, yc.cnt::int FROM (
-    select datarow->>'year' AS year, """ + count_exp + """ as cnt
-    from (
-    select jsonb_array_elements(content)
-    from dataset WHERE dataset.id = %s
-    ) s(datarow)
-    where datarow->>'""" + topic_col + "' = %s"
+        sql = """
+        SELECT yt.year::int, SUM(yt.amount::int) as cnt FROM (
+        select datarow->>'year' AS year, datarow->>'amount' as amount
+        FROM (
+          select jsonb_array_elements(content)
+          from dataset WHERE dataset.id = %s
+         ) s(datarow)
+        where datarow->>'""" + topic_col + "' = %s"
+        
+        if len(filter_predicates) > 0:
+            for pred in filter_predicates:
+                sql = sql + " AND " + pred 
+        
+        sql = sql + """
+        AND datarow->>'year' ~ '^[0-9]'
+        AND datarow->>'year' != '0'
+        ) yt
     
-    if len(filter_predicates) > 0:
-        for pred in filter_predicates:
-            sql = sql + " AND " + pred 
+        GROUP BY yt.year  ORDER by yt.year
+        """
+    
+        cur.execute(sql,[dataset,topic])
+        rows = cur.fetchall()
+    
+        count = []
+        for year in years:
+            found = next((item for item in rows if item['year'] == year), None)
+            if found is not None:
+                count.append(found['cnt'])
+            else:
+                count.append(0)
+        data['count'] = count
+        
+    else:
+    
+        topic_col = 'majortopic' if int(topic) < 100 else 'subtopic'    
+
+        # TOTALS ALL TOPICS
+    
+        sql = """
+        SELECT yt.year::int, yt.total::int FROM (
+        select datarow->>'year' AS year, COUNT(datarow->'id') as total
+        from (
+          select jsonb_array_elements(content)
+          from dataset WHERE dataset.id = %s
+        ) s(datarow)
+        WHERE 1=1"""
+    
+        if len(filter_predicates) > 0:
+            for pred in filter_predicates:
+                sql = sql + " AND " + pred 
+    
+        sql = sql + """
+        AND datarow->>'year' ~ '^[0-9]'
+        AND datarow->>'year' != '0'
+        GROUP BY year) AS yt ORDER by year
+        """
+    
+        cur.execute(sql,[dataset])
+        rows = cur.fetchall()
+    
+        totals = []
+        for i, total in enumerate(d['total'] for d in rows): 
+            totals.append(total)
+    
+    
+        # CALCULATE years for which this dataset "has data" (for ANY topic)
+        years = []
+        for i, year in enumerate(d['year'] for d in rows): 
+            years.append(year)
+         
+        data['years'] = years
+    
+    
+    
+        # COUNT THIS TOPIC
+    
+        sql = """
+        SELECT yc.year::int, yc.cnt::int FROM (
+        select datarow->>'year' AS year, COUNT(datarow->'id') as cnt
+        from (
+        select jsonb_array_elements(content)
+        from dataset WHERE dataset.id = %s
+        ) s(datarow)
+        where datarow->>'""" + topic_col + "' = %s"
+    
+        if len(filter_predicates) > 0:
+            for pred in filter_predicates:
+                sql = sql + " AND " + pred 
             
-    sql = sql + """
-    AND datarow->>'year' ~ '^[0-9]'
-    AND datarow->>'year' != '0'
-    """
+        sql = sql + """
+        AND datarow->>'year' ~ '^[0-9]'
+        AND datarow->>'year' != '0'
+        GROUP BY year) AS yc ORDER by year
+        """
     
-    # add group by clause if it is a 'raw observations' dataset
-    if count_exp == "COUNT(datarow->'id')":
-        sql = sql + " GROUP BY year"
+        cur.execute(sql,[dataset,topic])
+        rows = cur.fetchall()
     
-    sql = sql + """
-    ) AS yc ORDER by year
-    """
-   
-    #app.logger.debug(sql)
-    
-    cur.execute(sql,[dataset,topic])
-    rows = cur.fetchall()
-    
-    #app.logger.debug(rows)
-    
-    count = []
-    for year in years:
-        found = next((item for item in rows if item['year'] == year), None)
-        if found is not None:
-            count.append(found['cnt'])
-        else:
-            count.append(0)
-    data['count'] = count
-    
+        count = []
+        for year in years:
+            found = next((item for item in rows if item['year'] == year), None)
+            if found is not None:
+                count.append(found['cnt'])
+            else:
+                count.append(0)
+        data['count'] = count
     
     # PERCENT CHANGE
     percent_change = [None]
@@ -1398,9 +1472,6 @@ def api_measures(dataset,topic):
             else:
                 percent_change.append(None)
     data['percent_change'] = percent_change
-    
-    #app.logger.debug(len(count))    
-    #data['totals'] = totals
 
     percent_total = []
     i = 0
@@ -1414,8 +1485,6 @@ def api_measures(dataset,topic):
                 percent_total.append(None)
             i += 1
     data['percent_total'] = percent_total
-    
-    #return dumps(data)
     
     # WRITE CACHE
     #with open(cached_path, 'w') as outfile:
