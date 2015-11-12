@@ -341,20 +341,25 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         //console.log('did');
         
-        var idx;
         var found_it = false;
-        for (idx = 0; idx < $scope.budgetResults.length; idx++) {
-            if ($scope.budgetResults[idx].topic === topic.id && $scope.budgetResults[idx].dataset === dataset.id) {
-                $scope.budgetResults.splice(idx, 1);
-                found_it = true;
+        if ($scope.chart.series) {
+            var idx;
+            for (idx = 0; idx < $scope.chart.series.length; idx++) {
+                if ($scope.chart.series[idx].topic === topic.id && $scope.chart.series[idx].dataset === dataset.id) {
+                   $scope.removeFromChart(idx);
+                   // $scope.budgetResults.splice(idx, 1);
+                    found_it = true;
+                    break;
+                }
             }
         }
-
+        
         // is newly selected
         if (found_it==false) {            
           dataset_name = dataset.country + ': ' + dataset.name + ' #' + name;
           var obj = new Series(dataset.id,topic.id,dataset_name,JSON.parse(dataset.filters));
-          $scope.budgetResults.push(obj);
+          $scope.addToChart(obj);
+          //$scope.budgetResults.push(obj);
         }
         
        // console.log($scope.selection);
@@ -479,6 +484,10 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             alert('Scatter plot chart type requires exactly two series.');
         
         } else {
+        
+            // REMOVE CHECKBOX FROM BUDGET TAB
+            
+            
         
             // RESET TO DEFAULTS FOR NEXT ADD
             $scope.chart.series[index].measure = "count";
@@ -968,7 +977,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             url: '/charts/save/' + $("#user").val() + '/' + $scope.chart.slug,
             data: strOptions,
             success: function() {
-                alert('Chart pinned!\n\nClick "View History" to reload chart.');
+                alert('Chart pinned!\n\nClick "Chart History" to reload.');
                 item = new Saved( $scope.chart.slug, baseUrl + '/charts/' + $scope.chart.slug, strOptions );
                 $scope.saved.unshift(item);
                 $scope.$apply();

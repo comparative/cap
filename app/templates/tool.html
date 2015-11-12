@@ -185,7 +185,7 @@
 <dl class="tabs" data-tab>
   <dd class="active"><a class="clickable" href="#panel1">Policies</a></dd>
   <dd><a class="clickable" href="#panel3">Budgets</a></dd>
-  <dd><a class="clickable" href="#panel2">History</a></dd>
+  <dd><a class="clickable" href="#panel2">Chart History</a></dd>
 </dl>
 <div class="tabs-content contained">
 
@@ -272,11 +272,11 @@
         <ol class="menutree">
         
             <li ng-repeat="topic in dataset.topics">
-            <label class="menu_label" for="{@dataset.id@}t{@topic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@topic.id@}" ng-click="doBudgetResults(dataset,topic,topic.name)"><span class="major_topic" ng-class="{clickable: topic.subtopics.length>0}">{@topic.name | limitTo:33 @}</span><span style="float:right;" ng-show="topic.subtopics.length>0"><i ng-hide="topic.isOpen" class="fi-arrow-down"></i><i ng-show="topic.isOpen" class="fi-arrow-up"></i></span></label>
+            <label class="menu_label" for="{@dataset.id@}t{@topic.id@}"><input type="checkbox" class="choose_budget_topic" subtopic="{@topic.id@}" ng-click="doBudgetResults(dataset,topic,topic.name)"><span class="major_topic" ng-class="{clickable: topic.subtopics.length>0}">{@topic.name | limitTo:33 @}</span><span style="float:right;" ng-show="topic.subtopics.length>0"><i ng-hide="topic.isOpen" class="fi-arrow-down"></i><i ng-show="topic.isOpen" class="fi-arrow-up"></i></span></label>
             <input ng-click="topic.isOpen = ! topic.isOpen" type="checkbox" id="{@dataset.id@}t{@topic.id@}"/>
                 <ol>
                     <li ng-repeat="subtopic in topic.subtopics">
-                    <label class="menu_label" for="{@dataset.id@}s{@subtopic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@subtopic.id@}" ng-click="doBudgetResults(dataset,subtopic,topic.name + ': ' + subtopic.name)"><span>{@subtopic.name | limitTo:33 @}</span></label>
+                    <label class="menu_label" for="{@dataset.id@}s{@subtopic.id@}"><input type="checkbox" class="choose_budget_topic" subtopic="{@subtopic.id@}" ng-click="doBudgetResults(dataset,subtopic,topic.name + ': ' + subtopic.name)"><span>{@subtopic.name | limitTo:33 @}</span></label>
                     <input type="checkbox" id="{@dataset.id@}s{@subtopic.id@}"/>
                     </li>
                 </ol>

@@ -14,7 +14,7 @@
 {% if not current_user.country %}
     <a href="{{ url_for('admin_country_list') }}">Projects</a> >>
 {% endif %}
-<a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> <a href="{{ url_for('admin_dataset_list',slug=country.slug) }}">Datasets</a>
+<a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> <a href="{{ url_for('admin_dataset_list',slug=country.slug) }}">Datasets (Policy)</a>
 </h4>
 
 <form action="" method="post" name="login" enctype="multipart/form-data">
@@ -212,7 +212,7 @@
 
 
 Dropzone.options.datasetdropzone = {
-url: "/admin/dataset/upload",
+url: "/admin/dataset/upload/policy",
 maxFiles:1,
 init: function() {
           this.on("maxfilesexceeded", function(file) {

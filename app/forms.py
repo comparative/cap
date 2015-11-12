@@ -70,18 +70,17 @@ class DatasetForm(Form):
     aggregation_level = SelectField(u'Aggregation Level', choices=[('0', 'raw'), ('1', 'count'), ('2', 'percent')])
     #aggregation_level = IntegerField('aggregation_level')
     
-    #def validate(self):
-    #    rv = Form.validate(self)
-    #    if rv==False: return False
-    #    if self.fieldnames:
-    #        required_fieldnames = ['id','year','majortopic','subtopic']
-    #        #required_fieldnames = ['id','year','majortopic']
-    #        for required_fieldname in required_fieldnames:
-    #            if required_fieldname not in self.fieldnames:
-    #                self.content.errors.append('The required column "' + required_fieldname + '" was not found in the data you uploaded.')
-    #    if len(self.content.errors) > 0:
-    #        return False
-    #    return True
+    def validate(self):
+        rv = Form.validate(self)
+        if rv==False: return False
+        if self.topicsfieldnames:
+            required_fieldnames = ['majorfunction','subfunction','shortname','longname']
+            for required_fieldname in required_fieldnames:
+                if required_fieldname not in self.topicsfieldnames:
+                    self.topics.errors.append('The required column "' + required_fieldname + '" was not found in the data you uploaded.')
+        if len(self.topics.errors) > 0:
+            return False
+        return True
     
 
 class CountryForm(Form):

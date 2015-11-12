@@ -893,9 +893,9 @@ def admin_datasetcustom_item(slug,id):
 def admin_datasetdownload_item(slug,id):
     return
 
-@app.route('/admin/dataset/upload', methods=['POST'])
+@app.route('/admin/dataset/upload/<type>', methods=['POST'])
 @login_required
-def admin_dataset_upload():
+def admin_dataset_upload(type):
     #dataset = Dataset.query.filter_by(id=id).first()
     #if dataset is not None:
     retval = {}
@@ -909,7 +909,12 @@ def admin_dataset_upload():
     
     if reader.fieldnames:
         #required_fieldnames = ['id','year','majortopic','subtopic']
-        required_fieldnames = ['id','year','majortopic']
+        if type=='policy':
+            required_fieldnames = ['id','year','majortopic']
+        if type=='budget':
+            required_fieldnames = ['id','year','majorfunction','amount']
+        if type=='download':
+            required_fieldnames = []
         for required_fieldname in required_fieldnames:
             if required_fieldname not in reader.fieldnames:
                 errors += 'The required column "' + required_fieldname + '" was not found in the data you uploaded. '
@@ -936,7 +941,24 @@ def admin_dataset_item(slug,id):
     dataset = Dataset() if (id == 'add' or id=='addbudget') else Dataset.query.filter_by(id=id).first()
     form = DatasetForm()
     
-    #content = False
+    content = False
+    if 'content' in request.form and request.form['content'] != '':
+        content = request.form['content']
+        
+    form.topicsfieldnames=[]
+    if 'topics' in request.files and request.files['topics'].filename != '':
+        topicsfilename = topicsfiles.save(request.files['topics'])
+        topicsfilepath = topicsfiles.path(topicsfilename)
+        try:
+            didit = convert_to_utf8(topicsfilepath)
+        except:
+            didit = False
+        if (didit == False):
+            flash('Topics not converted to UTF-8!')
+            return redirect(url_for('admin_dataset_list',slug=slug))
+        topicscsvfile = open(topicsfilepath, 'rU')
+        topicsreader = csv.DictReader(topicscsvfile)
+        form.topicsfieldnames = [item.lower() for item in topicsreader.fieldnames]
     
         
     if form.validate_on_submit():
@@ -945,19 +967,39 @@ def admin_dataset_item(slug,id):
         
             codebookfilename = codebookfiles.save(request.files['codebook'])
             dataset.codebookfilename = codebookfilename
-         
+        
+        
+        if content:
+        
+            datasetfilepath = datasetfiles.path(content)
+            csvfile = open(datasetfilepath, 'rU')
+            reader = csv.DictReader(csvfile)
+            reader.fieldnames = [item.lower() for item in reader.fieldnames]
+            filters = []
+            for fieldname in reader.fieldnames:
+                if fieldname.split('_')[0] == 'filter':
+                    filters.append(fieldname)
+            dataset.filters = filters
+            dataset.datasetfilename = content
+            thedata = [ row for row in reader ]
+            dataset.content = thedata
+            dataset.ready = True
+            newdata = True
+        
+        
+        
         if 'topics' in request.files and request.files['topics'].filename != '':
         
-            topicsfilename = topicsfiles.save(request.files['topics'])
+            #topicsfilename = topicsfiles.save(request.files['topics'])
             dataset.topicsfilename = topicsfilename
-            topicsfilepath = topicsfiles.path(topicsfilename)
-            csvfile = open(topicsfilepath, 'rU')
-            reader = csv.DictReader(csvfile)
+            #topicsfilepath = topicsfiles.path(topicsfilename)
+            #csvfile = open(topicsfilepath, 'rU')
+            #reader = csv.DictReader(csvfile)
             
             thedata = []
             majorfunctions=[]
             subfunctions=[]
-            for row in reader:
+            for row in topicsreader:
                 if row['subfunction'] == '':
                     majorfunctions.append(row)
                 else:
@@ -979,29 +1021,28 @@ def admin_dataset_item(slug,id):
                 
                 thedata.append(therow)
             
-            app.logger.debug(thedata)
+            #app.logger.debug(thedata)
             dataset.topics = thedata
 
-        if 'content' in request.files and request.files['content'] != '':
+        #if 'content' in request.files and request.files['content'] != '':
         
-            app.logger.debug('found me');
+            #app.logger.debug('found me');
             
-            datasetfilename = datasetfiles.save(request.files['content'])
-            dataset.datasetfilename = datasetfilename
-            datasetfilepath = datasetfiles.path(datasetfilename)
-            csvfile = open(datasetfilepath, 'rU')
-            reader = csv.DictReader(csvfile)
-            reader.fieldnames = [item.lower() for item in reader.fieldnames]
-            filters = []
-            for fieldname in reader.fieldnames:
-                if fieldname.split('_')[0] == 'filter':
-                    filters.append(fieldname)
-            dataset.filters = filters
-            #dataset.datasetfilename = content
-            thedata = [ row for row in reader ]
-            dataset.content = thedata
-            dataset.ready = True
-            newdata = True
+            #datasetfilename = datasetfiles.save(request.files['content'])
+            #dataset.datasetfilename = datasetfilename
+            #datasetfilepath = datasetfiles.path(datasetfilename)
+            #csvfile = open(datasetfilepath, 'rU')
+            #reader = csv.DictReader(csvfile)
+            #reader.fieldnames = [item.lower() for item in reader.fieldnames]
+            #filters = []
+            #for fieldname in reader.fieldnames:
+            #    if fieldname.split('_')[0] == 'filter':
+            #        filters.append(fieldname)
+            #dataset.filters = filters
+            #thedata = [ row for row in reader ]
+            #dataset.content = thedata
+            #dataset.ready = True
+            #newdata = True
             
             
         dataset.display = form.display.data
@@ -1201,7 +1242,7 @@ def api_topics():
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("""
-SELECT Concat(Trim(To_char(m.majortopic, '999')), '_', m.shortname) 
+    SELECT Concat(Trim(To_char(m.majortopic, '999')), '_', m.shortname) 
        AS topic
        , 
        Array_agg( 
@@ -1309,7 +1350,7 @@ def api_measures(dataset,topic):
     
     if r["budget"]:
     
-        topic_col = 'majortopic' if float(topic) % 10 == 0 else 'subtopic'
+        topic_col = 'majorfunction' if float(topic) % 10 == 0 else 'subfunction'
     
         # TOTALS ALL TOPICS
     

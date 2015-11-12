@@ -3,7 +3,7 @@
 
 {% block head %}
 
-<!--<script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>-->
+<script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dropzone.css') }}">
 
 {% endblock %}
@@ -14,7 +14,7 @@
 {% if not current_user.country %}
     <a href="{{ url_for('admin_country_list') }}">Projects</a> >>
 {% endif %}
-<a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> <a href="{{ url_for('admin_dataset_list',slug=country.slug,tab=2) }}">Datasets
+<a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> <a href="{{ url_for('admin_dataset_list',slug=country.slug,tab=2) }}">Datasets (Budget)</a>
 </h4>
 
 <form action="" method="post" name="login" enctype="multipart/form-data">
@@ -22,7 +22,6 @@
 
 <input type="hidden" name="aggregation_level" id="aggregation_level" value="0">
 
-<!--
 <div class="row">
 	<div class="small-2 columns">
 	  <label for="title" class="right inline">Data [.csv]</label>
@@ -62,11 +61,10 @@
       
 	</div>
 </div>
--->
 
-<div class="row">
+<!--<div class="row">
 	<div class="small-2 columns">
-	  <label for="title" class="right inline">Dataset [.csv]</label>
+	  <label for="title" class="right inline">Data [.csv]</label>
 	</div>
 	<div class="small-10 columns">
 	  {% if dataseturl %}
@@ -84,7 +82,7 @@
           {% endfor %}
       {% endif %}
 	</div>
-</div>
+</div>-->
 
 
 <div class="row">
@@ -208,7 +206,7 @@
 
 
 
-<div class="row">
+<!--<div class="row">
 	<div class="small-2 columns">
 	  <label for="title" class="right inline">Category</label>
 	</div>
@@ -220,7 +218,8 @@
 	  <small class="error">{{ error }}</small>
       {% endfor %}
 	</div>
-</div>
+</div>-->
+
 <br>
 
 <div class="row">
@@ -242,4 +241,23 @@
 
 {% endblock %}
 
+{% block scripts %}
 
+
+Dropzone.options.datasetdropzone = {
+url: "/admin/dataset/upload/budget",
+maxFiles:1,
+init: function() {
+          this.on("maxfilesexceeded", function(file) {
+                this.removeAllFiles();
+                this.addFile(file);
+          });
+      },
+success: function( file, response ){
+        console.log(response.filename);
+        $("#content").val(response.filename);
+    }
+
+};
+
+{% endblock %}
