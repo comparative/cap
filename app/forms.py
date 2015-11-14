@@ -1,7 +1,7 @@
 from flask.ext.uploads import IMAGES
 from flask.ext.wtf import Form
 from flask.ext.wtf.file import FileField, FileAllowed
-from wtforms import StringField, BooleanField, PasswordField, IntegerField, SelectField
+from wtforms import StringField, BooleanField, PasswordField, IntegerField, SelectField, HiddenField
 from wtforms.validators import DataRequired, Length, NumberRange
 from wtforms.widgets import TextArea
 from wtforms.ext.sqlalchemy.orm import model_form
@@ -59,26 +59,23 @@ class DatasetForm(Form):
     description = StringField('content', validators=[DataRequired()],widget=TextArea())
     unit = StringField('unit')
     source = StringField('source')
-    content = FileField('content',validators=[FileAllowed(['csv'], 'Data must be formatted as .csv')])
+    #content = FileField('content',validators=[FileAllowed(['csv'], 'Data must be formatted as .csv')])
+    content = HiddenField("content")
     codebook = FileField('codebook',validators=[FileAllowed(['pdf'], 'Codebook must be formatted as .pdf')])
-    topics = FileField('topics',validators=[FileAllowed(['csv'], 'Data must be formatted as .csv')])
-    #content = FileField('content')
-    #codebook = FileField('codebook')
+    topics = FileField('topics',validators=[FileAllowed(['csv'], 'Topics must be formatted as .csv')])
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
     category = QuerySelectField(query_factory=categories_factory,allow_blank=True) 
     budgetcategory = QuerySelectField(query_factory=budgetcategories_factory,allow_blank=True) 
     aggregation_level = SelectField(u'Aggregation Level', choices=[('0', 'raw'), ('1', 'count'), ('2', 'percent')])
-    #aggregation_level = IntegerField('aggregation_level')
     
     def validate(self):
         rv = Form.validate(self)
-        if rv==False: return False
         if self.topicsfieldnames:
             required_fieldnames = ['majorfunction','subfunction','shortname','longname']
             for required_fieldname in required_fieldnames:
                 if required_fieldname not in self.topicsfieldnames:
                     self.topics.errors.append('The required column "' + required_fieldname + '" was not found in the data you uploaded.')
-        if len(self.topics.errors) > 0:
+        if len(self.topics.errors) > 0 or rv==False:
             return False
         return True
     

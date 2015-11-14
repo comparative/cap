@@ -36,24 +36,21 @@
 	      
       {% else %}
           
-          {% if content %}
+          {% if form.content.data %}
           
           <p>
-          {{ content }}
-          <br>
-	      <a href="{{ url_for('admin_dataset_item',slug=slug,id=id) }}">update</a>
+	      {{ form.content.data }}
           </p>
-          
-          <input type="hidden" name="content" id="content" value="{{ content }}">
           
           {% else %}
           
           <label class="error">
           <div id="datasetdropzone" class="dropzone" style="border: 1px solid black; color: black; margin-bottom: 20px; width: 200px; height: 200px; text-align: center;"></div>
           </label>
-          <input type="hidden" name="content" id="content" value="">
           
           {% endif %}
+          
+          {{ form.content }}
           
       {% endif %}
       
