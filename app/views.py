@@ -984,7 +984,21 @@ def admin_dataset_item(slug,id):
                 if fieldname.split('_')[0] == 'filter':
                     filters.append(fieldname)
             dataset.filters = filters
-            thedata = [ row for row in reader ]
+            thedata = []
+            for row in reader:
+                if 'count' in form.fieldnames:
+                    if row['count']:
+                        thedata.append(row)
+                elif 'amount' in form.fieldnames:
+                    if row['amount']:
+                        thedata.append(row)
+                elif 'percent' in form.fieldnames:
+                    if row['percent']:
+                        row['percent'] = float(row['percent'])
+                        thedata.append(row)
+                else:
+                    thedata.append(row)
+                    
             dataset.content = thedata
             dataset.ready = True
             newdata = True
@@ -1066,7 +1080,7 @@ def admin_dataset_item(slug,id):
             form.category.data = dataset.category
             form.budgetcategory.data = dataset.budgetcategory
             form.topics.data = dataset.topics
-            if dataset.budget != True:
+            if dataset.budget==False:
                 form.aggregation_level.data = str(dataset.aggregation_level)
             
     template = 'admin/budget_dataset_item.html' if dataset.budget else 'admin/dataset_item.html'
@@ -1186,7 +1200,8 @@ def api_budgetprojects():
             d.topics AS topics,
             d.short_display AS name,
             c.name AS country,
-            d.filters AS filters
+            d.filters AS filters,
+            d.unit AS unit
         FROM dataset d
         INNER JOIN country c ON d.country_id = c.id
         WHERE d.country_id = %(country_id)s 
@@ -1238,7 +1253,8 @@ def api_datasets(flag = None):
     d.category_id AS category,  
     d.short_display AS name,
     c.name AS country,
-    d.filters AS filters
+    d.filters AS filters,
+    d.unit AS unit
     FROM dataset d
     INNER JOIN country c ON d.country_id = c.id
     WHERE d.ready=TRUE
@@ -1289,15 +1305,25 @@ def api_instances(dataset,topic,year):
     cur.execute(sql,[dataset,topic,year])
     return dumps(cur.fetchall())
     
-@app.route('/api/measures/dataset/<dataset>/topic/<topic>')
-def api_measures(dataset,topic):
+@app.route('/api/measures/dataset/<dataset>/<flag>/<topic>')
+@app.route('/api/measures/dataset/<dataset>/<flag>/<topic>')
+def api_measures(dataset,flag,topic):
+    
+    if flag=='topic':
+        sub = False
+    elif flag=='subtopic':
+        sub = True
+    else:
+        abort(404)
+    
+    app.logger.debug(flag);
     
     # CHECK CACHE
-    cached_path = '/var/www/cap/datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
+    #cached_path = '/var/www/cap/datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
     #app.logger.debug(cached_path);
     
-    if (os.path.isfile(cached_path)):
-        return send_file(cached_path)
+    #if (os.path.isfile(cached_path)):
+    #    return send_file(cached_path)
     
     # NO CACHE, GO TO THE DB!!
     
@@ -1319,22 +1345,22 @@ def api_measures(dataset,topic):
         if (filterval != None):
             filter_predicates.append("datarow->>'" + filter + "'='" + filterval + "'")
     
-    topic_col = 'majortopic' if int(topic) < 100 else 'subtopic' 
+    topic_col = 'subtopic' if sub else 'majortopic'
     
     if r["aggregation_level"] != 2:
-    
-        if r["aggregation_level"] == 1:
         
+        if r["aggregation_level"] == 1:
+            
             if r["budget"]:
-                topic_col = 'majorfunction' if float(topic) % 10 == 0 else 'subfunction'
+                topic_col = 'subfunction' if sub else 'majorfunction'
                 count_col = 'amount'
             else:
                 count_col = 'count'
-        
+            
             # TOTALS ALL TOPICS
     
             sql = """
-            SELECT yt.year::int, SUM(yt.count::int) as total FROM (
+            SELECT yt.year::int, SUM(yt.count::float) as total FROM (
             select datarow->>'year' AS year, datarow->>'"""
         
             sql = sql + count_col
@@ -1346,10 +1372,6 @@ def api_measures(dataset,topic):
              ) s(datarow)
             WHERE 1=1"""
         
-            #if len(filter_predicates) > 0:
-            #    for pred in filter_predicates:
-            #        sql = sql + " AND " + pred 
-        
             sql = sql + """
             AND datarow->>'year' ~ '^[0-9]'
             AND datarow->>'year' != '0'
@@ -1357,8 +1379,6 @@ def api_measures(dataset,topic):
     
             GROUP BY yt.year  ORDER by yt.year
             """
-        
-            #app.logger.debug(sql)
         
             cur.execute(sql,[dataset])
             rows = cur.fetchall()
@@ -1379,7 +1399,7 @@ def api_measures(dataset,topic):
             # COUNT THIS TOPIC
     
             sql = """
-            SELECT yt.year::int, SUM(yt.count::int) as cnt FROM (
+            SELECT yt.year::int, SUM(yt.count::float) as cnt FROM (
             select datarow->>'year' AS year, datarow->>'"""
         
             sql = sql + count_col
@@ -1391,10 +1411,6 @@ def api_measures(dataset,topic):
              ) s(datarow)
             where datarow->>'""" + topic_col + "' = %s"
         
-            #if len(filter_predicates) > 0:
-            #    for pred in filter_predicates:
-            #        sql = sql + " AND " + pred 
-        
             sql = sql + """
             AND datarow->>'year' ~ '^[0-9]'
             AND datarow->>'year' != '0'
@@ -1402,7 +1418,7 @@ def api_measures(dataset,topic):
     
             GROUP BY yt.year  ORDER by yt.year
             """
-    
+            
             cur.execute(sql,[dataset,topic])
             rows = cur.fetchall()
     
@@ -1415,8 +1431,8 @@ def api_measures(dataset,topic):
                     count.append(0)
             data['count'] = count
         
-        else:   
-        
+        else:
+            
             # TOTALS ALL TOPICS
     
             sql = """
@@ -1520,38 +1536,32 @@ def api_measures(dataset,topic):
         # OUR DATA IS STRAIGHT UP PERCENT TOTAL -- no other measures avail!!
     
         sql = """
-        SELECT yt.year::int, yt.percent::float as percent FROM (
-        select datarow->>'year' AS year, datarow->>'percent' as percent
-        FROM (
-          select jsonb_array_elements(content)
-          from dataset WHERE dataset.id = %s
-         ) s(datarow)
+        SELECT yc.year::int, yc.percent::text::float FROM (
+        select datarow->>'year' AS year, datarow->'percent' as percent
+        from (
+        select jsonb_array_elements(content)
+        from dataset WHERE dataset.id = %s
+        ) s(datarow)
         where datarow->>'""" + topic_col + "' = %s"
-
-        #if len(filter_predicates) > 0:
-        #    for pred in filter_predicates:
-        #        sql = sql + " AND " + pred 
-
+        
         sql = sql + """
         AND datarow->>'year' ~ '^[0-9]'
         AND datarow->>'year' != '0'
-        ) yt
-
-        GROUP BY yt.year  ORDER by yt.year
-        """
+        ) AS yc ORDER by year
+            """
 
         cur.execute(sql,[dataset,topic])
         rows = cur.fetchall()
-
-        percent_total = []
-        for year in years:
-            found = next((item for item in rows if item['year'] == year), None)
-            if found is not None:
-                percent_total.append(found['percent'])
-            #else:
-            #    count.append(0)
-        data['percent_total'] = percent_total
         
+        years = []
+        for i, year in enumerate(d['year'] for d in rows): 
+            years.append(year)
+        data['years'] = years
+        
+        percent_total = []
+        for i, percent in enumerate(d['percent'] for d in rows): 
+            percent_total.append(float("{0:.3f}".format(100 * percent)))    
+        data['percent_total'] = percent_total
     
     # WRITE CACHE
     #with open(cached_path, 'w') as outfile:

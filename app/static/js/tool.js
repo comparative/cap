@@ -1,10 +1,11 @@
 //////////////////////////////////// CLASS-LIKE THANGS
 
-function Series (dataset,topic,name,filters) {
+function Series (dataset,topic,name,filters,sub,unit) {
 
     this.dataset = dataset;
     this.topic = topic;
     this.name = name;
+    this.sub = sub;
     this.budget = false;
     
     if (filters) {
@@ -18,16 +19,18 @@ function Series (dataset,topic,name,filters) {
     this.measure = "count";
     this.type = "line";
     this.yaxis = 0;
+    this.xaxis = 0;
     this.measure_on_multiple_axes = false;
     
     this.color = undefined;
+    this.unit = unit;
     
     this.alldata = [];
     this.chartdata = [];
     this.alldata.years = [];
     this.alldata.count = [];
     this.alldata.percent_total = [];
-    this.alldata.percent_change = [];
+    this.alldata.percent_change = []; 
     
 }
 
@@ -96,6 +99,11 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         {"num":0,"display":"primary"},
         {"num":1,"display":"secondary"},
         {"num":2,"display":"tertiary"}
+    ];
+    
+     $scope.xaxischoices = [
+        {"num":0,"display":"Year"},
+        {"num":1,"display":"US Congressional Session"}
     ];
     
     $scope.export_options = [
@@ -220,12 +228,21 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                         if (parentText.length) {
                             selText = parentText + ': ' + selText;
                         }
-                        var subtopic = $this.attr('subtopic');
+                        
+                        if ( $this.attr('topic') ) {
+                            topic = $this.attr('topic');
+                            sub = false;
+                        } else if ( $this.attr('subtopic') ) {
+                            topic = $this.attr('subtopic');
+                            sub = true;
+                        }
+                        
+                        
                         if (country == dataset.country) {
                             
                             // ADD TO SEARCH RESULTS
                             dataset_name = dataset.country + ': ' + dataset.name + ' #' + selText;
-                            var searchResult = new Series(dataset.id,subtopic,dataset_name,JSON.parse(dataset.filters));
+                            var searchResult = new Series(dataset.id,topic,dataset_name,JSON.parse(dataset.filters),sub,dataset.unit);
                             $scope.results.push(searchResult);
                                            
                         }
@@ -290,7 +307,24 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         for (i = 0; i < data.length; ++i) {
             for (j = 0; j < data[i].datasets.length; ++j) {
-                data[i].datasets[j].topics = JSON.parse(data[i].datasets[j].topics);
+                
+                console.log('bleh');
+                console.log(data[i].datasets[j].topics);
+                
+                if (data[i].datasets[j].topics==null) { 
+                 
+                  //  console.log('woo');
+                  //  console.log($scope.topics);
+                  //  data[i].datasets[j].topics = $scope.topics;
+                    
+                    
+                    
+                } else {
+                
+                    console.log('wee');
+                
+                    data[i].datasets[j].topics = JSON.parse(data[i].datasets[j].topics);
+                }
             }
         }
         
@@ -338,8 +372,11 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
 
     $scope.budgetResults = [];
 
-    $scope.doBudgetResults = function(dataset,topic,name) { 
+    $scope.doBudgetResults = function(dataset,topic,name,sub) { 
         
+        console.log('------');
+        console.log(dataset);
+          
         var found_it = false;
         /*
         var idx;
@@ -367,7 +404,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         // is newly selected
         if (found_it==false) {            
           dataset_name = dataset.country + ': ' + dataset.name + ' #' + name;
-          var obj = new Series(dataset.id,topic.id,dataset_name,JSON.parse(dataset.filters));
+          var obj = new Series(dataset.id,topic.id,dataset_name,JSON.parse(dataset.filters),sub,dataset.unit);
           obj.budget = true;
           $scope.addToChart(obj);
           //$scope.budgetResults.push(obj);
@@ -442,6 +479,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
     $scope.addToChart = function(result) {
     	
+    	//console.log(result);
+    	
     	if ($scope.chart.scatter) {
     	
     	    alert('Scatter plot chart type requires exactly two series.');
@@ -475,7 +514,11 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
             $scope.chart.series.push(result);
             
-            var url = baseUrl + '/api/measures/dataset/' + result.dataset.toString() + '/topic/' + result.topic.toString();
+            if (result.sub) {
+                var url = baseUrl + '/api/measures/dataset/' + result.dataset + '/subtopic/' + result.topic;
+            } else {
+                var url = baseUrl + '/api/measures/dataset/' + result.dataset + '/topic/' + result.topic;
+            }
             
             //console.log(url);
             
@@ -637,7 +680,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             
             } else {
         
-                options = angular.copy(defaultOptions);
+                options = angular.copy(defaultOptions);                
              
                 // GET Y AXES
         
@@ -646,7 +689,12 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 // if there is not a y-axis for this measure, add one!!
         
                 angular.forEach($scope.chart.series, function (series, index) {
-            
+                    
+                    // HAAAAACK
+                    if (series.dataset == 115 && series.measure == 'count') {
+                        series.measure = 'percent_total';
+                    }
+                    
                     bExists = false;
                     angular.forEach($scope.chart.yaxes, function (ax, i) {
                         if (series.measure == ax.measure) {
@@ -655,7 +703,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     });
             
                     if (!bExists) {
-                        $scope.chart.yaxes.push({"measure":series.measure});
+                    
+                        var label = (series.measure == 'count' && series.unit) ? series.unit : series.measure;
+                        $scope.chart.yaxes.push({"measure":series.measure,"label":label});
                         //series.yaxis = index;
                     }
             
@@ -667,6 +717,10 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
                 angular.forEach($scope.chart.series, function (series, index) {
             
+                    //console.log(series.alldata);
+                
+
+                
                     // sort into yAxis by measure
                     for (var i = 0; i < $scope.chart.yaxes.length; i++) {
                        ax = $scope.chart.yaxes[i];
@@ -730,7 +784,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
 
                     axis = { 
                         title: {
-                            text: ax.measure.split('_').join(' ').capitalizeFirstLetter()
+                            text: ax.label.split('_').join(' ').capitalizeFirstLetter()
                         },
                         plotLines: [{
                             value: 0,
@@ -804,7 +858,14 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         });
 		
 				
-        var url = baseUrl + '/api/measures/dataset/' + series.dataset + '/topic/' + series.topic;
+        //var url = baseUrl + '/api/measures/dataset/' + series.dataset + '/topic/' + series.topic;
+        
+        if (series.sub) {
+            var url = baseUrl + '/api/measures/dataset/' + series.dataset + '/subtopic/' + series.topic;
+        } else {
+            var url = baseUrl + '/api/measures/dataset/' + series.dataset + '/topic/' + series.topic;
+        }
+        
     
         if (params.length > 0) {
             url = url + "?" + params.join("&");
