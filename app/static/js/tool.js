@@ -48,12 +48,13 @@ function Chart() {
     this.series = [];
     this.yearFrom = 0;
     this.yearTo = 0;
-    this.yearsAvailable = [];
+    this.timePeriodsAvailable = [];
     this.stacked = false;
     this.scatter = false;
     this.chartType = "line";
     this.exportOption = 0;
     this.yaxes = [];
+    this.timeSeries = "years";
     
 }
 
@@ -100,12 +101,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         {"num":1,"display":"secondary"},
         {"num":2,"display":"tertiary"}
     ];
-    
-     $scope.xaxischoices = [
-        {"num":0,"display":"Year"},
-        {"num":1,"display":"US Congressional Session"}
-    ];
-    
+        
     $scope.export_options = [
         {"num":0,"display":""},
         {"num":1,"display":"Download Image"},
@@ -120,7 +116,12 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     $scope.recent = [];
     
     $scope.preserve_date_range = false;
-
+    
+    /* 
+    if (!$scope.chart.timeSeries) {
+        $scope.chart.timeSeries = "years";
+    }
+    */
 
     // LOAD SAVED CHARTS FROM DB BY USER COOKIE VAL
 
@@ -307,22 +308,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         for (i = 0; i < data.length; ++i) {
             for (j = 0; j < data[i].datasets.length; ++j) {
-                
-                console.log('bleh');
-                console.log(data[i].datasets[j].topics);
-                
-                if (data[i].datasets[j].topics==null) { 
-                 
-                  //  console.log('woo');
-                  //  console.log($scope.topics);
-                  //  data[i].datasets[j].topics = $scope.topics;
-                    
-                    
-                    
-                } else {
-                
-                    console.log('wee');
-                
+                if (data[i].datasets[j].topics) { 
                     data[i].datasets[j].topics = JSON.parse(data[i].datasets[j].topics);
                 }
             }
@@ -373,10 +359,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     $scope.budgetResults = [];
 
     $scope.doBudgetResults = function(dataset,topic,name,sub) { 
-        
-        console.log('------');
-        console.log(dataset);
-          
+                  
         var found_it = false;
         /*
         var idx;
@@ -422,9 +405,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             angular.copy($scope.chart.series,iterator);
             
             for (var i = 0, len = iterator.length; i < len; i++) {
-                
-                //console.log(iterator[i].name.split(':')[0]);
-                
+                                
                 if ( (iterator[i].name.split(':')[0] == country.name) &&  (iterator[i].budget==true) ) {
                 
                     position = $scope.budgetTopicFoundInChart(iterator[i].dataset,iterator[i].topic);
@@ -478,8 +459,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     // ADD TO CHART
         
     $scope.addToChart = function(result) {
-    	
-    	//console.log(result);
     	
     	if ($scope.chart.scatter) {
     	
@@ -593,11 +572,19 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
 
             chartMax = 0;
             chartMin = 9999;
-
-            angular.forEach($scope.chart.series, function (series, index) {
-
-                thisMax = Math.max.apply(null, series.alldata.years);
-                thisMin = Math.min.apply(null, series.alldata.years);
+            
+            
+            
+            
+            
+            
+            
+            angular.forEach($scope.chart.series, function (series, index) {            
+                
+                timePeriods = $scope.chart.timeSeries == "congresses" ? $scope.years_to_congresses(series.alldata.years) : series.alldata.years;
+                
+                thisMax = Math.max.apply(null, timePeriods);
+                thisMin = Math.min.apply(null, timePeriods);
 
                 chartMax = thisMax > chartMax ? thisMax : chartMax
                 chartMin = thisMin < chartMin ? thisMin : chartMin
@@ -605,11 +592,11 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             });
 
             
-            var yearsAvailable = [];
+            var timePeriodsAvailable = [];
             for (var i = chartMin; i <= chartMax; i++) {
-                yearsAvailable.push(i);
+                timePeriodsAvailable.push(i);
             }
-            $scope.chart.yearsAvailable = yearsAvailable;
+            $scope.chart.timePeriodsAvailable = timePeriodsAvailable;
 
 
             // set years selected to default if blank
@@ -738,14 +725,17 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     
                     
                     var chartdata = [];
+                    var allTimePeriods = $scope.chart.timeSeries == "congresses" ? $scope.years_to_congresses(series.alldata['years']) : series.alldata['years'];
+                    var dataThisMeasure = $scope.chart.timeSeries == "congresses" ? $scope.aggregate_by_congress(series.alldata[series.measure]) : series.alldata[series.measure];
+                    
                     for (var yr = $scope.chart.yearFrom; yr <= $scope.chart.yearTo; yr++) {
                         
-                        idx = series.alldata['years'].indexOf(yr);
+                        idx = allTimePeriods.indexOf(yr);
                            
                         if (idx == -1) {
-                            chartdata.push(null)
+                            chartdata.push(null);
                         } else {
-                            chartdata.push(series.alldata[series.measure][idx]);
+                            chartdata.push(dataThisMeasure[idx]);
                         }
                         
                     }
@@ -776,7 +766,16 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 // CONSTRUCT X AXIS
         
                 options.xAxis[0].categories = $scope.chart.yearsSelected;
-     
+                
+                if ($scope.chart.timeSeries == "congresses") {
+                     angular.forEach(options.xAxis[0].categories, function (session,idx) {
+                        var firstYear = ((session - 79) * 2) + 1945;
+                        var secondYearAbbr = firstYear < 1999 ? firstYear - 1899 : firstYear - 1999;
+                        if (secondYearAbbr < 10) secondYearAbbr = '0' + secondYearAbbr;
+                        options.xAxis[0].categories[idx] = firstYear + '-' + secondYearAbbr;
+                     });
+                     options.xAxis[0].labels.step = 1;
+                }
      
                 // CONSTRUCT Y AXES
     
@@ -831,9 +830,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             
         }
         
-        //console.log($scope.chart);
-        
         options.CAP_chart = $scope.chart;
+        
         return options;
         
     }
@@ -1053,7 +1051,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     $scope.saveChart = function() {
         
         strOptions = JSON.stringify(options);
-        //console.log(options);
             
         // SAVE CHART
         resp = $.ajax({
@@ -1342,6 +1339,51 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         return rgba_que[0];
                 
     }
+    
+    
+    
+    
+    $scope.aggregate_by_congress = function(data) {
+        
+        var new_data = [];
+        for (var i = 0; i < data.length; i++) {
+            if (i % 2 == 1) {
+                
+                if (data[i+1]) {
+                    var val = (data[i] + data[i+1]) / 2;
+                    new_data.push(val);
+                } else {
+                    new_data.push(null);
+                }
+
+            }
+        }
+        
+        return new_data;
+    
+    }
+    
+    
+    $scope.years_to_congresses = function(data) {
+        
+        var new_data = [];
+        for (var i = 0; i < data.length; i++) {
+            
+            var val = data[i] - Math.round(i/2) - 1866;
+            
+            if (i % 2 == 1) {
+                
+                new_data.push(val);
+            
+            }
+            
+        }   
+            
+        return new_data;
+    
+    }
+    
+    
     
     $scope.openDrilldown = function(f,d,t,y) {
         

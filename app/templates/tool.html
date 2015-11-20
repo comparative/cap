@@ -119,8 +119,20 @@
 					
 					
 				   <label><h5>Dates</h5></label>
-                   <select ng-change="changeYears()" ng-model="chart.yearFrom" ng-options="year for year in chart.yearsAvailable | filter: lessThan(chart.yearTo)" class="from years" name="years_from" style="display: inline-block;"></select>
-                   <select ng-change="changeYears()" ng-model="chart.yearTo" ng-options="year for year in chart.yearsAvailable | filter: greaterThan(chart.yearFrom)" class="to years" name="years_to" style="display: inline-block;"></select>
+				   
+				   
+                    
+                    <input type="radio" ng-model="chart.timeSeries" ng-change="drawChart()" value="years">
+                    Year
+                    &nbsp;&nbsp;
+                    <input type="radio" ng-model="chart.timeSeries" ng-change="drawChart()" value="congresses">
+                    US Congress
+                    <br/>
+				   
+				   
+				   
+                   <select ng-change="changeYears()" ng-model="chart.yearFrom" ng-options="year for year in chart.timePeriodsAvailable | filter: lessThan(chart.yearTo)" class="from years" name="years_from" style="display: inline-block;"></select>
+                   <select ng-change="changeYears()" ng-model="chart.yearTo" ng-options="year for year in chart.timePeriodsAvailable | filter: greaterThan(chart.yearFrom)" class="to years" name="years_to" style="display: inline-block;"></select>
                     
 					
 					<!--<select ng-change="chartExport()" >
@@ -424,9 +436,7 @@
             <select ng-disabled="chart.stacked" ng-model="series.type" ng-options="type.type as type.display for type in chart_types"></select>
             <label>Y-axis: </label>
             <select ng-disabled="chart.stacked" ng-change="checkAxes(series)" ng-model="series.yaxis" ng-options="axis.num as axis.display for axis in yaxischoices | filter:choiceIsVisible(series)"></select>
-            <label>X-axis: </label>
-            <select ng-disabled="chart.stacked" ng-model="series.xaxis" ng-options="axis.num as axis.display for axis in xaxischoices"></select>
-
+            
         </div>
         
         <div style="float:left">
