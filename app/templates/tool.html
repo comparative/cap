@@ -130,9 +130,8 @@
                     <br/>
 				   
 				   
-				   
-                   <select ng-change="changeYears()" ng-model="chart.yearFrom" ng-options="year for year in chart.timePeriodsAvailable | filter: lessThan(chart.yearTo)" class="from years" name="years_from" style="display: inline-block;"></select>
-                   <select ng-change="changeYears()" ng-model="chart.yearTo" ng-options="year for year in chart.timePeriodsAvailable | filter: greaterThan(chart.yearFrom)" class="to years" name="years_to" style="display: inline-block;"></select>
+                   <select ng-change="changeYears()" ng-model="chart.yearFrom" ng-options="item.value as item.display for item in chart.timePeriodsAvailable | filter: lessThan(chart.yearTo)" class="from years" name="years_from" style="display: inline-block;"></select>
+                   <select ng-change="changeYears()" ng-model="chart.yearTo" ng-options="item.value as item.display for item in chart.timePeriodsAvailable | filter: greaterThan(chart.yearFrom)" class="to years" name="years_to" style="display: inline-block;"></select>
                     
 					
 					<!--<select ng-change="chartExport()" >
@@ -266,9 +265,10 @@
     <div id="budget_projects" class="picker" style="display:block">
     
     <div ng-repeat="country in budgetProjects">
-    <input ng-checked="budgetProjectFoundInChart(country) || country.checked" ng-model="country.checked" ng-click="sayHowdy(country,budgetProjectFoundInChart(country))" type="checkbox">
+    <input ng-checked="budgetProjectFoundInChart(country) || country.checked" ng-model="country.checked" ng-click="clickBudgetProject(country,budgetProjectFoundInChart(country))" type="checkbox">
     <label>{@country.name | limitTo : 27@}</label>
     </div>
+    
     </div>
 
     
@@ -296,7 +296,8 @@
             <input ng-click="topic.isOpen = ! topic.isOpen" type="checkbox" id="{@dataset.id@}t{@topic.id@}"/>
                 <ol>
                     <li ng-repeat="subtopic in topic.subtopics">
-                    <label class="menu_label" for="{@dataset.id@}s{@subtopic.id@}"><input type="checkbox" class="choose_budget_topic" subtopic="{@subtopic.id@}" ng-click="doBudgetResults(dataset,subtopic,topic.name + ': ' + subtopic.name,true)"><span>{@subtopic.name | limitTo:33 @}</span></label>
+                    <label class="menu_label" for="{@dataset.id@}s{@subtopic.id@}">
+                    <input type="checkbox" class="choose_budget_topic" subtopic="{@subtopic.id@}" ng-checked="budgetTopicFoundInChart(dataset.id,subtopic.id) > -1" ng-click="doBudgetResults(dataset,subtopic,topic.name + ': ' + subtopic.name,true)"><span>{@subtopic.name | limitTo:33 @}</span></label>
                     <input type="checkbox" id="{@dataset.id@}s{@subtopic.id@}"/>
                     </li>
                 </ol>
