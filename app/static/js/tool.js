@@ -603,7 +603,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 timePeriodsAvailable.push(obj);
             }
             
-            console.log(timePeriodsAvailable);
+            //console.log(timePeriodsAvailable);
             
             $scope.chart.timePeriodsAvailable = timePeriodsAvailable;
 
@@ -684,37 +684,17 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
                 // if there is not a y-axis for this measure, add one!!
                 
-                var yAxisUnits = [];
-                
                 angular.forEach($scope.chart.series, function (series, index) {
-                    
-                    if (series.unit) {
-                        if (yAxisUnits.indexOf(series.unit) == -1) {
-                            //console.log(series.unit);
-                            yAxisUnits.push(series.unit);
-                        }
-                    }
-                    
-                    // HAAAAACK
-                    if (series.dataset == 115 && series.measure == 'count') {
-                        series.measure = 'percent_total';
-                    }
-                    
+
                     bExists = false;
                     angular.forEach($scope.chart.yaxes, function (ax, i) {
                         if (series.measure == ax.measure) {
-                            if (series.measure == 'count' && series.unit) {
-                                $scope.chart.yaxes[i].label = yAxisUnits.join(', ');
-                            }
                             bExists = true;
                         }
                     });
             
                     if (!bExists) {
-                    
-                        var label = (series.measure == 'count' && series.unit) ? series.unit : series.measure;
-                        $scope.chart.yaxes.push({"measure":series.measure,"label":label});
-                        //series.yaxis = index;
+                        $scope.chart.yaxes.push({"measure":series.measure,"label":series.unit});
                     }
 
                 });
@@ -723,10 +703,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 //SERIES TO OPTIONS
         
                 angular.forEach($scope.chart.series, function (series, index) {
-            
-                    //console.log(series.alldata);
-                
-
                 
                     // sort into yAxis by measure
                     for (var i = 0; i < $scope.chart.yaxes.length; i++) {
@@ -739,7 +715,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             
                     // in case series is manually assigned to additional axis with identical measure
                     if (!$scope.chart.yaxes[series.yaxis]) {
-                        $scope.chart.yaxes.push({"measure":series.measure});
+                        $scope.chart.yaxes.push({"measure":series.measure,"label":series.unit});
                         series.yaxis = $scope.chart.yaxes.length - 1;
                     }
                     
@@ -747,12 +723,10 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     var chartdata = [];
                     var allTimePeriods = $scope.chart.timeSeries == "congresses" ? $scope.years_to_congresses(series.alldata['years']) : series.alldata['years'];
                     
-                    
-                    
-                    
+
                     if ($scope.chart.timeSeries == "congresses") {
                     
-                        var dataThisMeasure = series.measure == "percent_change" ? $scope.percent_change_by_congress(series.alldata['count']) : $scope.aggregate_by_congress(series.alldata[series.measure]);
+                        var dataThisMeasure = series.measure == "percent_change" ? $scope.percent_change_by_congress(series.alldata['count'],series.alldata['years'][0] % 2) : $scope.aggregate_by_congress(series.alldata[series.measure],series.alldata['years'][0] % 2);
                     
                     } else {
                         
@@ -815,7 +789,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
 
                     axis = { 
                         title: {
-                            text: ax.label.split('_').join(' ').capitalizeFirstLetter()
+                            text: $scope.getAxisTitle(index)
                         },
                         plotLines: [{
                             value: 0,
@@ -926,6 +900,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         burnThumb = typeof burnThumb !== 'undefined' ? burnThumb : true;
         
         options = $scope.chartToOptions();
+        
+        //console.log(options);
         
         theChart.destroy();
 		theChart = new Highcharts.Chart(options);
@@ -1217,6 +1193,18 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
          
     }
     
+    $scope.getAxisTitle = function(axIndex) {
+        
+        var unitLabels = [];
+        angular.forEach($scope.chart.series, function (s) {
+            if (s.yaxis == axIndex) {
+                unitLabels.push(s.unit);
+            }
+        });
+        
+        return unitLabels.join(', ');
+        
+    }
     
     $scope.chartExport = function(option) {
         
@@ -1386,33 +1374,38 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         var new_data = [];
         for (var i = 0; i < data.length; i++) {
             
-           // 1947->80
-            
             var val = Math.round((data[i] - 1787) / 2);
             
-            if ( (i % 2 == 1) && (i < data.length - 1) ) {
+            if ( (data[i] % 2 == 1) ) {
                 
-                new_data.push(val);
+                if (typeof data[i + 1] === 'undefined') {
+                
+                } else {
+
+                    new_data.push(val);
+                
+                }
             
             }
             
-        }   
-        
-        console.log(new_data);
+        }
         
         return new_data;
     
     }
     
-    $scope.aggregate_by_congress = function(data) {
-        
+    $scope.aggregate_by_congress = function(data,starts_odd) {
+            
         var new_data = [];
         
         for (var i = 0; i < data.length; i++) {
-            if (i % 2 == 1) {
+        
+            if (i % 2 == starts_odd) {
                 
-                if (data[i+1] != null) {
-                    var val = (data[i] + data[i+1]);
+                idx = i - starts_odd;
+                
+                if (data[idx+1] != null) {
+                    var val = (data[idx] + data[idx+1]);
                     new_data.push(val);
                 } else {
                     new_data.push(null);
@@ -1425,9 +1418,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     }
     
-    $scope.percent_change_by_congress = function(preAggCount) {
+    $scope.percent_change_by_congress = function(preAggCount,starts_odd) {
         
-        count = $scope.aggregate_by_congress(preAggCount);
+        count = $scope.aggregate_by_congress(preAggCount,starts_odd);
         
         percent_change = [];
         

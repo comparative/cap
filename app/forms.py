@@ -57,7 +57,7 @@ class DatasetForm(Form):
     display = StringField('display', validators=[DataRequired()])
     short_display = StringField('short_display', validators=[DataRequired()])
     description = StringField('content', validators=[DataRequired()],widget=TextArea())
-    unit = StringField('unit')
+    unit = StringField('unit',validators=[DataRequired()])
     source = StringField('source')
     #content = FileField('content',validators=[FileAllowed(['csv'], 'Data must be formatted as .csv')])
     content = HiddenField("content")
