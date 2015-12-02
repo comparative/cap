@@ -37,7 +37,7 @@ class NewsForm(Form):
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
 
 class ResearchForm(Form):
-    title = StringField('title', validators=[DataRequired()])
+    title = StringField('title')
     file = FileField('file',validators=[FileAllowed(['pdf'], 'Papers must be formatted as .pdf')])
     image = FileField('image')
     body = StringField('content', validators=[Length(min=0, max=9000)],widget=TextArea()) 
@@ -92,6 +92,7 @@ class CountryForm(Form):
     short_name = StringField('short_name', validators=[])
     principal = StringField('principal')
     location = StringField('location')
+    email = StringField('email')
     image = FileField('image',validators=[FileAllowed(IMAGES, 'Please choose an image file.')])
     heading = StringField('heading', validators=[DataRequired()])
     about = StringField('content', validators=[DataRequired()],widget=TextArea())

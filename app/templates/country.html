@@ -272,6 +272,7 @@
                                 <p>
                                 {% if country.principal %}<strong>Principal Investigator:</strong>&nbsp;{{ country.principal }}<br/>{% endif %}
                                 {% if country.location %}<strong>Location:</strong>&nbsp;{{ country.location }}<br/>{% endif %}
+                                {% if country.email %}<strong>Email:</strong>&nbsp;<a href="mailto:{{ country.email }}">{{ country.email }}</a><br/>{% endif %}
                                 {% if country.stats_observations %}
                                 <strong>Downloadable Data Series:</strong>&nbsp;{{ country.stats_series }}<br/>
                                 <strong>Time Span:</strong>&nbsp;{{ country.stats_year_from }}-{{ country.stats_year_to }}<br/>

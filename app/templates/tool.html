@@ -206,7 +206,7 @@
     <h5 class="picker-label clickable">Select projects<span ng-show="countryCount() > 0" class="selection_count">{@countryCount()@}</span></h5>
     <div id="projects" class="picker" style="display:block">
     <div ng-repeat="country in countries">
-    <input id="{@country.slug@}" ng-attr-country="{@country.name@}" type="checkbox" ng-click="doFacets()">
+    <input id="{@country.slug@}" ng-attr-country="{@country.short_name@}" type="checkbox" ng-click="doFacets()">
     <label>{@country.name | limitTo : 27@}</label>
     </div>
     </div>
@@ -432,7 +432,7 @@
             <h6>{@series.name@}</h6>
             
             <label> Measure: </label>
-            <select ng-disabled="chart.stacked" ng-model="series.measure" ng-options="measure.measure as measure.display for measure in measures"></select>
+            <select ng-disabled="chart.stacked" ng-model="series.measure" ng-options="measure as measure.split('_').join(' ').capitalizeFirstLetter() for measure in series.measures"></select>
             <label>Type:</label>
             <select ng-disabled="chart.stacked" ng-model="series.type" ng-options="type.type as type.display for type in chart_types"></select>
             <label>Y-axis: </label>
@@ -662,7 +662,8 @@ var defaultOptions = {
     tooltip: {
     
         enabled: true,
-
+        hideDelay: 0,
+        followPointer: false,
         formatter: tooltipFormatter
         
     },

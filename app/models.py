@@ -72,6 +72,7 @@ class Country(db.Model):
     short_name = db.Column(db.String(80))
     filename = db.Column(db.String(200))
     principal = db.Column(db.String(200))
+    email = db.Column(db.String(200))
     location = db.Column(db.String(200))
     heading = db.Column(db.String(80))
     about = db.Column(db.String(9000))

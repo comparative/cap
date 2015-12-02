@@ -1,12 +1,12 @@
 //////////////////////////////////// CLASS-LIKE THANGS
 
-function Series (dataset,topic,name,filters,sub,unit) {
+function Series (dataset,topic,name,filters,sub,unit,aggregation_level,budget) {
 
     this.dataset = dataset;
     this.topic = topic;
     this.name = name;
     this.sub = sub;
-    this.budget = false;
+    this.budget = budget;
     
     if (filters) {
         this.filters = [];
@@ -16,7 +16,7 @@ function Series (dataset,topic,name,filters,sub,unit) {
         }
     }
     
-    this.measure = "count";
+    
     this.type = "line";
     this.yaxis = 0;
     this.xaxis = 0;
@@ -25,12 +25,49 @@ function Series (dataset,topic,name,filters,sub,unit) {
     this.color = undefined;
     this.unit = unit;
     
-    this.alldata = [];
+    this.measures = [];
+    
+    if (budget) {
+        
+        this.measures.push('amount');
+        this.measures.push('percent_total');
+        this.measures.push('percent_change');
+        this.measure = 'amount';
+    
+    } else if (aggregation_level == 2) {
+        
+        this.measures.push('percent_total');
+        this.measure = 'percent_total';
+        
+    } else {
+        
+        this.measures.push('count');
+        this.measures.push('percent_total');
+        this.measures.push('percent_change');
+        this.measure = 'count';
+    
+    } 
+    
+   
+    //this.measure = "count";
+    
+    
     this.chartdata = [];
+    
+    this.alldata = [];
     this.alldata.years = [];
-    this.alldata.count = [];
-    this.alldata.percent_total = [];
-    this.alldata.percent_change = []; 
+    
+    
+    for (var i = 0; i < this.measures.length; i++) {
+        
+        this.alldata[this.measures[i]] = [];
+    
+    }
+    
+    
+    //this.alldata.count = [];
+    //this.alldata.percent_total = [];
+    //this.alldata.percent_change = []; 
     
 }
 
@@ -76,11 +113,13 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     // INIT VARS
     
+    /*
     $scope.measures = [
         {"measure":"count","display":"Count"},
         {"measure":"percent_total","display":"Percent Total"},
         {"measure":"percent_change","display":"Percent Change"},
     ];
+    */
     
     $scope.chart_types = [
         {"type":"line","display":"Line"},
@@ -104,10 +143,13 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
     $scope.export_options = [
         {"num":0,"display":""},
-        {"num":1,"display":"Download Image"},
-        {"num":2,"display":"Copy Image URL"},
-        {"num":3,"display":"Copy Tool URL"},
-        {"num":4,"display":"Copy Embed Code"}
+        {"num":1,"display":"Download PNG"},
+        {"num":2,"display":"Download JPEG"},
+        {"num":3,"display":"Download SVG"},
+        {"num":4,"display":"Download PDF"},
+        {"num":5,"display":"Copy Image URL"},
+        {"num":6,"display":"Copy Tool URL"},
+        {"num":7,"display":"Copy Embed Code"}
     ];
     
     
@@ -241,9 +283,11 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                         
                         if (country == dataset.country) {
                             
+                            console.log(dataset.aggregation_level);
+                            
                             // ADD TO SEARCH RESULTS
                             dataset_name = dataset.country + ': ' + dataset.name + ' #' + selText;
-                            var searchResult = new Series(dataset.id,topic,dataset_name,JSON.parse(dataset.filters),sub,dataset.unit);
+                            var searchResult = new Series(dataset.id,topic,dataset_name,JSON.parse(dataset.filters),sub,dataset.unit,dataset.aggregation_level,false);
                             $scope.results.push(searchResult);
                                            
                         }
@@ -387,8 +431,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         // is newly selected
         if (found_it==false) {            
           dataset_name = dataset.country + ': ' + dataset.name + ' #' + name;
-          var obj = new Series(dataset.id,topic.id,dataset_name,JSON.parse(dataset.filters),sub,dataset.unit);
-          obj.budget = true;
+          var obj = new Series(dataset.id,topic.id,dataset_name,JSON.parse(dataset.filters),sub,dataset.unit,1,true);
+          //obj.budget = true;
           $scope.addToChart(obj);
           //$scope.budgetResults.push(obj);
         }
@@ -594,7 +638,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 if ($scope.chart.timeSeries == "congresses") {
                     var firstYear = ( i * 2 ) + 1787;
                     var secondYearAbbr = firstYear < 1999 ? firstYear - 1899 : firstYear - 1999;
-                   if (secondYearAbbr < 10) secondYearAbbr = '0' + secondYearAbbr;
+                    if (secondYearAbbr < 10) secondYearAbbr = '0' + secondYearAbbr;
                     obj['display'] = firstYear + '-' + secondYearAbbr;     
                 } else {
                     obj['display'] = i;
@@ -694,7 +738,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     });
             
                     if (!bExists) {
-                        $scope.chart.yaxes.push({"measure":series.measure,"label":series.unit});
+                        var label = series.unit;
+                        $scope.chart.yaxes.push({"measure":series.measure,"label":label});
                     }
 
                 });
@@ -762,6 +807,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                         data: chartdata,
                         color: hex_colors[rgba_colors.indexOf(series.color)],
                         yAxis: series.yaxis,
+                        unit: series.unit
                     }
 
                     options.series.push(s);
@@ -1197,7 +1243,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         var unitLabels = [];
         angular.forEach($scope.chart.series, function (s) {
-            if (s.yaxis == axIndex) {
+            if ( (s.yaxis == axIndex) && (unitLabels.indexOf(s.unit) == -1) ) {
                 unitLabels.push(s.unit);
             }
         });
@@ -1214,10 +1260,10 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
         switch(option) {
 
-            case 1:
+            case 1: //PNG
                 theChart.exportChart(
                     {
-                    type: 'img/png',
+                    type: 'image/png',
                     filename: $scope.chart.slug,
                     sourceWidth: 960,
                     },
@@ -1242,18 +1288,105 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     }
                 );
                 break;
-  
-            case 2:
+            
+            case 2: //JPEG
+                theChart.exportChart(
+                    {
+                    type: 'image/jpeg',
+                    filename: $scope.chart.slug,
+                    sourceWidth: 960,
+                    },
+                
+                    {
+                    /*legend:{
+                        enabled: true,
+                        align: 'left',
+                        verticalAlign: 'top',
+                        floating: true 
+                    },*/
+                    yAxis: [{
+                    gridLineWidth: 0,
+                    minorGridLineWidth: 0,
+                    labels: {
+                        enabled: false
+                    },
+                    title: {
+                        text: $scope.chart.series[0].measure.split('_').join(' ').capitalizeFirstLetter()
+                    }
+                    }]
+                    }
+                );
+                break;
+            
+            case 3: //SVG
+                theChart.exportChart(
+                    {
+                    type: 'image/svg+xml',
+                    filename: $scope.chart.slug,
+                    sourceWidth: 960,
+                    },
+                
+                    {
+                    /*legend:{
+                        enabled: true,
+                        align: 'left',
+                        verticalAlign: 'top',
+                        floating: true 
+                    },*/
+                    yAxis: [{
+                    gridLineWidth: 0,
+                    minorGridLineWidth: 0,
+                    labels: {
+                        enabled: false
+                    },
+                    title: {
+                        text: $scope.chart.series[0].measure.split('_').join(' ').capitalizeFirstLetter()
+                    }
+                    }]
+                    }
+                );
+                break;
+            
+            case 4: //PDF
+                theChart.exportChart(
+                    {
+                    type: 'application/pdf',
+                    filename: $scope.chart.slug,
+                    sourceWidth: 960,
+                    },
+                
+                    {
+                    /*legend:{
+                        enabled: true,
+                        align: 'left',
+                        verticalAlign: 'top',
+                        floating: true 
+                    },*/
+                    yAxis: [{
+                    gridLineWidth: 0,
+                    minorGridLineWidth: 0,
+                    labels: {
+                        enabled: false
+                    },
+                    title: {
+                        text: $scope.chart.series[0].measure.split('_').join(' ').capitalizeFirstLetter()
+                    }
+                    }]
+                    }
+                );
+                break;
+            
+            case 5:
                 window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/charts/" + $scope.chart.slug );
                // save = true;
                 break;
             
-            case 3:
+            case 6:
                 window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/tool/" + $scope.chart.slug );
                // save = true;
                 break;
                 
-            case 4:
+            case 7:
                 $('#embed_code').foundation('reveal', 'open');
                // save = true;
                 break;
@@ -1395,16 +1528,16 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     }
     
     $scope.aggregate_by_congress = function(data,starts_odd) {
-            
+                    
         var new_data = [];
         
         for (var i = 0; i < data.length; i++) {
         
             if (i % 2 == starts_odd) {
                 
-                idx = i - starts_odd;
+                var idx = starts_odd == 1 ? i - 1 : i + 1;
                 
-                if (data[idx+1] != null) {
+                if (idx >= 0 && (data[idx+1] != null) ) {
                     var val = (data[idx] + data[idx+1]);
                     new_data.push(val);
                 } else {
@@ -1501,8 +1634,14 @@ var clickPoint = function(event) {
 }
 
 
-var tooltipFormatter = function(event) {
-    return '<center><b>' + this.x + '</b><br/>' + this.series.name.split(': ').join(':<br/>').split(' #').join('<br/>#') + '<br/><b>' + this.y + '</b></center>';
+var tooltipFormatter = function() {
+    
+    console.log(this);
+
+   // return '<center><b>' + this.x + '</b><br/>' + this.series.name.split(': ').join(':<br/>').split(' #').join('<br/>#') + '<br/><b>' + this.y + '</b></center>';
+   // return '<center><b>' + this.x + '</b><br/>' + this.series.name.split(': ')[0] + ' #' + this.series.name.split('#')[1] + '<br/><b>' + this.y + ' ' + this.series.userOptions.unit + '</b></center>';
+     return '<center><b>' + this.x + '</b><br>' + this.y + ' ' + this.series.userOptions.unit + '</center>';
+
 }
 
 var drilldown = function(filters,dataset,topic,year) {

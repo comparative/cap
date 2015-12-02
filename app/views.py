@@ -201,7 +201,7 @@ def datasets_codebooks():
             
             # get datasets for this country in this category     
             datasets = []
-            for u in Dataset.query.filter_by(category_id=category.id).filter_by(country_id=item[0]).filter_by(ready=True).all():
+            for u in Dataset.query.filter_by(category_id=category.id).filter_by(country_id=item[0]).filter_by(ready=True).order_by('display').all():
                 datasets.append(u.__dict__)
             
             c['name'] = item[1]
@@ -476,6 +476,7 @@ def admin_country_item(slug):
         country.name = form.name.data
         country.short_name = form.short_name.data
         country.principal = form.principal.data
+        country.email = form.email.data
         country.location = form.location.data
         country.heading = form.heading.data
         country.about = form.about.data
@@ -494,6 +495,7 @@ def admin_country_item(slug):
             form.name.data = country.name
             form.short_name.data = country.short_name
             form.principal.data = country.principal
+            form.email.data = country.email
             form.location.data = country.location
             form.heading.data = country.heading
             form.about.data = country.about
@@ -1199,9 +1201,10 @@ def api_budgetprojects():
             d.budgetcategory_id AS category,
             d.topics AS topics,
             d.short_display AS name,
-            c.name AS country,
+            c.short_name AS country,
             d.filters AS filters,
-            d.unit AS unit
+            d.unit AS unit,
+            d.aggregation_level AS aggregation_level
         FROM dataset d
         INNER JOIN country c ON d.country_id = c.id
         WHERE d.country_id = %(country_id)s 
@@ -1220,7 +1223,7 @@ def api_categories():
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
     #cur.execute("""SELECT DISTINCT(c.*) FROM category c INNER JOIN dataset d ON c.id = d.category_id ORDER BY c.name""")
-    cur.execute("""SELECT c.id as category_id, c.* FROM category c ORDER BY c.name""")
+    cur.execute("""SELECT c.id as category_id, c.* FROM category c ORDER BY c.id""")
     return dumps(cur.fetchall())
 
 @app.route('/api/topics')
@@ -1252,9 +1255,10 @@ def api_datasets(flag = None):
     SELECT d.id,
     d.category_id AS category,  
     d.short_display AS name,
-    c.name AS country,
+    c.short_name AS country,
     d.filters AS filters,
-    d.unit AS unit
+    d.unit AS unit,
+    d.aggregation_level AS aggregation_level
     FROM dataset d
     INNER JOIN country c ON d.country_id = c.id
     WHERE d.ready=TRUE
@@ -1359,24 +1363,19 @@ def api_measures(dataset,flag,topic):
             
             # TOTALS ALL TOPICS
     
-            sql = """
-            SELECT yt.year::int, SUM(yt.count::float) as total FROM (
-            select datarow->>'year' AS year, datarow->>'"""
-        
-            sql = sql + count_col
-        
-            sql = sql + """' as count
+            sql = "SELECT yt.year::int, SUM(yt." + count_col
+            sql = sql + "::float) as total FROM (select datarow->>'year' AS year, datarow->>'"
+            sql = sql + count_col + "' AS " + count_col
+            sql = sql + """
             FROM (
               select jsonb_array_elements(content)
               from dataset WHERE dataset.id = %s
              ) s(datarow)
             WHERE 1=1"""
-        
             sql = sql + """
             AND datarow->>'year' ~ '^[0-9]'
             AND datarow->>'year' != '0'
             ) yt
-    
             GROUP BY yt.year  ORDER by yt.year
             """
         
@@ -1398,24 +1397,19 @@ def api_measures(dataset,flag,topic):
     
             # COUNT THIS TOPIC
     
-            sql = """
-            SELECT yt.year::int, SUM(yt.count::float) as cnt FROM (
-            select datarow->>'year' AS year, datarow->>'"""
-        
-            sql = sql + count_col
-        
-            sql = sql + """' as count
+            sql = "SELECT yt.year::int, SUM(yt." + count_col
+            sql = sql + "::float) as cnt FROM (select datarow->>'year' AS year, datarow->>'"
+            sql = sql + count_col + "' AS " + count_col
+            sql = sql + """
             FROM (
               select jsonb_array_elements(content)
               from dataset WHERE dataset.id = %s
              ) s(datarow)
             where datarow->>'""" + topic_col + "' = %s"
-        
             sql = sql + """
             AND datarow->>'year' ~ '^[0-9]'
             AND datarow->>'year' != '0'
             ) yt
-    
             GROUP BY yt.year  ORDER by yt.year
             """
             
@@ -1429,7 +1423,7 @@ def api_measures(dataset,flag,topic):
                     count.append(found['cnt'])
                 else:
                     count.append(0)
-            data['count'] = count
+            data[count_col] = count
         
         else:
             
