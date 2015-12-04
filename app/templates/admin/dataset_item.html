@@ -16,7 +16,9 @@
 {% endif %}
 <a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> <a href="{{ url_for('admin_dataset_list',slug=country.slug) }}">Datasets (Policy)</a>
 </h4>
-
+<p>
+<a href="{{ url_for('page',slug='dataset-instructions') }}">Click here for dataset instructions.</a>
+</p>
 <form action="" method="post" name="login" enctype="multipart/form-data">
 {{ form.hidden_tag() }}
 

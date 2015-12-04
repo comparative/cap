@@ -738,8 +738,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     });
             
                     if (!bExists) {
-                        var label = series.unit;
-                        $scope.chart.yaxes.push({"measure":series.measure,"label":label});
+                        $scope.chart.yaxes.push({"measure":series.measure});
                     }
 
                 });
@@ -760,7 +759,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             
                     // in case series is manually assigned to additional axis with identical measure
                     if (!$scope.chart.yaxes[series.yaxis]) {
-                        $scope.chart.yaxes.push({"measure":series.measure,"label":series.unit});
+                        //$scope.chart.yaxes.push({"measure":series.measure,"label":series.unit});
+                        $scope.chart.yaxes.push({"measure":series.measure});
                         series.yaxis = $scope.chart.yaxes.length - 1;
                     }
                     
@@ -807,7 +807,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                         data: chartdata,
                         color: hex_colors[rgba_colors.indexOf(series.color)],
                         yAxis: series.yaxis,
-                        unit: series.unit
+                        unit: series.unit,
+                        stickyTracking: false,
+                        measure: series.measure
                     }
 
                     options.series.push(s);
@@ -1242,13 +1244,21 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     $scope.getAxisTitle = function(axIndex) {
         
         var unitLabels = [];
-        angular.forEach($scope.chart.series, function (s) {
+        var measureLabel = false;
+        
+        angular.forEach($scope.chart.series, function (s,key) {
             if ( (s.yaxis == axIndex) && (unitLabels.indexOf(s.unit) == -1) ) {
-                unitLabels.push(s.unit);
+                
+                if (s.measure == 'count' || s.measure == 'amount') {
+                    unitLabels.push(s.unit);
+                } else {
+                    measureLabel = s.measure.split('_').join(' ').capitalizeFirstLetter();
+                }
+  
             }
         });
         
-        return unitLabels.join(', ');
+        return measureLabel ? measureLabel : unitLabels.join(', ');
         
     }
     
@@ -1635,12 +1645,20 @@ var clickPoint = function(event) {
 
 
 var tooltipFormatter = function() {
-    
-    console.log(this);
 
    // return '<center><b>' + this.x + '</b><br/>' + this.series.name.split(': ').join(':<br/>').split(' #').join('<br/>#') + '<br/><b>' + this.y + '</b></center>';
    // return '<center><b>' + this.x + '</b><br/>' + this.series.name.split(': ')[0] + ' #' + this.series.name.split('#')[1] + '<br/><b>' + this.y + ' ' + this.series.userOptions.unit + '</b></center>';
-     return '<center><b>' + this.x + '</b><br>' + this.y + ' ' + this.series.userOptions.unit + '</center>';
+     
+   //  console.log(this);
+     
+     if (this.series.userOptions.measure == 'count' || this.series.userOptions.measure == 'amount') {
+        var label = this.series.userOptions.unit;
+     } else {
+        var label = '%';
+     }
+     
+     
+     return '<center><b>' + this.x + '</b><br>' + this.y + ' ' + label + '</center>';
 
 }
 

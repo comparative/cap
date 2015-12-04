@@ -32,6 +32,7 @@
 
                     <div class="medium-8 columns">
                     <h5>{{ item.title }}</h5>
+                    <em class="date">{{ item.saved_date.strftime('%d %b %Y') }}</em><br/>
                     {{ smart_truncate(item.content,275)| safe }}
                     <br>
                     <a class="orange-link" href="/news/{{ item.slug }}">read more</a>
@@ -42,7 +43,7 @@
 				
 
 			</div>
-
+            <br/>
 			{% endfor %} 
 
 {% if news.has_prev or news.has_next %}
