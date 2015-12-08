@@ -14,7 +14,7 @@
 {% if not current_user.country %}
     <a href="{{ url_for('admin_country_list') }}">Projects</a> >>
 {% endif %}
-<a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> <a href="{{ url_for('admin_dataset_list',slug=country.slug,tab=2) }}">Datasets (Budget)</a>
+<a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> <a href="{{ url_for('admin_dataset_list',slug=country.slug,tab=3) }}">Datasets (Download)</a>
 </h4>
 <p>
 <a href="{{ url_for('page',slug='dataset-instructions') }}">Click here for dataset instructions.</a>
@@ -22,9 +22,6 @@
 <form action="" method="post" name="login" enctype="multipart/form-data">
 {{ form.hidden_tag() }}
 
-<input type="hidden" name="aggregation_level" id="aggregation_level" value="0">
-
-
 <div class="row">
 	<div class="small-2 columns">
 	  <label for="title" class="right inline">Data [.csv]</label>
@@ -40,89 +37,19 @@
 	      </p>
 	      
       {% else %}
-          
-          {% if form.content.data %}
-          
-          <p>
-	      {{ form.content.data }}
-          </p>
-          
-          {% else %}
-          
+                    
           <label class="error">
           <div id="datasetdropzone" class="dropzone" style="border: 1px solid black; color: black; margin-bottom: 20px; width: 200px; height: 200px; text-align: center;"></div>
           </label>
-          
-          {% endif %}
-          
-          {{ form.content }}
-          
+            
+          {{ form.content }} 
+        
       {% endif %}
       
 	</div>
 </div>
 
-<!--<div class="row">
-	<div class="small-2 columns">
-	  <label for="title" class="right inline">Data [.csv]</label>
-	</div>
-	<div class="small-10 columns">
-	
-	  {% if ready %}
-	  
-	      <p>
-	      <a href="{{ dataseturl }}" target="_new">{{ datasetfilename }}</a>
-	      <br>
-	      <a href="{{ url_for('admin_dataset_removecontent',slug=slug,id=id) }}">update</a>
-	      </p>
-	      
-      {% else %}
-          
-          {% if content %}
-          
-          <p>
-          {{ content }}
-          <br>
-	      <a href="{{ url_for('admin_dataset_item',slug=slug,id=id) }}">update</a>
-          </p>
-          
-          <input type="hidden" name="content" id="content" value="{{ content }}">
-          
-          {% else %}
-          
-          <label class="error">
-          <div id="datasetdropzone" class="dropzone" style="border: 1px solid black; color: black; margin-bottom: 20px; width: 200px; height: 200px; text-align: center;"></div>
-          </label>
-          <input type="hidden" name="content" id="content" value="">
-          
-          {% endif %}
-          
-      {% endif %}
-      
-	</div>
-</div>
 
-<div class="row">
-	<div class="small-2 columns">
-	  <label for="title" class="right inline">Data [.csv]</label>
-	</div>
-	<div class="small-10 columns">
-	  {% if dataseturl %}
-	      <p>
-	      <a href="{{ codebookurl }}" target="_new">{{ datasetfilename }}</a>
-	      <br>
-	      <a href="{{ url_for('admin_dataset_removecontent',slug=slug,id=id) }}">remove</a>
-	      </p>
-      {% else %}
-          <label class="error">
-          {{ form.content(size=40) }}
-          </label>
-          {% for error in form.content.errors %}
-          <small class="error">{{ error }}</small>
-          {% endfor %}
-      {% endif %}
-	</div>
-</div>-->
 
 
 <div class="row">
@@ -149,28 +76,6 @@
 
 <div class="row">
 	<div class="small-2 columns">
-	  <label for="title" class="right inline">Topics [.csv]</label>
-	</div>
-	<div class="small-10 columns">
-	  {% if topicsurl %}
-	      <p>
-	      <a href="{{ topicsurl }}" target="_new">{{ topicsfilename }}</a>
-	      <br>
-	      <a href="{{ url_for('admin_dataset_removetopics',slug=slug,id=id) }}">remove</a>
-	      </p>
-      {% else %}
-          <label class="error">
-          {{ form.topics(size=40) }}
-          </label>
-          {% for error in form.topics.errors %}
-          <small class="error">{{ error }}</small>
-          {% endfor %}
-      {% endif %}
-	</div>
-</div>
-
-<div class="row">
-	<div class="small-2 columns">
 	  <label for="title" class="right inline">Display</label>
 	</div>
 	<div class="small-10 columns">
@@ -183,7 +88,7 @@
 	</div>
 </div>
 
-<div class="row">
+<!--<div class="row">
 	<div class="small-2 columns">
 	  <label for="title" class="right inline">Short Display</label>
 	</div>
@@ -195,21 +100,7 @@
 	  <small class="error">{{ error }}</small>
       {% endfor %}
 	</div>
-</div>
-
-<div class="row">
-	<div class="small-2 columns">
-	  <label for="title" class="right inline">Unit</label>
-	</div>
-	<div class="small-10 columns">
-	  <label class="error">
-	  {{ form.unit(size=40) }}
-	  </label>
-	  {% for error in form.unit.errors %}
-	  <small class="error">{{ error }}</small>
-      {% endfor %}
-	</div>
-</div>
+</div>-->
 
 <div class="row">
 	<div class="small-2 columns">
@@ -226,41 +117,19 @@
 </div>
 <br>
 
-
-
-<!--<div class="row">
-	<div class="small-2 columns">
-	  <label for="title" class="right inline">Source</label>
-	</div>
-	<div class="small-10 columns">
-	  <label class="error">
-	  {{ form.source(size=40) }}
-	  </label>
-	  {% for error in form.source.errors %}
-	  <small class="error">{{ error }}</small>
-      {% endfor %}
-	</div>
-</div>-->
-
-
-
-
-
-
-<!--<div class="row">
+<div class="row">
 	<div class="small-2 columns">
 	  <label for="title" class="right inline">Category</label>
 	</div>
 	<div class="small-10 columns">
 	  <label class="error">
-	  {{ form.budgetcategory }}
+	  {{ form.category }}
 	  </label>
-	  {% for error in form.budgetcategory.errors %}
+	  {% for error in form.category.errors %}
 	  <small class="error">{{ error }}</small>
       {% endfor %}
 	</div>
-</div>-->
-
+</div>
 <br>
 
 <div class="row">
@@ -282,11 +151,12 @@
 
 {% endblock %}
 
+
 {% block scripts %}
 
 
 Dropzone.options.datasetdropzone = {
-url: "/admin/dataset/upload/budget",
+url: "/admin/staticdataset/upload",
 maxFiles:1,
 init: function() {
           this.on("maxfilesexceeded", function(file) {

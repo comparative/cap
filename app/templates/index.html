@@ -63,6 +63,7 @@
 
                     <div class="medium-8 columns">
                     <h5>{{ item.title }}</h5>
+                    <em class="date">{{ item.saved_date.strftime('%d %b %Y') }}</em><br/>
                     {{ smart_truncate(item.content,275)| safe }}
                     <br>
                     <a class="orange-link" href="/news/{{ item.slug }}">read more</a>
@@ -73,7 +74,7 @@
                 
                 
 			</div>
-
+            <br/>
 			{% endfor %} 
 			
 			<div clas="row">
@@ -101,19 +102,45 @@
         	    <p class="panel">Explore Trends Tool</p>
         	</a>
         	
-      		<a href="#" data-options="align:top; is_hover:true;" data-dropdown="drop">
+      		<a href="#" data-options="align:left; is_hover:true;" data-dropdown="drop">
       			<p class="panel">Explore Projects</p>
       		</a>
       		
-			<ul id="drop" class="f-dropdown" data-dropdown-content>
+			<ul id="drop" class="large f-dropdown" data-dropdown-content>
+			
+			{% set count = 1 %}
+			
 			{% for item in countries %}
-			  <li><a href="{{ url_for('country',slug=item.slug) }}">{{ item.name }}</a></li>
+			  
+			  {% if (count % 2) == 1 %}
+			  
+			  <li>
+			  
+			  {% endif %}
+			  
+			  
+			  
+  {% set count = count + 1 %}
+  <a href="{{ url_for('country',slug=item.slug) }}">{{ item.name }}</a>
+			  
+			  
+			  {% if (count % 2) == 1 %}
+			  
+			  </li>
+			  
+			  {% endif %}
+			  
 			{% endfor %} 
 			</ul>
 				
 			<a href="/datasets_codebooks">
       		    <p class="panel">Datasets / Codebooks</p>
       		</a>
+      		
+      		<a href="pages/conference">
+      		    <p class="panel">Conferences</p>
+      		</a>
+      		
       		
       		<a href="pages/About">
       		    <p class="panel">About</p>

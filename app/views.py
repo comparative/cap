@@ -16,8 +16,8 @@ from werkzeug import secure_filename
 from json import dump, dumps, loads
 from slugify import slugify
 from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles, slideimages, codebookfiles, datasetfiles, topicsfiles
-from .models import User, News, Country, Research, Staff, Page, File, Slide, Chart, Dataset, Category
-from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm, SlideForm, DatasetForm
+from .models import User, News, Country, Research, Staff, Page, File, Slide, Chart, Dataset, Category, Staticdataset
+from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm, SlideForm, DatasetForm, StaticDatasetForm
 from datetime import datetime
 
 @lm.user_loader
@@ -202,6 +202,8 @@ def datasets_codebooks():
             # get datasets for this country in this category     
             datasets = []
             for u in Dataset.query.filter_by(category_id=category.id).filter_by(country_id=item[0]).filter_by(ready=True).order_by('display').all():
+                datasets.append(u.__dict__)
+            for u in Staticdataset.query.filter_by(category_id=category.id).filter_by(country_id=item[0]).filter_by(ready=True).order_by('display').all():
                 datasets.append(u.__dict__)
             
             c['name'] = item[1]
@@ -874,9 +876,9 @@ def admin_analytics(slug):
 @login_required
 def admin_dataset_list(slug,tab=1,page=1):
     country = Country.query.filter_by(slug=slug).first()
-    datasets_policy = Dataset.query.filter_by(country_id=country.id).filter_by(budget=False).order_by(desc(Dataset.saved_date)).paginate(page, 10, False)
-    datasets_budget = Dataset.query.filter_by(country_id=country.id).filter_by(budget=True).order_by(desc(Dataset.saved_date)).paginate(page, 10, False)
-    datasets_download = []
+    datasets_policy = Dataset.query.filter_by(country_id=country.id).filter_by(budget=False).order_by(desc(Dataset.saved_date)).paginate(page, 20, False)
+    datasets_budget = Dataset.query.filter_by(country_id=country.id).filter_by(budget=True).order_by(desc(Dataset.saved_date)).paginate(page, 20, False)
+    datasets_download = Staticdataset.query.filter_by(country_id=country.id).order_by(desc(Staticdataset.saved_date)).paginate(page, 20, False)
     return render_template('admin/dataset_list.html',
                            country=country,
                            tab=tab,
@@ -885,15 +887,131 @@ def admin_dataset_list(slug,tab=1,page=1):
                            datasets_download=datasets_download)
 
 
-@app.route('/admin/projects/<slug>/datasetcustom/<id>', methods=['GET', 'POST'])
+
+# routes for static ("Download only") datasets
+
+@app.route('/admin/staticdataset/upload', methods=['POST'])
 @login_required
-def admin_datasetcustom_item(slug,id):
-    return
+def admin_datasetstatic_upload():
+    retval = {}
+    datasetfilename = datasetfiles.save(request.files['file'])
+    retval['filename'] = datasetfilename
+    resp = Response(dumps(retval), status=200, mimetype='application/json')
+    return resp
     
-@app.route('/admin/projects/<slug>/datasetdownload/<id>', methods=['GET', 'POST'])
+@app.route('/admin/projects/<slug>/staticdataset/<id>', methods=['GET', 'POST'])
 @login_required
-def admin_datasetdownload_item(slug,id):
-    return
+def admin_staticdataset_item(slug,id):
+    
+    country = Country.query.filter_by(slug=slug).first()
+    dataset = Staticdataset() if (id == 'add') else Staticdataset.query.filter_by(id=id).first()
+    form = StaticDatasetForm()
+    
+    content = False
+    if 'content' in request.form and request.form['content'] != '':
+        content = request.form['content']
+        dataset.datasetfilename = content
+    
+    if form.validate_on_submit():
+        
+        if content:
+            dataset.ready = True
+            newdata = True
+        
+        
+        dataset.display = form.display.data
+        dataset.short_display = form.short_display.data
+        dataset.description = form.description.data
+        dataset.category = form.category.data
+        
+        tab = 3
+        
+        if id == 'add':
+            dataset.country_id = country.id
+            try:
+                db.session.add(dataset) 
+            except:
+                flash('Something went wrong, dataset not saved!')
+                return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
+    
+        dataset.saved_date = datetime.utcnow()
+        
+        try:
+            db.session.commit()
+            flash('Dataset "%s" saved' % (form.display.data))
+        except:
+            flash('Something went wrong, dataset not saved!')
+            return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
+            
+        return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
+    
+
+
+    else:
+    
+        dataseturl= datasetfiles.url(dataset.datasetfilename) if dataset.datasetfilename else None
+        codebookurl = codebookfiles.url(dataset.codebookfilename) if dataset.codebookfilename else None
+        if request.method == 'GET':
+            form.display.data = dataset.display
+            form.short_display.data = dataset.short_display
+            form.description.data = dataset.description
+            form.category.data = dataset.category
+    
+    return render_template('admin/staticdataset_item.html', 
+                           id=dataset.id,
+                           country=country,
+                           slug=slug,
+                           ready=dataset.ready,
+                           dataseturl=dataseturl,
+                           datasetfilename=dataset.datasetfilename,
+                           codebookurl=codebookurl,
+                           codebookfilename=dataset.codebookfilename,
+                           form=form)
+
+@app.route('/admin/projects/<slug>/staticdataset/delete/<id>')
+@login_required
+def admin_staticdataset_delete(slug,id):
+    dataset = Dataset.query.filter_by(id=id).first()
+    if dataset is not None:
+        title = dataset.display
+        db.session.delete(dataset)
+        db.session.commit()
+        country_id = dataset.country_id
+        # update stats for the whole country
+        sql = """
+        UPDATE country SET 
+        stats_series = (SELECT COUNT(id) FROM dataset WHERE ready=true AND country_id=%s),
+        stats_year_from = COALESCE( (SELECT MIN(stats_year_from) FROM dataset WHERE ready=true AND country_id=%s), 0),
+        stats_year_to = COALESCE( (SELECT MAX(stats_year_to) FROM dataset WHERE ready=true AND country_id=%s), 0),
+        stats_observations = COALESCE( (SELECT SUM(stats_observations) FROM dataset WHERE ready=true AND country_id=%s), 0)
+        WHERE id = %s
+        """
+        cur = db.session.connection().connection.cursor()
+        cur.execute(sql,[country_id,country_id,country_id,country_id,country_id])
+        db.session.commit() 
+        flash('Dataset "%s" deleted' %
+              (title))
+        return redirect(url_for('admin_dataset_list',slug=slug))
+    flash('Dataset not found!')
+    return redirect(url_for('admin'))  
+
+@app.route('/admin/projects/<slug>/staticdataset/remove/<id>')
+@login_required
+def admin_staticdataset_removecontent(slug,id):
+    dataset = Dataset.query.filter_by(id=id).first()
+    if dataset is not None:
+        #path = datasetimages.path(dataset.filename)
+        #if os.path.isfile(path):
+        #    os.remove(path)
+        #dataset.filename = None
+        dataset.ready = False
+        db.session.commit()
+        return redirect(url_for('admin_dataset_item',slug=slug,id=id))
+    flash('Dataset not found!')
+    return redirect(url_for('admin')) 
+
+
+# routes for REAL datasets, i.e. the ones in the trends tool
 
 @app.route('/admin/dataset/upload/<type>', methods=['POST'])
 @login_required
@@ -915,8 +1033,6 @@ def admin_dataset_upload(type):
             required_fieldnames = ['id','year','majortopic']
         if type=='budget':
             required_fieldnames = ['id','year','majorfunction','amount']
-        if type=='download':
-            required_fieldnames = []
         for required_fieldname in required_fieldnames:
             if required_fieldname not in reader.fieldnames:
                 errors += 'Missing column: "' + required_fieldname + '" '
@@ -929,9 +1045,7 @@ def admin_dataset_upload(type):
     retval['filename'] = datasetfilename
     resp = Response(dumps(retval), status=200, mimetype='application/json')
     return resp
-    
-    
-                    
+                     
 @app.route('/admin/projects/<slug>/dataset/<id>', methods=['GET', 'POST'])
 @login_required
 def admin_dataset_item(slug,id):

@@ -60,7 +60,7 @@
 
 <table>
 {% for item in datasets_download.items %}
-<tr><td><a href="{{ url_for('admin_dataset_item',slug=country.slug,id=item.id) }}">edit</a></td><td>{{ item.display }}</td></tr>
+<tr><td><a href="{{ url_for('admin_staticdataset_item',slug=country.slug,id=item.id) }}">edit</a></td><td>{{ item.display }}</td></tr>
 {% endfor %}
 </table>
 
@@ -71,7 +71,7 @@
 </p>
 {% endif %}
 
-<a href="{{ url_for('admin_datasetdownload_item',slug=country.slug,id='add') }}">Add download dataset</a>
+<a href="{{ url_for('admin_staticdataset_item',slug=country.slug,id='add') }}">Add download dataset</a>
 
 </div>
 

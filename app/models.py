@@ -64,7 +64,23 @@ class Dataset(db.Model):
     budgetcategory = db.relationship('Budgetcategory',backref=db.backref('budget_categories', lazy='dynamic'))
     topics = db.Column(JSON)
     topicsfilename = db.Column(db.String(200))
-    
+
+class Staticdataset(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)    
+    display = db.Column(db.String(80))
+    short_display = db.Column(db.String(80))
+    description = db.Column(db.String(9000))
+    country_id = db.Column(db.Integer,db.ForeignKey('country.id'))
+    country = db.relationship('Country',backref=db.backref('staticdatasets', lazy='dynamic'))
+    category_id = db.Column(db.Integer,db.ForeignKey('category.id'))
+    category = db.relationship('Category',backref=db.backref('staticcategories', lazy='dynamic'))
+    saved_date = db.Column(db.DateTime)
+    codebookfilename = db.Column(db.String(200))
+    datasetfilename = db.Column(db.String(200))
+    ready = db.Column(db.Boolean())
+
+   
 class Country(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)    

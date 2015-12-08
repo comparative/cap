@@ -85,7 +85,15 @@ class DatasetForm(Form):
         if len(self.aggregation_level.errors) > 0 or len(self.topics.errors) > 0 or rv==False:
             return False
         return True
-    
+
+class StaticDatasetForm(Form):
+    display = StringField('display', validators=[DataRequired()])
+    short_display = StringField('short_display')
+    description = StringField('content', validators=[DataRequired()],widget=TextArea())
+    content = HiddenField("content")
+    codebook = FileField('codebook',validators=[FileAllowed(['pdf'], 'Codebook must be formatted as .pdf')])
+    country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
+    category = QuerySelectField(query_factory=categories_factory,allow_blank=True)
 
 class CountryForm(Form):
     name = StringField('name', validators=[DataRequired()])
