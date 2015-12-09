@@ -1,3 +1,5 @@
+# USAGE: docker run --name="web" -d -p 80:5000 -v /PATH/TO/THIS/DOCKERFILE:/var/www/cap cap:web python /var/www/cap/wsgi.py
+
 FROM python:2.7
 
 ENV DEBIAN_FRONTEND noninteractive
