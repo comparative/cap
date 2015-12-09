@@ -70,7 +70,7 @@ def tool(slug=None):
     projectid = request.args.get('project')
     
     # send response
-    resp=make_response(render_template('tool.html',user=user,slug=slug,options=options,recent=recent,projectid=projectid))    
+    resp=make_response(render_template('tool.html',baseUrl=app.config['TOOL_BASE_URL'],exportUrl=app.config['HIGHCHARTS_EXPORT_URL'],user=user,slug=slug,options=options,recent=recent,projectid=projectid))    
     resp.set_cookie('captool_user',value=user)
     return resp
 
@@ -1455,7 +1455,7 @@ def api_measures(dataset,flag,topic):
     """
     cur.execute(sql,[dataset])
     r = cur.fetchone()
-    filters = loads(r["filters"]) if r["filters"] != None else []
+    filters = r["filters"] if r["filters"] != None else []
     
     filter_predicates = []
     for filter in filters:

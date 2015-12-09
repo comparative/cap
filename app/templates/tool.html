@@ -535,7 +535,9 @@ var rgba_colors = [
 
 var hex_colors = ['#7cb5ec', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#8d4653', '#91e8e1'];
 
-var baseUrl = 'http://beta.comparativeagendas.com';
+//var baseUrl = 'http://beta.comparativeagendas.com';
+//var baseUrl = 'http://192.168.99.100';
+var baseUrl = '{{ baseUrl }}'
 
 var scatterOptions = {
             chart: {
@@ -607,7 +609,7 @@ var scatterOptions = {
                         enabled: false
                     }
                 },
-                url: 'http://104.237.136.8:8080/highcharts-export-web/',
+                url: '{{ exportUrl }}',
                 width: '960'
             },
             
@@ -714,7 +716,7 @@ var defaultOptions = {
                 enabled: false
             }	 
         },
-        url: 'http://104.237.136.8:8080/highcharts-export-web/',
+        url: '{{ exportUrl }}',
         width: '960'
     },
 

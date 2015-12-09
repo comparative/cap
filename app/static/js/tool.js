@@ -287,7 +287,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                             
                             // ADD TO SEARCH RESULTS
                             dataset_name = dataset.country + ': ' + dataset.name + ' #' + selText;
-                            var searchResult = new Series(dataset.id,topic,dataset_name,JSON.parse(dataset.filters),sub,dataset.unit,dataset.aggregation_level,false);
+                            var searchResult = new Series(dataset.id,topic,dataset_name,dataset.filters,sub,dataset.unit,dataset.aggregation_level,false);
                             $scope.results.push(searchResult);
                                            
                         }
@@ -350,10 +350,12 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     $http.get(baseUrl + '/api/budgetprojects').success(function(data){
         
+        console.log(data);
+        
         for (i = 0; i < data.length; ++i) {
             for (j = 0; j < data[i].datasets.length; ++j) {
                 if (data[i].datasets[j].topics) { 
-                    data[i].datasets[j].topics = JSON.parse(data[i].datasets[j].topics);
+                    data[i].datasets[j].topics = data[i].datasets[j].topics;
                 }
             }
         }
@@ -431,7 +433,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         // is newly selected
         if (found_it==false) {            
           dataset_name = dataset.country + ': ' + dataset.name + ' #' + name;
-          var obj = new Series(dataset.id,topic.id,dataset_name,JSON.parse(dataset.filters),sub,dataset.unit,1,true);
+          var obj = new Series(dataset.id,topic.id,dataset_name,dataset.filters,sub,dataset.unit,1,true);
           //obj.budget = true;
           $scope.addToChart(obj);
           //$scope.budgetResults.push(obj);
