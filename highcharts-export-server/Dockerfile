@@ -1,4 +1,4 @@
-# USAGE: docker run -d -i -p 8080:8080 IMAGE 
+# USAGE: docker run --name="export" -d -i -p 8080:8080 IMAGE 
 
 FROM tomcat:7-jre7
 
@@ -25,8 +25,8 @@ RUN ln -sf /usr/local/share/phantomjs-1.9.8-linux-x86_64/bin/phantomjs /usr/loca
 RUN apt-get install -y git-core
 
 # DOWNLOAD EXPORT SERVER FROM GITHUB
-RUN git clone https://github.com/highslide-software/highcharts.com.git ~/highcharts.com
-RUN mv ~/highcharts.com/exporting-server/java/highcharts-export /srv/highcharts-export
+RUN git clone https://github.com/highcharts/highcharts-export-server.git
+RUN mv ./highcharts-export-server/java/highcharts-export /srv/highcharts-export
 
 # BUILD A .WAR FILE
 RUN cd /srv/highcharts-export/ && mvn install 
