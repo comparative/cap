@@ -25,7 +25,7 @@ RUN ln -sf /usr/local/share/phantomjs-1.9.8-linux-x86_64/bin/phantomjs /usr/loca
 RUN apt-get install -y git-core
 
 # DOWNLOAD EXPORT SERVER FROM GITHUB
-RUN git clone https://github.com/highcharts/highcharts-export-server.git
+RUN git clone https://github.com/highcharts/highcharts-export-server.git && cd highcharts-export-server && git checkout 0c831a080
 RUN mv ./highcharts-export-server/java/highcharts-export /srv/highcharts-export
 
 # BUILD A .WAR FILE

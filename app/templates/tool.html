@@ -538,6 +538,8 @@ var hex_colors = ['#7cb5ec', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d35
 //var baseUrl = 'http://beta.comparativeagendas.com';
 //var baseUrl = 'http://192.168.99.100';
 var baseUrl = '{{ baseUrl }}'
+var exportUrl = '{{ exportUrl }}'
+
 
 var scatterOptions = {
             chart: {
@@ -609,7 +611,7 @@ var scatterOptions = {
                         enabled: false
                     }
                 },
-                url: '{{ exportUrl }}',
+                url: exportUrl,
                 width: '960'
             },
             
@@ -716,7 +718,7 @@ var defaultOptions = {
                 enabled: false
             }	 
         },
-        url: '{{ exportUrl }}',
+        url: exportUrl,
         width: '960'
     },
 

@@ -958,8 +958,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
 		
 		if (burnThumb) {
 		
-            var obj = {},
-            exportUrl = 'http://104.237.136.8:8080/highcharts-export-web/';
+            var obj = {};
+            //exportUrl = 'http://104.237.136.8:8080/highcharts-export-web/';
             obj.options = JSON.stringify(options);
             obj.type = 'image/png';
             obj.async = true;
