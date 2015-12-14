@@ -507,67 +507,67 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     $scope.addToChart = function(result) {
     	
     	if ($scope.chart.scatter) {
-    	
-    	    alert('Scatter plot chart type requires exactly two series.');
     	    
-    	} else {
+    	   // alert('Scatter plot chart type requires exactly two series.');
+    	   $scope.chart.scatter = false;
+    	   $scope.chart.chartType = "line";
+    	        
+    	}
     	
-            result.color = $scope.getRgbaColor();
-        
-            switch($scope.chart.chartType) {
+        result.color = $scope.getRgbaColor();
     
-                case "stacked_area_count":
-                    result.type = "area";
-                    result.measure = "count";
-                    break;
-                case "stacked_area_percent_total":
-                    result.type = "area";
-                    result.measure = "percent_total";
-                    break;
-                case "stacked_column_count":
-                    result.type = "column";
-                    result.measure = "count";
-                    break;
-                case "stacked_column_percent_total":
-                    result.type = "column";
-                    result.measure = "percent_total";
-                    break;
-                default:
-                    result.type = $scope.chart.chartType;
-            
-            }
+        switch($scope.chart.chartType) {
+
+            case "stacked_area_count":
+                result.type = "area";
+                result.measure = "count";
+                break;
+            case "stacked_area_percent_total":
+                result.type = "area";
+                result.measure = "percent_total";
+                break;
+            case "stacked_column_count":
+                result.type = "column";
+                result.measure = "count";
+                break;
+            case "stacked_column_percent_total":
+                result.type = "column";
+                result.measure = "percent_total";
+                break;
+            default:
+                result.type = $scope.chart.chartType;
         
-            $scope.chart.series.push(result);
+        }
+    
+        $scope.chart.series.push(result);
+        
+        if (result.sub) {
+            var url = baseUrl + '/api/measures/dataset/' + result.dataset + '/subtopic/' + result.topic;
+        } else {
+            var url = baseUrl + '/api/measures/dataset/' + result.dataset + '/topic/' + result.topic;
+        }
+        
+        //console.log(url);
+        
+        $.getJSON(url, function (retval) {
+        
+            // async... find the right series and assign the data
             
-            if (result.sub) {
-                var url = baseUrl + '/api/measures/dataset/' + result.dataset + '/subtopic/' + result.topic;
-            } else {
-                var url = baseUrl + '/api/measures/dataset/' + result.dataset + '/topic/' + result.topic;
-            }
-            
-            //console.log(url);
-            
-            $.getJSON(url, function (retval) {
-            
-                // async... find the right series and assign the data
-                
-                angular.forEach($scope.chart.series, function (series, index) { 
-                    if (result.name == series.name) {
-                        $scope.chart.series[index].alldata = retval;
-                        //console.log($scope.chart.series[index].alldata);
-                    }
-                });
-            
-                // redraw the chart
-                
-                
-            
-                $scope.drawChart(); 
-            
+            angular.forEach($scope.chart.series, function (series, index) { 
+                if (result.name == series.name) {
+                    $scope.chart.series[index].alldata = retval;
+                    //console.log($scope.chart.series[index].alldata);
+                }
             });
-		
-		}
-    	
+        
+            // redraw the chart
+            
+            
+        
+            $scope.drawChart(); 
+        
+        });
+    
     }
     
     // REMOVE FROM CHART
@@ -575,34 +575,35 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     $scope.removeFromChart = function(index) {
         
         if ($scope.chart.scatter) {
+            
+            
+            $scope.chart.scatter = false;
+            $scope.chart.chartType = "line";
+            //alert('Scatter plot chart type requires exactly two series.');
         
-            alert('Scatter plot chart type requires exactly two series.');
+        }
         
-        } else {
+        // RESET TO DEFAULTS FOR NEXT ADD
+        $scope.chart.series[index].measure = "count";
+        $scope.chart.series[index].type = "line";
+        $scope.chart.series[index].yaxis = 0;
+        $scope.chart.series[index].measure_on_multiple_axes = false; 	
+    
+        // REMOVE FROM CHART
+        $scope.chart.series.splice(index,1);
+    
+        // RESET CHART TYPE IF RESTRICTED
+        if ( $scope.chart.stacked && $scope.chart.series.length == 1) {
+            $scope.chart.stacked = false;
+            $scope.chart.chartType = $scope.chart.series[0].type;   
+        }
+        if ($scope.chart.series.length == 0) {   
+            $scope.chart.chartType = "line";
+        }
+    
+        doSeriesRemain = $scope.chart.series.length > 0;            
+        $scope.drawChart(doSeriesRemain); 
         
-            // RESET TO DEFAULTS FOR NEXT ADD
-            $scope.chart.series[index].measure = "count";
-            $scope.chart.series[index].type = "line";
-            $scope.chart.series[index].yaxis = 0;
-            $scope.chart.series[index].measure_on_multiple_axes = false; 	
-        
-            // REMOVE FROM CHART
-            $scope.chart.series.splice(index,1);
-        
-            // RESET CHART TYPE IF RESTRICTED
-            if ( $scope.chart.stacked && $scope.chart.series.length == 1) {
-                $scope.chart.stacked = false;
-                $scope.chart.chartType = $scope.chart.series[0].type;   
-            }
-            if ($scope.chart.series.length == 0) {   
-                $scope.chart.chartType = "line";
-            }
-        
-            doSeriesRemain = $scope.chart.series.length > 0;            
-            $scope.drawChart(doSeriesRemain); 
-        
-        } 
-    	
     }
     
     // CHART TO OPTIONS

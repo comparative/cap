@@ -151,7 +151,7 @@
                 
                 <p>Click on data points to see underlying data.</p>
                 
-                <table class="drilldown">
+                <table id="drilldown" class="drilldown">
                    <tbody>
                       <tr>
                          <th></th>
@@ -172,9 +172,8 @@
                    </tbody>
                 </table>
 
-
-                <a class="coming-soon">Copy this table</a><br/>
-                <a class="coming-soon">Download all data</a>
+                <a id="copy-table" data-clipboard-target="#drilldown">Copy this table</a><br/>
+                <a id="download-data">Download all data</a>
                 
                 </div>
                 
@@ -215,7 +214,7 @@
     <div id="categories" class="picker">
     <div ng-repeat="category in categories">
     <input ng-attr-catid="{@category.category_id@}" type="checkbox" ng-click="doFacets()">
-    <label>{@category.name | limitTo : 30@}</label>
+    <label>{@category.name | limitTo : 32@}</label>
     </div>
     </div>
    
@@ -223,7 +222,9 @@
     <div id="topics" class="picker">
 
         <ol class="menutree">
-        
+            
+            <li><label class="menu_label" for="t0"><input type="checkbox" class="choose_topic" topic="0" ng-click="doFacets()"><span class="major_topic">All Topics</span></label></li>
+            
             <li ng-repeat="topic in topics">
             <label class="menu_label" for="t{@topic.id@}"><input type="checkbox" class="choose_topic" topic="{@topic.id@}" ng-click="doFacets()"><span class="major_topic clickable">{@topic.name | limitTo:33 @}</span><span style="float:right;"><i ng-hide="isOpen" class="fi-arrow-down"></i><i ng-show="isOpen" class="fi-arrow-up"></i></span></label>
             <input ng-click="isOpen = ! isOpen" type="checkbox" id="t{@topic.id@}"/>
@@ -283,6 +284,13 @@
     <div id="{@dataset.id@}_budget_topics" class="picker">
 
         <ol class="menutree">
+            
+            <li ng-if="dataset.topics.length>0">
+            <label class="menu_label" for="t0">
+                <input type="checkbox" class="choose_budget_topic" subtopic="0" ng-checked="budgetTopicFoundInChart(dataset.id,'0') > -1" ng-click="doBudgetResults(dataset,{id:'0'},'All Topics',false)"">
+                <span class="major_topic">All Topics</span>
+            </label>
+            </li>
             
             <li ng-if="dataset.topics.length>0" ng-repeat="topic in dataset.topics">
             <label class="menu_label" for="{@dataset.id@}t{@topic.id@}">
@@ -517,11 +525,12 @@
 <script src="http://code.highcharts.com/modules/exporting.js"></script>
 <script src="/static/js/highcharts-regression.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
+<script src="static/js/clipboard.min.js"></script>
 <script src="/static/js/tool.js"></script>
 
 
 <script>
-        
+     
 var rgba_colors = [
 "{'background':'rgba(124, 181, 236, 0.5)'}", 
 "{'background':'rgba(144, 237, 125, 0.5)'}", 
@@ -540,6 +549,8 @@ var hex_colors = ['#7cb5ec', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d35
 var baseUrl = '{{ baseUrl }}'
 var exportUrl = '{{ exportUrl }}'
 
+var copyLink = document.getElementById('copy-table');
+new Clipboard(copyLink);
 
 var scatterOptions = {
             chart: {

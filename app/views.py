@@ -142,12 +142,13 @@ def charts(slug,switch=None):
 
 @app.route('/')
 def index():
-    slides = Slide.query.filter_by(active=True).paginate(1,3,False).items
+    #slides = Slide.query.filter_by(active=True).paginate(1,3,False).items
+    slides = Slide.query.filter_by(active=True).all()
     for item in slides:
         if item.imagename:
             url = slideimages.url(item.imagename)
             item.url = url
-    news = News.query.order_by(desc(News.saved_date)).paginate(1, 2, False).items
+    news = News.query.order_by(desc(News.saved_date)).paginate(1, 3, False).items
     for item in news:
         if item.filename:
             url = newsimages.url(item.filename)
@@ -206,6 +207,9 @@ def datasets_codebooks():
             for u in Staticdataset.query.filter_by(category_id=category.id).filter_by(country_id=item[0]).filter_by(ready=True).order_by('display').all():
                 datasets.append(u.__dict__)
             
+            datasets = sorted(datasets, key=lambda k: k['display']) 
+            
+            
             c['name'] = item[1]
             c['datasets'] = datasets
 
@@ -215,7 +219,7 @@ def datasets_codebooks():
             setattr(category, 'countries', countries_for_category)
             cats.append(category)
             
-    return render_template("datasets_codebooks.html",intro=intro,categories=cats)
+    return render_template("datasets_codebooks.html",intro=intro,categories=cats,countries=countries)
 
 @app.route('/codebook')
 def cap_codebook():
@@ -892,7 +896,7 @@ def admin_dataset_list(slug,tab=1,page=1):
 
 @app.route('/admin/staticdataset/upload', methods=['POST'])
 @login_required
-def admin_datasetstatic_upload():
+def admin_staticdataset_upload():
     retval = {}
     datasetfilename = datasetfiles.save(request.files['file'])
     retval['filename'] = datasetfilename
@@ -914,10 +918,13 @@ def admin_staticdataset_item(slug,id):
     
     if form.validate_on_submit():
         
+        if 'codebook' in request.files and request.files['codebook'].filename != '':
+            codebookfilename = codebookfiles.save(request.files['codebook'])
+            dataset.codebookfilename = codebookfilename
+        
         if content:
             dataset.ready = True
             newdata = True
-        
         
         dataset.display = form.display.data
         dataset.short_display = form.short_display.data
@@ -971,34 +978,21 @@ def admin_staticdataset_item(slug,id):
 @app.route('/admin/projects/<slug>/staticdataset/delete/<id>')
 @login_required
 def admin_staticdataset_delete(slug,id):
-    dataset = Dataset.query.filter_by(id=id).first()
+    dataset = Staticdataset.query.filter_by(id=id).first()
     if dataset is not None:
         title = dataset.display
         db.session.delete(dataset)
         db.session.commit()
-        country_id = dataset.country_id
-        # update stats for the whole country
-        sql = """
-        UPDATE country SET 
-        stats_series = (SELECT COUNT(id) FROM dataset WHERE ready=true AND country_id=%s),
-        stats_year_from = COALESCE( (SELECT MIN(stats_year_from) FROM dataset WHERE ready=true AND country_id=%s), 0),
-        stats_year_to = COALESCE( (SELECT MAX(stats_year_to) FROM dataset WHERE ready=true AND country_id=%s), 0),
-        stats_observations = COALESCE( (SELECT SUM(stats_observations) FROM dataset WHERE ready=true AND country_id=%s), 0)
-        WHERE id = %s
-        """
-        cur = db.session.connection().connection.cursor()
-        cur.execute(sql,[country_id,country_id,country_id,country_id,country_id])
-        db.session.commit() 
         flash('Dataset "%s" deleted' %
               (title))
-        return redirect(url_for('admin_dataset_list',slug=slug))
+        return redirect(url_for('admin_dataset_list',slug=slug,tab=3))
     flash('Dataset not found!')
     return redirect(url_for('admin'))  
 
 @app.route('/admin/projects/<slug>/staticdataset/remove/<id>')
 @login_required
 def admin_staticdataset_removecontent(slug,id):
-    dataset = Dataset.query.filter_by(id=id).first()
+    dataset = Staticdataset.query.filter_by(id=id).first()
     if dataset is not None:
         #path = datasetimages.path(dataset.filename)
         #if os.path.isfile(path):
@@ -1006,10 +1000,23 @@ def admin_staticdataset_removecontent(slug,id):
         #dataset.filename = None
         dataset.ready = False
         db.session.commit()
-        return redirect(url_for('admin_dataset_item',slug=slug,id=id))
+        return redirect(url_for('admin_staticdataset_item',slug=slug,id=id))
     flash('Dataset not found!')
     return redirect(url_for('admin')) 
 
+@app.route('/admin/projects/<slug>/staticcodebook/remove/<id>')
+@login_required
+def admin_staticdataset_removecodebook(slug,id):
+    dataset = Staticdataset.query.filter_by(id=id).first()
+    if dataset is not None:
+        path = codebookfiles.path(dataset.codebookfilename)
+        if os.path.isfile(path):
+            os.remove(path)
+        dataset.codebookfilename = None
+        db.session.commit()
+        return redirect(url_for('admin_staticdataset_item',slug=slug,id=id))
+    flash('Dataset not found!')
+    return redirect(url_for('admin'))
 
 # routes for REAL datasets, i.e. the ones in the trends tool
 
@@ -1427,6 +1434,10 @@ def api_instances(dataset,topic,year):
 @app.route('/api/measures/dataset/<dataset>/<flag>/<topic>')
 def api_measures(dataset,flag,topic):
     
+    #app.logger.debug(topic);
+    #if topic == '0':
+    #    app.logger.debug('yup');
+    
     if flag=='topic':
         sub = False
     elif flag=='subtopic':
@@ -1434,7 +1445,7 @@ def api_measures(dataset,flag,topic):
     else:
         abort(404)
     
-    app.logger.debug(flag);
+    #app.logger.debug(flag);
     
     # CHECK CACHE
     #cached_path = '/var/www/cap/datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
@@ -1510,33 +1521,36 @@ def api_measures(dataset,flag,topic):
     
     
             # COUNT THIS TOPIC
-    
-            sql = "SELECT yt.year::int, SUM(yt." + count_col
-            sql = sql + "::float) as cnt FROM (select datarow->>'year' AS year, datarow->>'"
-            sql = sql + count_col + "' AS " + count_col
-            sql = sql + """
-            FROM (
-              select jsonb_array_elements(content)
-              from dataset WHERE dataset.id = %s
-             ) s(datarow)
-            where datarow->>'""" + topic_col + "' = %s"
-            sql = sql + """
-            AND datarow->>'year' ~ '^[0-9]'
-            AND datarow->>'year' != '0'
-            ) yt
-            GROUP BY yt.year  ORDER by yt.year
-            """
             
-            cur.execute(sql,[dataset,topic])
-            rows = cur.fetchall()
+            if topic == '0':
+                count = totals
+            else :
+                sql = "SELECT yt.year::int, SUM(yt." + count_col
+                sql = sql + "::float) as cnt FROM (select datarow->>'year' AS year, datarow->>'"
+                sql = sql + count_col + "' AS " + count_col
+                sql = sql + """
+                FROM (
+                  select jsonb_array_elements(content)
+                  from dataset WHERE dataset.id = %s
+                 ) s(datarow)
+                where datarow->>'""" + topic_col + "' = %s"
+                sql = sql + """
+                AND datarow->>'year' ~ '^[0-9]'
+                AND datarow->>'year' != '0'
+                ) yt
+                GROUP BY yt.year  ORDER by yt.year
+                """
+            
+                cur.execute(sql,[dataset,topic])
+                rows = cur.fetchall()
     
-            count = []
-            for year in years:
-                found = next((item for item in rows if item['year'] == year), None)
-                if found is not None:
-                    count.append(found['cnt'])
-                else:
-                    count.append(0)
+                count = []
+                for year in years:
+                    found = next((item for item in rows if item['year'] == year), None)
+                    if found is not None:
+                        count.append(found['cnt'])
+                    else:
+                        count.append(0)
             data[count_col] = count
         
         else:
@@ -1580,36 +1594,39 @@ def api_measures(dataset,flag,topic):
     
     
             # COUNT THIS TOPIC
-    
-            sql = """
-            SELECT yc.year::int, yc.cnt::int FROM (
-            select datarow->>'year' AS year, COUNT(datarow->'id') as cnt
-            from (
-            select jsonb_array_elements(content)
-            from dataset WHERE dataset.id = %s
-            ) s(datarow)
-            where datarow->>'""" + topic_col + "' = %s"
-    
-            if len(filter_predicates) > 0:
-                for pred in filter_predicates:
-                    sql = sql + " AND " + pred 
             
-            sql = sql + """
-            AND datarow->>'year' ~ '^[0-9]'
-            AND datarow->>'year' != '0'
-            GROUP BY year) AS yc ORDER by year
-            """
+            if topic == '0':
+                count = totals
+            else :
+                sql = """
+                SELECT yc.year::int, yc.cnt::int FROM (
+                select datarow->>'year' AS year, COUNT(datarow->'id') as cnt
+                from (
+                select jsonb_array_elements(content)
+                from dataset WHERE dataset.id = %s
+                ) s(datarow)
+                where datarow->>'""" + topic_col + "' = %s"
     
-            cur.execute(sql,[dataset,topic])
-            rows = cur.fetchall()
+                if len(filter_predicates) > 0:
+                    for pred in filter_predicates:
+                        sql = sql + " AND " + pred 
+            
+                sql = sql + """
+                AND datarow->>'year' ~ '^[0-9]'
+                AND datarow->>'year' != '0'
+                GROUP BY year) AS yc ORDER by year
+                """
     
-            count = []
-            for year in years:
-                found = next((item for item in rows if item['year'] == year), None)
-                if found is not None:
-                    count.append(found['cnt'])
-                else:
-                    count.append(0)
+                cur.execute(sql,[dataset,topic])
+                rows = cur.fetchall()
+    
+                count = []
+                for year in years:
+                    found = next((item for item in rows if item['year'] == year), None)
+                    if found is not None:
+                        count.append(found['cnt'])
+                    else:
+                        count.append(0)
             data['count'] = count
     
         
@@ -1688,6 +1705,12 @@ def country(slug,pane='about'):
         cats = []
         for category in categories:
             datasets = [u.__dict__ for u in Dataset.query.filter_by(country_id=country.id).filter_by(category_id=category.id).filter_by(ready=True).all()]
+            
+            for u in Staticdataset.query.filter_by(category_id=category.id).filter_by(country_id=country.id).filter_by(category_id=category.id).filter_by(ready=True).all():
+                datasets.append(u.__dict__)
+            
+            datasets = sorted(datasets, key=lambda k: k['display'])
+            
             if len(datasets) > 0:
                 setattr(category, 'datasets', datasets)
                 cats.append(category)

@@ -1,3 +1,7 @@
+#slogan {
+    margin-bottom:0.8rem;
+}
+
 h3 {
     margin-top:0px;
 }
@@ -140,6 +144,10 @@ div#under-graph h3 {
 
 div#indexmenu {
     margin-top:10px;
+}
+
+div#indexmenu div.scrollable {
+    max-height:195px;
 }
 
 .slider {
