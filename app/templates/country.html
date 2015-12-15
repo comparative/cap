@@ -122,6 +122,7 @@
                                 
                                 {% endif %}
                                 
+                                
                                 {% for category in categories %}
                                 
                                 <ul class="category">
@@ -161,9 +162,15 @@
                                 
                                 </ul>
                                 
-                                
                                 {% endfor %}
-                            
+                                
+                                
+                                {% if codebookurl %}
+                                <br><br>
+                                <p><a href="{{ codebookurl }}">download master topics codebook</a></p>
+                                
+                                {% endif %}
+
                             
                             </div>
                     
@@ -184,7 +191,9 @@
                                 <div class="row">
 
                                     <div class="medium-4 columns">
+                                    {% if item.imagename %}
                                     <img class="news-image" src="http://beta.comparativeagendas.com/_uploads/researchimages/{{ item.imagename }}"/>
+                                    {% endif %}
                                     </div>
 
                                     <div class="medium-8 columns">
@@ -279,6 +288,14 @@
                                 <strong>Total Observations:</strong>&nbsp;{{ "{:,}".format(country.stats_observations) }}<br/>
                                 {% endif %}
                                 </p>
+                                
+                                
+                                {% if country.sponsoring_institutions %}
+                                    
+                                <h5>Sponsoring Institutions</h5>  
+                                <p>{{ country.sponsoring_institutions|safe }}</p>
+                                
+                                {% endif %}
                                 
                                <!-- <img class="supporting-institutions" src="http://baconmockup.com/300/75"/>
                                 <img class="supporting-institutions" src="http://baconmockup.com/300/75"/> 

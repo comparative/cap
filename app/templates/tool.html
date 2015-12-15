@@ -550,7 +550,15 @@ var baseUrl = '{{ baseUrl }}'
 var exportUrl = '{{ exportUrl }}'
 
 var copyLink = document.getElementById('copy-table');
-new Clipboard(copyLink);
+var clipboard = new Clipboard(copyLink);
+clipboard.on('success', function(e) {
+    console.info('Action:', e.action);
+    console.info('Text:', e.text);
+    console.info('Trigger:', e.trigger);
+    alert('Copied to clipboard.');
+    
+    e.clearSelection();
+});
 
 var scatterOptions = {
             chart: {

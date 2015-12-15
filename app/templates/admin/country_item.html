@@ -208,6 +208,21 @@
 
 <div class="row">
 	<div class="small-1 columns">
+	  <label for="title" class="right inline">Sponsoring Institutions</label>
+	</div>
+	<div class="small-11 columns">
+	  <label class="error">
+	  {{ form.sponsoring_institutions(cols="35", rows="15") }}
+	  </label>
+	  {% for error in form.sponsoring_institutions.errors %}
+	  <small class="error">{{ error }}</small>
+      {% endfor %}
+	</div>
+</div>
+<br>
+
+<div class="row">
+	<div class="small-1 columns">
 	  <label for="title" class="right inline">Left Img</label>
 	</div>
 	<div class="small-11 columns">
@@ -217,6 +232,28 @@
 	  {% for error in form.embed_url.errors %}
 	  <small class="error">{{ error }}</small>
       {% endfor %}
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-1 columns">
+	  <label for="title" class="right inline">Master Topics Codebook</label>
+	</div>
+	<div class="small-11 columns">
+	  {% if codebookurl %}
+	      <p>
+	      <a href="{{ codebookurl }}" target="_new">{{ codebookfilename }}</a>
+	      <br>
+	      <a href="{{ url_for('admin_country_removecodebook',slug=slug,id=id) }}">remove</a>
+	      </p>
+      {% else %}
+          <label class="error">
+          {{ form.codebook(size=40) }}
+          </label>
+          {% for error in form.codebook.errors %}
+          <small class="error">{{ error }}</small>
+          {% endfor %}
+      {% endif %}
 	</div>
 </div>
 

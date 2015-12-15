@@ -1270,6 +1270,24 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         //var save = false;
     
         $scope.chart.exportOption = 0;
+        
+        
+        var optionOverride =
+        {
+            legend:{
+                enabled: true,
+                align: 'left',
+                verticalAlign: 'bottom',
+                floating: true 
+            },
+            yAxis: [{
+                gridLineWidth: 0,
+                title: {
+                    text: $scope.chart.series[0].measure.split('_').join(' ').capitalizeFirstLetter()
+                }
+            }]
+        };
+        
     
         switch(option) {
 
@@ -1280,25 +1298,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     filename: $scope.chart.slug,
                     sourceWidth: 960,
                     },
-                
-                    {
-                    /*legend:{
-                        enabled: true,
-                        align: 'left',
-                        verticalAlign: 'top',
-                        floating: true 
-                    },*/
-                    yAxis: [{
-                    gridLineWidth: 0,
-                    minorGridLineWidth: 0,
-                    labels: {
-                        enabled: false
-                    },
-                    title: {
-                        text: $scope.chart.series[0].measure.split('_').join(' ').capitalizeFirstLetter()
-                    }
-                    }]
-                    }
+                    optionOverride
                 );
                 break;
             
@@ -1309,25 +1309,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     filename: $scope.chart.slug,
                     sourceWidth: 960,
                     },
-                
-                    {
-                    /*legend:{
-                        enabled: true,
-                        align: 'left',
-                        verticalAlign: 'top',
-                        floating: true 
-                    },*/
-                    yAxis: [{
-                    gridLineWidth: 0,
-                    minorGridLineWidth: 0,
-                    labels: {
-                        enabled: false
-                    },
-                    title: {
-                        text: $scope.chart.series[0].measure.split('_').join(' ').capitalizeFirstLetter()
-                    }
-                    }]
-                    }
+                    optionOverride
                 );
                 break;
             
@@ -1338,25 +1320,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     filename: $scope.chart.slug,
                     sourceWidth: 960,
                     },
-                
-                    {
-                    /*legend:{
-                        enabled: true,
-                        align: 'left',
-                        verticalAlign: 'top',
-                        floating: true 
-                    },*/
-                    yAxis: [{
-                    gridLineWidth: 0,
-                    minorGridLineWidth: 0,
-                    labels: {
-                        enabled: false
-                    },
-                    title: {
-                        text: $scope.chart.series[0].measure.split('_').join(' ').capitalizeFirstLetter()
-                    }
-                    }]
-                    }
+                    optionOverride
                 );
                 break;
             
@@ -1367,25 +1331,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     filename: $scope.chart.slug,
                     sourceWidth: 960,
                     },
-                
-                    {
-                    /*legend:{
-                        enabled: true,
-                        align: 'left',
-                        verticalAlign: 'top',
-                        floating: true 
-                    },*/
-                    yAxis: [{
-                    gridLineWidth: 0,
-                    minorGridLineWidth: 0,
-                    labels: {
-                        enabled: false
-                    },
-                    title: {
-                        text: $scope.chart.series[0].measure.split('_').join(' ').capitalizeFirstLetter()
-                    }
-                    }]
-                    }
+                    optionOverride
                 );
                 break;
             

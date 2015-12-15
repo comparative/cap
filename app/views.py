@@ -193,7 +193,7 @@ def datasets_codebooks():
     for category in categories:
         countries_for_category = []
         sql = """
-        SELECT DISTINCT country.id AS id, country.name AS name FROM dataset INNER JOIN country on dataset.country_id = country.id WHERE dataset.category_id = %s    
+        SELECT DISTINCT country.id AS id, country.name AS name FROM dataset INNER JOIN country on dataset.country_id = country.id WHERE dataset.category_id = %s AND dataset.ready=True ORDER BY country.name    
         """
         cur.execute(sql,[category.id])
         for item in cur.fetchall():
@@ -479,6 +479,9 @@ def admin_country_item(slug):
         if 'image' in request.files and request.files['image'].filename != '':
             filename = countryimages.save(request.files['image'])
             country.filename = filename
+        if 'codebook' in request.files and request.files['codebook'].filename != '':
+            codebookfilename = codebookfiles.save(request.files['codebook'])
+            country.codebookfilename = codebookfilename
         country.name = form.name.data
         country.short_name = form.short_name.data
         country.principal = form.principal.data
@@ -488,6 +491,10 @@ def admin_country_item(slug):
         country.about = form.about.data
         country.datasets_intro = form.datasets_intro.data
         country.embed_url = form.embed_url.data
+        country.sponsoring_institutions = form.sponsoring_institutions.data
+        
+        app.logger.debug(form.sponsoring_institutions.data)
+        
         if slug == 'add':
             country.slug = slugify(country.short_name,to_lower=True)
             db.session.add(country)
@@ -497,6 +504,7 @@ def admin_country_item(slug):
         return redirect( url_for('admin_country_item',slug=current_user.country.slug) if current_user.country else url_for('admin_country_list') )
     else:
         url = countryimages.url(country.filename) if country.filename else None
+        codebookurl = codebookfiles.url(country.codebookfilename) if country.codebookfilename else None
         if request.method == 'GET':
             form.name.data = country.name
             form.short_name.data = country.short_name
@@ -507,12 +515,15 @@ def admin_country_item(slug):
             form.about.data = country.about
             form.datasets_intro.data = country.datasets_intro 
             form.embed_url.data = country.embed_url
+            form.sponsoring_institutions.data = country.sponsoring_institutions
     
     return render_template('admin/country_item.html', 
                            id=country.id,
                            slug=country.slug,
                            url=url,
-                           form=form)
+                           form=form,
+                           codebookurl = codebookurl,
+                           codebookfilename=country.codebookfilename)
  
 
 @app.route('/admin/projects/delete/<id>')
@@ -542,6 +553,21 @@ def admin_country_removeimage(id):
         return redirect(url_for('admin_country_item',slug=country.slug))
     flash('Country not found!')
     return redirect(url_for('admin'))                         
+
+@app.route('/admin/projects/removecodebook/<id>')
+@login_required
+def admin_country_removecodebook(id):
+    country = Country.query.filter_by(id=id).first()
+    if country is not None:
+        path = codebookfiles.path(country.codebookfilename)
+        if os.path.isfile(path):
+            os.remove(path)
+        country.codebookfilename = None
+        db.session.commit()
+        return redirect(url_for('admin_country_item',slug=country.slug))
+    flash('Country not found!')
+    return redirect(url_for('admin'))
+
 
 ## USERS
 
@@ -1402,7 +1428,8 @@ def api_instances(dataset,topic,year):
     """
     cur.execute(sql,[dataset])
     r = cur.fetchone()
-    filters = loads(r["filters"]) if r["filters"] != None else []
+    #filters = r["filters"] if r["filters"] != None else []
+    filters = r["filters"] if r["filters"] != None else []
     
     filter_predicates = []
     for filter in filters:
@@ -1473,6 +1500,8 @@ def api_measures(dataset,flag,topic):
         filterval = request.args.get(filter)
         if (filterval != None):
             filter_predicates.append("datarow->>'" + filter + "'='" + filterval + "'")
+    
+    app.logger.debug(filter_predicates);
     
     topic_col = 'subtopic' if sub else 'majortopic'
     
@@ -1575,7 +1604,9 @@ def api_measures(dataset,flag,topic):
             AND datarow->>'year' != '0'
             GROUP BY year) AS yt ORDER by year
             """
-    
+            
+            app.logger.debug(sql)
+            
             cur.execute(sql,[dataset])
             rows = cur.fetchall()
     
@@ -1701,7 +1732,7 @@ def country(slug,pane='about'):
     country = Country.query.filter_by(slug=slug).first()
     if country:
         countries = Country.query.filter(Country.id != country.id).order_by(Country.name).all()
-        categories = Category.query.order_by(Category.name).all()
+        categories = Category.query.all()
         cats = []
         for category in categories:
             datasets = [u.__dict__ for u in Dataset.query.filter_by(country_id=country.id).filter_by(category_id=category.id).filter_by(ready=True).all()]
@@ -1718,10 +1749,12 @@ def country(slug,pane='about'):
         research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date))
         staff = Staff.query.filter_by(country_id=country.id).order_by(Staff.sort_order)
         url = countryimages.url(country.filename) if country.filename else None
+        codebookurl = codebookfiles.url(country.codebookfilename) if country.codebookfilename else None
         return render_template("country.html",
                                countries=countries,
                                pane=pane,
                                url=url,
+                               codebookurl = codebookurl,
                                latest_research=latest_research,
                                country=country,
                                research=research,

@@ -99,6 +99,8 @@ class Country(db.Model):
     stats_year_from = db.Column(db.Integer)
     stats_year_to = db.Column(db.Integer)
     stats_observations = db.Column(db.Integer)
+    sponsoring_institutions = db.Column(db.String(9000))
+    codebookfilename = db.Column(db.String(200))
     
     
     def __repr__(self):

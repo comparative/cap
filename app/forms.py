@@ -107,6 +107,8 @@ class CountryForm(Form):
     datasets_intro = StringField('datasets_intro', validators=[],widget=TextArea())
     embed_url = principal = StringField('embed_url')
     budget_topics = StringField('budget_topics')
+    sponsoring_institutions = StringField('sponsoring_institutions', validators=[],widget=TextArea())
+    codebook = FileField('codebook',validators=[])
     
 class UserForm(Form):
     name = StringField('name', validators=[])
