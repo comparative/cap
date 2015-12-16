@@ -187,6 +187,10 @@ a.button.tiny {
     font-size:10px;
 }
 
+table.drilldown tbody tr:first-child td:first-child {
+    width:69px;
+}
+
 img.thumb {
     display:block;
     margin: 0 auto 0 auto;

@@ -1057,7 +1057,7 @@ def admin_dataset_upload(type):
     didit = convert_to_utf8(datasetfilepath)
     csvfile = open(datasetfilepath, 'rU')
     reader = csv.DictReader(csvfile)
-    reader.fieldnames = [item.lower() for item in reader.fieldnames]
+    #reader.fieldnames = [item.lower() for item in reader.fieldnames]
     errors = ''
     
     if reader.fieldnames:
@@ -1101,9 +1101,9 @@ def admin_dataset_item(slug,id):
         datasetfilepath = datasetfiles.path(dataset.datasetfilename)
         csvfile = open(datasetfilepath, 'rU')
         reader = csv.DictReader(csvfile)
-        form.fieldnames = [item.lower() for item in reader.fieldnames]
+        #form.fieldnames = [item.lower() for item in reader.fieldnames]
         
-    form.topicsfieldnames=[]
+    #form.topicsfieldnames=[]
     if 'topics' in request.files and request.files['topics'].filename != '':
         topicsfilename = topicsfiles.save(request.files['topics'])
         topicsfilepath = topicsfiles.path(topicsfilename)
@@ -1116,7 +1116,7 @@ def admin_dataset_item(slug,id):
             return redirect(url_for('admin_dataset_list',slug=slug))
         topicscsvfile = open(topicsfilepath, 'rU')
         topicsreader = csv.DictReader(topicscsvfile)
-        form.topicsfieldnames = [item.lower() for item in topicsreader.fieldnames]
+        #form.topicsfieldnames = [item.lower() for item in topicsreader.fieldnames]
     
         
     if form.validate_on_submit():
@@ -1447,14 +1447,21 @@ def api_instances(dataset,topic,year):
       select jsonb_array_elements(content)
       from dataset WHERE dataset.id = %s
     ) s(datarow)
-    where datarow->>'""" + topic_col + "' = %s AND datarow->>'year' = %s"
+    where datarow->>'""" + topic_col + "' = %s"
     
     if len(filter_predicates) > 0:
         for pred in filter_predicates:
             sql = sql + " AND " + pred
     
-    #app.logger.debug(sql)
-    cur.execute(sql,[dataset,topic,year])
+    if (int(year) < 1000): # HACK!! to handle congress time periods, which are ~80-120
+        sql = sql + " AND datarow->>'year' >= %s AND datarow->>'year' <= %s"
+        firstyear = (int(year) * 2) + 1787
+        lastyear = (int(year) * 2) + 1788
+        cur.execute(sql,[dataset,topic,str(firstyear),str(lastyear)])
+    else:
+        sql = sql + " AND datarow->>'year' = %s"
+        cur.execute(sql,[dataset,topic,year])
+    
     return dumps(cur.fetchall())
     
 @app.route('/api/measures/dataset/<dataset>/<flag>/<topic>')

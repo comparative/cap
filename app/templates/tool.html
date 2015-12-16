@@ -161,19 +161,42 @@
                          </th>
          
                       </tr>
-                      <tr ng-repeat="year in chart.yearsSelected">
-                         <td>{@ year @}</td>
+                      <tr ng-repeat="period in chart.periodsSelected">
+                         <td>{@ period.display @}</td>
                          <td ng-style="{@series.color@}" ng-repeat="series in chart.series">
                          <div class="text-center">
-                         <a class="clickable" ng-click="openDrilldown(series.filters,series.dataset,series.topic,year)">{@ series.chartdata[$parent.$index] @}</a>
+                         <a class="clickable" ng-click="openDrilldown(series.filters,series.dataset,series.topic,period.value)">{@ series.chartdata[$parent.$index] @}</a>
                          </div>
                          </td>
                       </tr>
                    </tbody>
                 </table>
-
-                <a id="copy-table" data-clipboard-target="#drilldown">Copy this table</a><br/>
-                <a id="download-data">Download all data</a>
+                
+                <a id="copy-table" data-clipboard-target="#drilldown">Copy table to clipboard</a>
+                <p/>
+                
+                <table class="drilldown">
+                   <tbody>
+                      <tr>
+                         <th style="color:transparent;">0000<span ng-show="chart.timeSeries == 'congresses'">000</span></th>
+                         <th ng-repeat="series in chart.series">
+                            <h3>{@series.name@}</h3>
+                         </th>
+                      </tr>
+                      <tr>
+                         <td></td>
+                         <td ng-style="{@series.color@}" ng-repeat="series in chart.series">
+                         <div class="text-center">
+                         <a class="clickable" href="downloadData(series.filters,series.dataset,series.topic)">download all data</a>
+                         </div>
+                         </td>
+                      </tr>
+                   </tbody>
+                </table>
+                
+                
+                
+                <!--<a id="download-data">Download all data</a>-->
                 
                 </div>
                 
@@ -522,7 +545,7 @@
 {% block scripts %}
           
 <script src="/static/js/highcharts.js"></script>
-<script src="http://code.highcharts.com/modules/exporting.js"></script>
+<script src="http://code.highcharts.com/2.2.4/modules/exporting.js"></script>
 <script src="/static/js/highcharts-regression.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
 <script src="static/js/clipboard.min.js"></script>

@@ -245,9 +245,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     });
               
     $scope.doFacets = function() { 
-        
-        
-        //console.log($scope.datasets);
+
         
         $scope.results = [];
         
@@ -283,8 +281,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                         
                         if (country == dataset.country) {
                             
-                            console.log(dataset.aggregation_level);
-                            
                             // ADD TO SEARCH RESULTS
                             dataset_name = dataset.country + ': ' + dataset.name + ' #' + selText;
                             var searchResult = new Series(dataset.id,topic,dataset_name,dataset.filters,sub,dataset.unit,dataset.aggregation_level,false);
@@ -300,8 +296,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     }
     
     $scope.noResults = function() {
-        
-       // console.log($scope.results);
         
         var unhidden_results = [];
         angular.forEach($scope.results, function (result, index) {
@@ -349,8 +343,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     
     $http.get(baseUrl + '/api/budgetprojects').success(function(data){
-        
-        console.log(data);
         
         for (i = 0; i < data.length; ++i) {
             for (j = 0; j < data[i].datasets.length; ++j) {
@@ -547,8 +539,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             var url = baseUrl + '/api/measures/dataset/' + result.dataset + '/topic/' + result.topic;
         }
         
-        //console.log(url);
-        
         $.getJSON(url, function (retval) {
         
             // async... find the right series and assign the data
@@ -556,14 +546,11 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             angular.forEach($scope.chart.series, function (series, index) { 
                 if (result.name == series.name) {
                     $scope.chart.series[index].alldata = retval;
-                    //console.log($scope.chart.series[index].alldata);
                 }
             });
         
             // redraw the chart
             
-            
-        
             $scope.drawChart(); 
         
         });
@@ -650,8 +637,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 timePeriodsAvailable.push(obj);
             }
             
-            //console.log(timePeriodsAvailable);
-            
             $scope.chart.timePeriodsAvailable = timePeriodsAvailable;
 
 
@@ -673,6 +658,15 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             }
             $scope.chart.yearsSelected = yearsSelected;
             
+                
+            periodsSelected = [];
+            angular.forEach(timePeriodsAvailable, function (timePeriod, index) {
+                if (timePeriod.value >= $scope.chart.yearFrom && timePeriod.value <= $scope.chart.yearTo) {
+                    periodsSelected.push(timePeriod);
+                }
+            });
+            $scope.chart.periodsSelected = periodsSelected;
+
             
             // CONSOLIDATE ON ONE AXIS IF STACKED
             
@@ -951,8 +945,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         burnThumb = typeof burnThumb !== 'undefined' ? burnThumb : true;
         
         options = $scope.chartToOptions();
-        
-        //console.log(options);
         
         theChart.destroy();
 		theChart = new Highcharts.Chart(options);
@@ -1550,8 +1542,6 @@ $(document).ready(function() {
     
     theScope.chart = options.CAP_chart;
     
-    //console.log(options.CAP_chart);
-    
     // send options to highcharts
     theChart = new Highcharts.Chart(options);
 
@@ -1579,11 +1569,17 @@ var clickPoint = function(event) {
                     
     if ( $('a[href="#data-view"]').attr('aria-selected') == "true" ) { 
         
+        var cat = this.category;
+        var result = theScope.chart.periodsSelected.filter(function( obj ) {
+            return obj.display == cat;
+        });
+        
+        
         drilldown(
         this.series.userOptions.filters,
         this.series.userOptions.dataset,
         this.series.userOptions.topic,
-        this.category);
+        result[0].value);
 
     } else {
 
@@ -1597,8 +1593,6 @@ var tooltipFormatter = function() {
 
    // return '<center><b>' + this.x + '</b><br/>' + this.series.name.split(': ').join(':<br/>').split(' #').join('<br/>#') + '<br/><b>' + this.y + '</b></center>';
    // return '<center><b>' + this.x + '</b><br/>' + this.series.name.split(': ')[0] + ' #' + this.series.name.split('#')[1] + '<br/><b>' + this.y + ' ' + this.series.userOptions.unit + '</b></center>';
-     
-   //  console.log(this);
      
      if (this.series.userOptions.measure == 'count' || this.series.userOptions.measure == 'amount') {
         var label = this.series.userOptions.unit;
