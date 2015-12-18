@@ -797,6 +797,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                         measure: series.measure,
                         filters: series.filters
                         */
+                        sub: series.sub,
                         topic: series.topic,
                         dataset: series.dataset,
                         type: series.type,
@@ -1444,9 +1445,17 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 
     }
     
-    $scope.openDrilldown = function(f,d,t,y) {
+    $scope.openDrilldown = function(f,d,s,t,y) {
         
-        drilldown(f,d,t,y);
+        drilldown(f,d,s,t,y);
+        
+    }
+    
+    $scope.getInstancesUrl = function(f,d,s,t) {
+        
+        var uri = getInstancesUri(f,d,s,t,$scope.chart.yearFrom,$scope.chart.yearTo);
+        var url = baseUrl + "/api/instances/" + uri;
+        return url;
         
     }
     
@@ -1574,10 +1583,12 @@ var clickPoint = function(event) {
             return obj.display == cat;
         });
         
+        console.log(this.series);
         
         drilldown(
         this.series.userOptions.filters,
         this.series.userOptions.dataset,
+        this.series.userOptions.sub,
         this.series.userOptions.topic,
         result[0].value);
 
@@ -1605,28 +1616,10 @@ var tooltipFormatter = function() {
 
 }
 
-var drilldown = function(filters,dataset,topic,year) {
+var drilldown = function(filters,dataset,flag,topic,year) {
     
-    // have filters been checked?
-    var params = [];
-    angular.forEach(filters, function (filter, index) { 
-        var param = undefined;
-        if (filter.include) {
-            param = filter.name + "=1";
-        }
-        if (filter.exclude) {
-            param = filter.name + "=0";
-        }
-        if (param) {
-            params.push(param);
-        }   
-    });
-    
-    var url = baseUrl + "/api/instances/" + dataset + "/" + topic + "/" + year;
-    
-    if (params.length > 0) {
-        url = url + "?" + params.join("&");
-    }
+    var uri = getInstancesUri(filters,dataset,flag,topic,year);
+    var url = baseUrl + "/api/drilldown/" + uri;
     
     $.get(url, function( data ) {
         
@@ -1666,3 +1659,38 @@ function getQueryVariable(variable)
        }
        return(false);
 }
+
+function getInstancesUri(filters,dataset,flag,topic,frm,to) {
+    
+    // have filters been checked?
+    var params = [];
+    angular.forEach(filters, function (filter, index) { 
+        var param = undefined;
+        if (filter.include) {
+            param = filter.name + "=1";
+        }
+        if (filter.exclude) {
+            param = filter.name + "=0";
+        }
+        if (param) {
+            params.push(param);
+        }   
+    });
+    
+    var uri = dataset + "/";
+    uri = uri + (flag ? "subtopic" : "topic");    
+    uri = uri + "/" + topic
+    if (typeof to === 'undefined') {
+        uri = uri + "/" + frm;
+    } else {
+        uri = uri + "/" + frm + "/" + to;
+    }
+    
+    if (params.length > 0) {
+        uri = uri + "?" + params.join("&");
+    }
+    
+    return uri;
+    
+}
+

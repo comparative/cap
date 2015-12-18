@@ -165,7 +165,7 @@
                          <td>{@ period.display @}</td>
                          <td ng-style="{@series.color@}" ng-repeat="series in chart.series">
                          <div class="text-center">
-                         <a class="clickable" ng-click="openDrilldown(series.filters,series.dataset,series.topic,period.value)">{@ series.chartdata[$parent.$index] @}</a>
+                         <a class="clickable" ng-click="openDrilldown(series.filters,series.dataset,series.sub,series.topic,period.value)">{@ series.chartdata[$parent.$index] @}</a>
                          </div>
                          </td>
                       </tr>
@@ -187,7 +187,7 @@
                          <td></td>
                          <td ng-style="{@series.color@}" ng-repeat="series in chart.series">
                          <div class="text-center">
-                         <a class="clickable" href="downloadData(series.filters,series.dataset,series.topic)">download all data</a>
+                         <a class="clickable" ng-href="{@ getInstancesUrl(series.filters,series.dataset,series.sub,series.topic) @}">Download all data</a>
                          </div>
                          </td>
                       </tr>

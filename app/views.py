@@ -1101,9 +1101,9 @@ def admin_dataset_item(slug,id):
         datasetfilepath = datasetfiles.path(dataset.datasetfilename)
         csvfile = open(datasetfilepath, 'rU')
         reader = csv.DictReader(csvfile)
-        #form.fieldnames = [item.lower() for item in reader.fieldnames]
+        form.fieldnames = [item.lower() for item in reader.fieldnames]
         
-    #form.topicsfieldnames=[]
+    form.topicsfieldnames=[]
     if 'topics' in request.files and request.files['topics'].filename != '':
         topicsfilename = topicsfiles.save(request.files['topics'])
         topicsfilepath = topicsfiles.path(topicsfilename)
@@ -1116,7 +1116,7 @@ def admin_dataset_item(slug,id):
             return redirect(url_for('admin_dataset_list',slug=slug))
         topicscsvfile = open(topicsfilepath, 'rU')
         topicsreader = csv.DictReader(topicscsvfile)
-        #form.topicsfieldnames = [item.lower() for item in topicsreader.fieldnames]
+        form.topicsfieldnames = [item.lower() for item in topicsreader.fieldnames]
     
         
     if form.validate_on_submit():
@@ -1415,31 +1415,20 @@ def api_datasets(flag = None):
     cur.execute(sql)
     return dumps(cur.fetchall())
 
-@app.route('/api/instances/<dataset>/<topic>/<year>')
-def api_instances(dataset,topic,year):
+@app.route('/api/drilldown/<dataset>/<flag>/<topic>/<year>')
+def api_drilldown(dataset,flag,topic,year):
+    
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    data = {}
     
-    # GET FILTERS
+    if flag=='topic':
+        sub = False
+    elif flag=='subtopic':
+        sub = True
+    else:
+        abort(404)
     
-    sql = """
-    select filters from dataset WHERE dataset.id = %s
-    """
-    cur.execute(sql,[dataset])
-    r = cur.fetchone()
-    #filters = r["filters"] if r["filters"] != None else []
-    filters = r["filters"] if r["filters"] != None else []
-    
-    filter_predicates = []
-    for filter in filters:
-        filterval = request.args.get(filter)
-        if (filterval != None):
-            filter_predicates.append("datarow->>'" + filter + "'='" + filterval + "'")
-    
-    topic_col = 'majortopic' if int(topic) < 100 else 'subtopic'
-    
-    # INSTANCES
+    # DRILLDOWN
     
     sql = """
     select datarow->>'source' as source, datarow->>'description' as description
@@ -1447,30 +1436,67 @@ def api_instances(dataset,topic,year):
       select jsonb_array_elements(content)
       from dataset WHERE dataset.id = %s
     ) s(datarow)
-    where datarow->>'""" + topic_col + "' = %s"
-    
-    if len(filter_predicates) > 0:
-        for pred in filter_predicates:
-            sql = sql + " AND " + pred
+    """
     
     if (int(year) < 1000): # HACK!! to handle congress time periods, which are ~80-120
-        sql = sql + " AND datarow->>'year' >= %s AND datarow->>'year' <= %s"
-        firstyear = (int(year) * 2) + 1787
-        lastyear = (int(year) * 2) + 1788
-        cur.execute(sql,[dataset,topic,str(firstyear),str(lastyear)])
+        frm = (int(year) * 2) + 1787
+        to = (int(year) * 2) + 1788    
     else:
-        sql = sql + " AND datarow->>'year' = %s"
-        cur.execute(sql,[dataset,topic,year])
+        frm = year
+        to = year
+    
+    where = instances_get_where(db,dataset,sub,topic,str(frm),str(to))
+    sql = sql + where
+    cur.execute(sql,[dataset])
     
     return dumps(cur.fetchall())
+
+
+@app.route('/api/instances/<dataset>/<flag>/<topic>/<frm>/<to>')
+def api_instances(dataset,flag,topic,frm,to):
+    
+    conn = psycopg2.connect(app.config['CONN_STRING'])
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    
+    if flag=='topic':
+        sub = False
+    elif flag=='subtopic':
+        sub = True
+    else:
+        abort(404)
+    
+    # INSTANCES
+    
+    sql = """
+    select datarow
+    from (
+      select jsonb_array_elements(content)
+      from dataset WHERE dataset.id = %s
+    ) s(datarow)
+    """
+    
+    if (int(frm) < 1000): # HACK!! to handle congress time periods, which are ~80-120
+        frm = (int(frm) * 2) + 1787
+        to = (int(to) * 2) + 1788
+    
+    where = instances_get_where(db,dataset,sub,topic,str(frm),str(to))
+    
+    sql = sql + where
+    cur.execute(sql,[dataset])
+    
+    def generate():
+        firstrow = cur.fetchone()['datarow']
+        yield ','.join(firstrow.keys()) + '\n'
+        yield '"' + '","'.join(map(str,firstrow.values())) + '"' + '\n'
+        for u in cur.fetchall():
+            yield '"' + '","'.join(map(str,u['datarow'].values())) + '"' + '\n'
+            
+    return Response(generate(), mimetype='text/csv')
+    
     
 @app.route('/api/measures/dataset/<dataset>/<flag>/<topic>')
 @app.route('/api/measures/dataset/<dataset>/<flag>/<topic>')
 def api_measures(dataset,flag,topic):
-    
-    #app.logger.debug(topic);
-    #if topic == '0':
-    #    app.logger.debug('yup');
     
     if flag=='topic':
         sub = False
@@ -1779,6 +1805,38 @@ def research_item(slug,id):
         return render_template("research_item.html",countries=countries,country=country,research=research)
     else:
         abort(404)
+
+def instances_get_where(db,dataset,sub,topic,frm,to):
+    
+    # get cursor
+    cur = db.session.connection().connection.cursor()
+    
+    # GET FILTERS
+    
+    sql = """
+    select filters from dataset WHERE dataset.id = %s
+    """
+    cur.execute(sql,[dataset])
+    r = cur.fetchone()
+    filters = r[0] if r[0] != None else []
+    
+    filter_predicates = []
+    for filter in filters:
+        filterval = request.args.get(filter)
+        if (filterval != None):
+            filter_predicates.append("datarow->>'" + filter + "'='" + filterval + "'")
+      
+    # CONSTRUCT WHERE CLAUSE
+            
+    topic_col = 'subtopic' if sub else 'majortopic'
+    sql = " WHERE datarow->>'""" + topic_col + "' = '" + topic + "'"
+    if len(filter_predicates) > 0:
+        for pred in filter_predicates:
+            sql = sql + " AND " + pred
+    sql = sql + " AND datarow->>'year' >= '" + frm + "' AND datarow->>'year' <= '" + to + "'"
+       
+    return sql
+
 
 def update_stats(db,dataset_id,country_id):
 
