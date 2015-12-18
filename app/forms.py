@@ -48,7 +48,7 @@ class StaffForm(Form):
     name = StringField('name', validators=[DataRequired()])
     title = StringField('title')
     institution = StringField('institution')
-    sort_order = IntegerField('sort_order', [NumberRange(min=0, max=10)])
+    sort_order = IntegerField('sort_order', [NumberRange(min=0, max=50)])
     image = FileField('image',validators=[FileAllowed(IMAGES, 'Please choose an image file.')])
     body = StringField('content', validators=[],widget=TextArea()) 
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True) 
