@@ -1,0 +1,14 @@
+<html>
+    <head>
+        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    </head>
+    <body>
+        <div id="chart"></div>
+        <script src="//code.highcharts.com/adapters/standalone-framework.js"></script>
+        <script src="//code.highcharts.com/highcharts.js"></script>
+        <script>
+        new Highcharts.Chart({{ options | safe }});
+        </script>
+    </body>
+</html>
+

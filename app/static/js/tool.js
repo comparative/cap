@@ -7,6 +7,7 @@ function Series (dataset,topic,name,filters,sub,unit,aggregation_level,budget) {
     this.name = name;
     this.sub = sub;
     this.budget = budget;
+    this.agg = aggregation_level;
     
     if (filters) {
         this.filters = [];
@@ -86,6 +87,7 @@ function Chart() {
     this.yearFrom = 0;
     this.yearTo = 0;
     this.timePeriodsAvailable = [];
+    this.periodsSelected = [];
     this.stacked = false;
     this.scatter = false;
     this.chartType = "line";
@@ -149,7 +151,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         {"num":4,"display":"Download PDF"},
         {"num":5,"display":"Copy Image URL"},
         {"num":6,"display":"Copy Tool URL"},
-        {"num":7,"display":"Copy Embed Code"}
+        {"num":7,"display":"Copy Embed URL"}
     ];
     
     
@@ -798,6 +800,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                         filters: series.filters
                         */
                         sub: series.sub,
+                        agg: series.agg,
                         topic: series.topic,
                         dataset: series.dataset,
                         type: series.type,
@@ -1260,111 +1263,120 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     $scope.chartExport = function(option) {
         
+        console.log('woo wee');
+        console.log($scope.chart.slug);
+        
         //var save = false;
     
         $scope.chart.exportOption = 0;
         
+        if (typeof($scope.chart.slug) != "undefined") {
         
-        var optionOverride =
-        {
-            legend:{
-                enabled: true,
-                align: 'left',
-                verticalAlign: 'bottom',
-                floating: true 
-            },
-            yAxis: [{
-                gridLineWidth: 0,
-                title: {
-                    text: $scope.chart.series[0].measure.split('_').join(' ').capitalizeFirstLetter()
-                }
-            }]
-        };
+            var optionOverride =
+            {
+                legend:{
+                    enabled: true,
+                    align: 'left',
+                    verticalAlign: 'bottom',
+                    floating: true 
+                },
+                yAxis: [{
+                    gridLineWidth: 0,
+                    title: {
+                        text: $scope.chart.series[0].measure.split('_').join(' ').capitalizeFirstLetter()
+                    }
+                }]
+            };
         
-    
-        switch(option) {
-
-            case 1: //PNG
-                theChart.exportChart(
-                    {
-                    type: 'image/png',
-                    filename: $scope.chart.slug,
-                    sourceWidth: 960,
-                    },
-                    optionOverride
-                );
-                break;
-            
-            case 2: //JPEG
-                theChart.exportChart(
-                    {
-                    type: 'image/jpeg',
-                    filename: $scope.chart.slug,
-                    sourceWidth: 960,
-                    },
-                    optionOverride
-                );
-                break;
-            
-            case 3: //SVG
-                theChart.exportChart(
-                    {
-                    type: 'image/svg+xml',
-                    filename: $scope.chart.slug,
-                    sourceWidth: 960,
-                    },
-                    optionOverride
-                );
-                break;
-            
-            case 4: //PDF
-                theChart.exportChart(
-                    {
-                    type: 'application/pdf',
-                    filename: $scope.chart.slug,
-                    sourceWidth: 960,
-                    },
-                    optionOverride
-                );
-                break;
-            
-            case 5:
-                window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/charts/" + $scope.chart.slug );
-               // save = true;
-                break;
-            
-            case 6:
-                window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/tool/" + $scope.chart.slug );
-               // save = true;
-                break;
-                
-            case 7:
-                $('#embed_code').foundation('reveal', 'open');
-               // save = true;
-                break;
-                
-            default:
-    
-        }
-        
-      //  if (save) {
-        
+         
             strOptions = JSON.stringify(options);
-            
+        
+        
+        
             // SAVE CHART, UNPINNED
             resp = $.ajax({
                 type: 'POST',
-                url: '/charts/saveunpinned/' + $("#user").val() + '/' + $scope.chart.slug ,
+                url: '/charts/saveunpinned/' + $("#user").val() + '/' + $scope.chart.slug,
                 data: strOptions,
-                success: function() { },
+                success: function() {
+            
+                    switch(option) {
+
+                        case 1: //PNG
+                            theChart.exportChart(
+                                {
+                                type: 'image/png',
+                                filename: $scope.chart.slug,
+                                sourceWidth: 960,
+                                },
+                                optionOverride
+                            );
+                            break;
+            
+                        case 2: //JPEG
+                            theChart.exportChart(
+                                {
+                                type: 'image/jpeg',
+                                filename: $scope.chart.slug,
+                                sourceWidth: 960,
+                                },
+                                optionOverride
+                            );
+                            break;
+            
+                        case 3: //SVG
+                            theChart.exportChart(
+                                {
+                                type: 'image/svg+xml',
+                                filename: $scope.chart.slug,
+                                sourceWidth: 960,
+                                },
+                                optionOverride
+                            );
+                            break;
+            
+                        case 4: //PDF
+                            theChart.exportChart(
+                                {
+                                type: 'application/pdf',
+                                filename: $scope.chart.slug,
+                                sourceWidth: 960,
+                                },
+                                optionOverride
+                            );
+                            break;
+            
+                        case 5:
+                            window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/charts/" + $scope.chart.slug );
+                            break;
+            
+                        case 6:
+                            window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/tool/" + $scope.chart.slug );
+                            break;
+                
+                        case 7:
+                            window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/embed/" + $scope.chart.slug );
+                            break;
+                
+                        default:
+    
+                    }
+            
+            
+                },
                 error: function(XMLHttpRequest, textStatus, errorThrown) { 
                     alert('Error saving chart.'); 
                 }
-             
+         
             });
         
-      //  }
-
+        } else {
+        
+            alert('No chart to export!');
+            
+        }
+        
+        
         
     }
     
@@ -1377,6 +1389,10 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         $scope.chart = new Chart();
         $scope.drawChart(false);
         
+
+        
+         //$scope.$apply();
+        
     }
     
     
@@ -1388,6 +1404,14 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         angular.element('div.picker input:checkbox').each(function() {
             $(this).removeAttr('checked');
         });
+        
+        
+        angular.forEach($scope.budgetProjects, function (project, index) { 
+        
+            project.checked = false;
+                
+        });
+        
         
         /*
         angular.element('#categories input:checked').each(function () {
@@ -1445,9 +1469,18 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 
     }
     
-    $scope.openDrilldown = function(f,d,s,t,y) {
+    $scope.openDrilldown = function(s,y) {
         
-        drilldown(f,d,s,t,y);
+        console.log(s);
+        
+        drilldown(s.filters,s.dataset,s.sub,s.topic,s.agg,y);
+        
+    }
+    
+    $scope.hasDrilldown = function(s) {
+        
+        console.log(s);
+        return false;
         
     }
     
@@ -1583,13 +1616,14 @@ var clickPoint = function(event) {
             return obj.display == cat;
         });
         
-        console.log(this.series);
+        console.log(this.series.userOptions);
         
         drilldown(
         this.series.userOptions.filters,
         this.series.userOptions.dataset,
         this.series.userOptions.sub,
         this.series.userOptions.topic,
+        this.series.userOptions.agg,
         result[0].value);
 
     } else {
@@ -1616,18 +1650,28 @@ var tooltipFormatter = function() {
 
 }
 
-var drilldown = function(filters,dataset,flag,topic,year) {
+var drilldown = function(filters,dataset,flag,topic,agg,year) {
     
-    var uri = getInstancesUri(filters,dataset,flag,topic,year);
-    var url = baseUrl + "/api/drilldown/" + uri;
+    console.log(agg);
     
-    $.get(url, function( data ) {
+    if (agg==0) {
+    
+        var uri = getInstancesUri(filters,dataset,flag,topic,year);
+        var url = baseUrl + "/api/drilldown/" + uri;
+    
+        $.get(url, function( data ) {
         
-        theScope.instances = JSON.parse(data);
-        theScope.$apply();
-        $('#datapoints').foundation('reveal', 'open');
+            theScope.instances = JSON.parse(data);
+            theScope.$apply();
+            $('#datapoints').foundation('reveal', 'open');
         
-    });
+        });
+    
+    } else {
+        
+        alert('Pre-aggregated dataset, no drilldown available.');
+        
+    }
 
 }
 

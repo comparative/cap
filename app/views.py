@@ -137,6 +137,13 @@ def charts(slug,switch=None):
     else:
         return 'not found',404  
 
+@app.route('/embed/<slug>')
+def embed(slug):
+    exists = Chart.query.filter_by(slug=slug).first()
+    if exists:
+        return render_template('embed.html',options=exists.options)
+    else:
+        return 'not found',404
 
 ######### CMS ROUTES
 
@@ -1338,7 +1345,7 @@ def api_countries():
 def api_budgetprojects():
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""SELECT DISTINCT ON (c.name) c.* FROM country c INNER JOIN dataset d ON c.id = d.country_id WHERE d.budget=True ORDER BY c.name""")
+    cur.execute("""SELECT DISTINCT ON (c.name) c.* FROM country c INNER JOIN dataset d ON c.id = d.country_id WHERE d.budget=True AND d.ready=TRUE ORDER BY c.name""")
     countries = cur.fetchall()
     
     for country in countries:

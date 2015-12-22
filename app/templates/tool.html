@@ -165,7 +165,8 @@
                          <td>{@ period.display @}</td>
                          <td ng-style="{@series.color@}" ng-repeat="series in chart.series">
                          <div class="text-center">
-                         <a class="clickable" ng-click="openDrilldown(series.filters,series.dataset,series.sub,series.topic,period.value)">{@ series.chartdata[$parent.$index] @}</a>
+                         <a class="clickable" ng-click="openDrilldown(series,period.value)">{@ series.chartdata[$parent.$index] @}</a>
+                         <!--<span ng-if="!hasDrilldown(series)">{@ series.chartdata[$parent.$index] @}</span>-->
                          </div>
                          </td>
                       </tr>
@@ -439,22 +440,8 @@
         
 </div>
        
-<div id="embed_code" class="reveal-modal small" data-reveal>
-    
-    <p>To embed this mighty CAP chart copy the following code and slap it up on a web page:</p>
-    
-    <textarea>
-    <pre>
-    <div id="chart"></div>
-    <script src="//code.highcharts.com/adapters/standalone-framework.js"></script>
-    <script src="//code.highcharts.com/highcharts.js"></script>
-    <script>// <![CDATA[
-    new Highcharts.Chart({{ options | safe }});
-    // ]]></script>
-    </pre>
-    </textarea>
-
-</div>  
+<!--<div id="embed_code" class="reveal-modal small" data-reveal>
+</div>  -->
            
 <div ng-repeat="series in chart.series" id="seriesoptions-{@series.dataset@}-{@series.topic@}" class="reveal-modal small" data-reveal>
         

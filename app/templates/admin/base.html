@@ -7,9 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="keywords" content="">
-
+    
     <title>Admin - Comparative Agendas</title>
 	
+	<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 	<link href="//cdn.jsdelivr.net/foundation/5.5.0/css/normalize.css" rel="stylesheet">
     <link href="//cdn.jsdelivr.net/foundation/5.5.0/css/foundation.min.css" rel="stylesheet">	
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.min.css" rel="stylesheet">
@@ -66,8 +67,23 @@
       <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.0/js/foundation.min.js"></script>
       <script src="/static/js/main.js"></script>
       
-      <script>
       
+      <script>
+        
+        $(document).ready(function() {
+            
+            $('input[type="button"][value="Delete"]').click(function(e) {
+                    
+                var confirmed = confirm('REALLY delete this item?');
+                if (confirmed==false) {
+                    e.preventDefault();
+                } 
+                
+            });
+            
+        });
+        
+        
         function strip_tags (str, allowed_tags)
         {
 
