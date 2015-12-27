@@ -182,11 +182,11 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     
     // OPEN THE SEARCH BOX I CLICKED, CLOSE OTHERS
-    
+    /*
     if( event.target.tagName === "LABEL" ) {
          alert('clicked');
     }
-    
+    */
     
     $scope.budgetPickerLabel = function(e) {
               

@@ -31,7 +31,7 @@
 	  {% if ready %}
 	  
 	      <p>
-	      <a href="{{ dataseturl }}" target="_new">{{ datasetfilename }}</a>
+	      <a href="{{ dataseturl }}" target="_blank">{{ datasetfilename }}</a>
 	      <br>
 	      <a href="{{ url_for('admin_staticdataset_removecontent',slug=slug,id=id) }}">update</a>
 	      </p>
@@ -59,7 +59,7 @@
 	<div class="small-10 columns">
 	  {% if codebookurl %}
 	      <p>
-	      <a href="{{ codebookurl }}" target="_new">{{ codebookfilename }}</a>
+	      <a href="{{ codebookurl }}" target="_blank">{{ codebookfilename }}</a>
 	      <br>
 	      <a href="{{ url_for('admin_staticdataset_removecodebook',slug=slug,id=id) }}">remove</a>
 	      </p>
