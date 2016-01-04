@@ -190,6 +190,7 @@ def news_item(slug):
 def about():
     return render_template('about.html')
 
+# ALL OF EM
 @app.route('/datasets_codebooks')
 def datasets_codebooks():
     intro = Page.query.filter_by(slug='datasets-intro').first()
@@ -211,7 +212,7 @@ def datasets_codebooks():
             datasets = []
             for u in Dataset.query.filter_by(category_id=category.id).filter_by(country_id=item[0]).filter_by(ready=True).order_by('display').all():
                 datasets.append(u.__dict__)
-            for u in Staticdataset.query.filter_by(category_id=category.id).filter_by(country_id=item[0]).filter_by(ready=True).order_by('display').all():
+            for u in Staticdataset.query.filter_by(category_id=category.id).filter_by(country_id=item[0]).order_by('display').all():
                 datasets.append(u.__dict__)
             
             datasets = sorted(datasets, key=lambda k: k['display']) 
@@ -225,6 +226,9 @@ def datasets_codebooks():
         if len(countries_for_category) > 0:
             setattr(category, 'countries', countries_for_category)
             cats.append(category)
+        
+        
+        
             
     return render_template("datasets_codebooks.html",intro=intro,categories=cats,countries=countries)
 
@@ -1194,8 +1198,12 @@ def admin_dataset_item(slug,id):
         dataset.description = form.description.data
         dataset.unit = form.unit.data
         dataset.source = form.source.data
-        dataset.budgetcategory = form.budgetcategory.data
-        dataset.category = form.category.data
+        if dataset.budget:
+            dataset.budgetcategory = form.budgetcategory.data
+            dataset.category_id = 7
+        else:
+            dataset.category = form.category.data
+            
         dataset.aggregation_level = 1 if dataset.budget else form.aggregation_level.data
         
         tab = 2 if dataset.budget else 1
@@ -1765,7 +1773,7 @@ def api_measures(dataset,flag,topic):
          
     return dumps(data)
 
-    
+# ONE OF EM  
 @app.route('/<slug>')
 @app.route('/<slug>/<pane>')
 def country(slug,pane='about'):
@@ -1775,16 +1783,23 @@ def country(slug,pane='about'):
         categories = Category.query.all()
         cats = []
         for category in categories:
+            
+            app.logger.debug(category)
+        
             datasets = [u.__dict__ for u in Dataset.query.filter_by(country_id=country.id).filter_by(category_id=category.id).filter_by(ready=True).all()]
             
-            for u in Staticdataset.query.filter_by(category_id=category.id).filter_by(country_id=country.id).filter_by(category_id=category.id).filter_by(ready=True).all():
+            for u in Staticdataset.query.filter_by(category_id=category.id).filter_by(country_id=country.id).filter_by(category_id=category.id).all():
                 datasets.append(u.__dict__)
             
             datasets = sorted(datasets, key=lambda k: k['display'])
-            
             if len(datasets) > 0:
                 setattr(category, 'datasets', datasets)
                 cats.append(category)
+        
+        #budget_datasets = [u.__dict__ for u in Dataset.query.filter_by(country_id=country.id).filter_by(budget=True).filter_by(ready=True).all()]
+        #if len(budget_datasets) > 0:
+        #        cats.append({'name':'Budget', 'datasets': budget_datasets})
+        
         latest_research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date)).paginate(1, 1, False).items
         research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date))
         staff = Staff.query.filter_by(country_id=country.id).order_by(Staff.sort_order)

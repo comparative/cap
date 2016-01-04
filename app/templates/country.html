@@ -144,9 +144,12 @@
                                     {{dataset.description | safe}}
                                     
                                     <br/>
+                                    {% if dataset.stats_observations %}
                                     {{dataset.stats_observations}} observations spanning the years {{dataset.stats_year_from}} to {{dataset.stats_year_to}}
-                                    
                                     <br/>
+                                    {% else %}
+                                    This dataset is not available in the trends tool.<br/>
+                                    {% endif %}
                                     
                                     <a class="clickable" href="/_uploads/datasetfiles/{{dataset.datasetfilename}}">download dataset</a>
                                                                         
