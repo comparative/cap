@@ -109,7 +109,7 @@
                 
                 <div class="medium-4 columns">
                     {% if research.imagename %}
-                    <img style="margin-top:24px;" class="news-image" src="http://www.comparativeagendas.net/_uploads/researchimages/{{ research.imagename }}">
+                    <img style="margin-top:24px;" class="news-image" src="{{config['S3_URL']}}researchimages/{{ research.imagename }}">
                     {% endif %}
                 </div>
                 
@@ -119,7 +119,7 @@
 				{{ smart_truncate(research.body,5000)|safe }}
 				{% if research.filename %}
 				    
-				    <a href="http://beta.comparativeagendas.com/_uploads/researchfiles/{{ research.filename }}">{{ research.filename }}</a>
+				    <a href="{{config['S3_URL']}}researchfiles/{{ research.filename }}">{{ research.filename }}</a>
 				    
 				{% endif %}
 				</div>

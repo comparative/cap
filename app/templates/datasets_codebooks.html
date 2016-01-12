@@ -123,9 +123,9 @@ div.dataset-display:hover > span.arrow i {
             {% else %}
             This dataset is not available in the trends tool.<br/>
             {% endif %}
-            <a class="clickable" href="/_uploads/datasetfiles/{{dataset.datasetfilename}}">download dataset</a>
+            <a class="clickable" href="{{config['S3_URL']}}datasetfiles/{{dataset.datasetfilename}}">download dataset</a>
             {% if dataset.codebookfilename %}
-            &nbsp;&nbsp;<a class="clickable" href="/_uploads/codebookfiles/{{dataset.codebookfilename}}" target="_blank">download codebook</a>
+            &nbsp;&nbsp;<a class="clickable" href="{{config['S3_URL']}}codebookfiles/{{dataset.codebookfilename}}" target="_blank">download codebook</a>
             {% endif %}
             
         </div>

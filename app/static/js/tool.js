@@ -105,7 +105,6 @@ function Saved(slug, imgsrc, options) {
     
 }
 
-
 //////////////////////////////////////// ANGULAR APP
 
 var toolApp = angular.module('toolApp', []);
@@ -1604,7 +1603,6 @@ $(document).ready(function() {
                
 });
 
-
 //////////////////////////////////////////////////////////////////////// UTILS
 
 var clickPoint = function(event) {
@@ -1632,7 +1630,6 @@ var clickPoint = function(event) {
 
     }
 }
-
 
 var tooltipFormatter = function() {
 
@@ -1693,8 +1690,7 @@ String.prototype.capitalizeFirstLetter = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
-function getQueryVariable(variable)
-{
+function getQueryVariable(variable) {
        var query = window.location.search.substring(1);
        var vars = query.split("&");
        for (var i=0;i<vars.length;i++) {

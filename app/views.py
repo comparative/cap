@@ -6,6 +6,7 @@ import urllib
 import urllib2
 import csv
 import time
+import tinys3
 from sqlalchemy import desc
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
@@ -19,6 +20,8 @@ from app import app, db, lm, newsimages, countryimages, staffimages, researchfil
 from .models import User, News, Country, Research, Staff, Page, File, Slide, Chart, Dataset, Category, Staticdataset
 from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm, SlideForm, DatasetForm, StaticDatasetForm
 from datetime import datetime
+
+s3 = tinys3.Pool(app.config['S3_ACCESS_KEY'],app.config['S3_SECRET_KEY'],app.config['S3_BUCKET'])
 
 @lm.user_loader
 def load_user(id):
@@ -153,13 +156,15 @@ def index():
     slides = Slide.query.filter_by(active=True).all()
     for item in slides:
         if item.imagename:
-            url = slideimages.url(item.imagename)
+            #url = slideimages.url(item.imagename)
+            url = app.config['S3_URL'] + 'slideimages/' + item.imagename
             item.url = url
     news = News.query.order_by(desc(News.saved_date)).paginate(1, 3, False).items
     for item in news:
         if item.filename:
-            url = newsimages.url(item.filename)
-            item.url = url
+            #url = newsimages.url(item.filename)
+            #item.url = url
+            item.url = app.config['S3_URL'] + 'newsimages/' + item.filename
     countries = Country.query.order_by(Country.name)
     return render_template("index.html",
                            countries=countries,
@@ -173,7 +178,8 @@ def news(page = 1):
     news = News.query.order_by(desc(News.saved_date)).paginate(page, 3, False)
     for item in news.items:
         if item.filename:
-            url = newsimages.url(item.filename)
+            #url = newsimages.url(item.filename)
+            url = app.config['S3_URL'] + 'newsimages/' + item.filename
             item.url = url
     return render_template('news.html',news=news,countries=countries)
 
@@ -181,7 +187,8 @@ def news(page = 1):
 def news_item(slug):    
     item = News.query.filter_by(slug=slug).first()
     if item.filename:
-            url = newsimages.url(item.filename)
+            #url = newsimages.url(item.filename)
+            url = app.config['S3_URL'] + 'newsimages/' + item.filename
             item.url = url
     news = News.query.filter(News.slug!=slug).order_by(desc(News.saved_date)).limit(3).all()
     return render_template('news_item.html',item=item,news=news)
@@ -351,6 +358,7 @@ def admin_file_item(slug):
     if form.validate_on_submit():
         if 'file' in request.files and request.files['file'].filename != '':
             filename = adhocfiles.save(request.files['file'])
+            s3.upload('adhocfiles/' + filename,open(adhocfiles.path(filename),'rb'))
             file.filename = filename
         file.name = form.name.data
         if slug == 'add':
@@ -361,7 +369,9 @@ def admin_file_item(slug):
               (form.name.data))
         return redirect( 'admin/files' )
     else:
-        url = adhocfiles.url(file.filename) if file.filename else None
+        #url = adhocfiles.url(file.filename) if file.filename else None
+        url = app.config['S3_URL'] + 'adhocfiles/' + file.filename if file.filename else None
+        
         if request.method == 'GET':
             form.name.data = file.name
     
@@ -378,6 +388,7 @@ def admin_file_item(slug):
 def admin_file_delete(id):
     file = File.query.filter_by(id=id).first()
     if file is not None:
+        s3.delete('adhocfiles/' + file.filename)
         name = file.name
         db.session.delete(file)
         db.session.commit()
@@ -392,9 +403,10 @@ def admin_file_delete(id):
 def admin_file_removefile(id):
     file = File.query.filter_by(id=id).first()
     if file is not None:
-        path = adhocfiles.path(file.filename)
-        if os.path.isfile(path):
-            os.remove(path)
+        #path = adhocfiles.path(file.filename)
+        #if os.path.isfile(path):
+        #    os.remove(path)
+        s3.delete('adhocfiles/' + file.filename)
         file.filename = None
         db.session.commit()
         return redirect(url_for('admin_file_item',slug=file.slug))
@@ -419,6 +431,7 @@ def admin_slide_item(id):
     if form.validate_on_submit():
         if 'image' in request.files and request.files['image'].filename != '':
             imagename = slideimages.save(request.files['image'])
+            s3.upload('slideimages/' + imagename,open(slideimages.path(imagename),'rb'))
             slide.imagename = imagename
         slide.heading = form.heading.data
         slide.subheading = form.subheading.data
@@ -431,7 +444,9 @@ def admin_slide_item(id):
               (form.heading.data))
         return redirect(url_for('admin_slide_list'))
     else:
-        url = slideimages.url(slide.imagename) if slide.imagename else None
+        #url = slideimages.url(slide.imagename) if slide.imagename else None
+        url = app.config['S3_URL'] + 'slideimages/' + slide.imagename if slide.imagename else None
+        
         if request.method == 'GET':
             form.heading.data = slide.heading
             form.subheading.data = slide.subheading
@@ -449,6 +464,7 @@ def admin_slide_item(id):
 def admin_slide_delete(id):
     slide = Slide.query.filter_by(id=id).first()
     if slide is not None:
+        s3.delete('slideimages/' + slide.imagename)
         title = page.heading
         db.session.delete(slide)
         db.session.commit()
@@ -463,9 +479,10 @@ def admin_slide_delete(id):
 def admin_slide_removeimage(id):
     slide = Slide.query.filter_by(id=id).first()
     if slide is not None:
-        path = slideimages.path(slide.imagename)
-        if os.path.isfile(path):
-            os.remove(path)
+        #path = slideimages.path(slide.imagename)
+        #if os.path.isfile(path):
+        #    os.remove(path)
+        s3.delete('slideimages/' + slide.imagename)
         slide.imagename = None
         db.session.commit()
         return redirect(url_for('admin_slide_item',id=id))
@@ -489,9 +506,11 @@ def admin_country_item(slug):
     if form.validate_on_submit():
         if 'image' in request.files and request.files['image'].filename != '':
             filename = countryimages.save(request.files['image'])
+            s3.upload('countryimages/' + filename,open(countryimages.path(filename),'rb'))
             country.filename = filename
         if 'codebook' in request.files and request.files['codebook'].filename != '':
             codebookfilename = codebookfiles.save(request.files['codebook'])
+            s3.upload('codebookfiles/' + codebookfilename,open(codebookfiles.path(codebookfilename),'rb'))
             country.codebookfilename = codebookfilename
         country.name = form.name.data
         country.short_name = form.short_name.data
@@ -514,8 +533,12 @@ def admin_country_item(slug):
               (form.name.data))
         return redirect( url_for('admin_country_item',slug=current_user.country.slug) if current_user.country else url_for('admin_country_list') )
     else:
-        url = countryimages.url(country.filename) if country.filename else None
-        codebookurl = codebookfiles.url(country.codebookfilename) if country.codebookfilename else None
+        #url = countryimages.url(country.filename) if country.filename else None
+        url = app.config['S3_URL'] + 'countryimages/' + country.filename if country.filename else None
+        
+        #codebookurl = codebookfiles.url(country.codebookfilename) if country.codebookfilename else None
+        codebookurl = app.config['S3_URL'] + 'codebookfiles/' + country.codebookfilename if country.codebookfilename else None
+        
         if request.method == 'GET':
             form.name.data = country.name
             form.short_name.data = country.short_name
@@ -542,6 +565,8 @@ def admin_country_item(slug):
 def admin_country_delete(id):
     country = Country.query.filter_by(id=id).first()
     if country is not None:
+        s3.delete('countryimages/' + country.filename)
+        s3.delete('codebookfiles/' + country.codebookfilename)
         title = country.name
         db.session.delete(country)
         db.session.commit()
@@ -556,9 +581,10 @@ def admin_country_delete(id):
 def admin_country_removeimage(id):
     country = Country.query.filter_by(id=id).first()
     if country is not None:
-        path = countryimages.path(country.filename)
-        if os.path.isfile(path):
-            os.remove(path)
+        #path = countryimages.path(country.filename)
+        #if os.path.isfile(path):
+        #    os.remove(path)
+        s3.delete('countryimages/' + country.filename)
         country.filename = None
         db.session.commit()
         return redirect(url_for('admin_country_item',slug=country.slug))
@@ -570,9 +596,10 @@ def admin_country_removeimage(id):
 def admin_country_removecodebook(id):
     country = Country.query.filter_by(id=id).first()
     if country is not None:
-        path = codebookfiles.path(country.codebookfilename)
-        if os.path.isfile(path):
-            os.remove(path)
+        #path = codebookfiles.path(country.codebookfilename)
+        #if os.path.isfile(path):
+        #    os.remove(path)
+        s3.delete('codebookfiles/' + country.codebookfilename)
         country.codebookfilename = None
         db.session.commit()
         return redirect(url_for('admin_country_item',slug=country.slug))
@@ -659,7 +686,7 @@ def admin_news_list(slug,page=1):
     return render_template('admin/news_list.html',
                            country=country,
                            news=news)
-                    
+  #NNN                  
 @app.route('/admin/projects/<slug>/news/<id>', methods=['GET', 'POST'])
 @login_required
 def admin_news_item(slug,id):
@@ -669,6 +696,7 @@ def admin_news_item(slug,id):
     if form.validate_on_submit():
         if 'image' in request.files and request.files['image'].filename != '':
             filename = newsimages.save(request.files['image'])
+            s3.upload('newsimages/' + filename,open(newsimages.path(filename),'rb'))
             news.filename = filename
         news.title = form.title.data
         news.content = form.content.data
@@ -682,7 +710,8 @@ def admin_news_item(slug,id):
               (form.title.data))
         return redirect(url_for('admin_news_list',slug=slug))
     else:
-        url = newsimages.url(news.filename) if news.filename else None
+        #url = newsimages.url(news.filename) if news.filename else None
+        url = app.config['S3_URL'] + 'newsimages/' + news.filename if news.filename else None
         if request.method == 'GET':
             form.title.data = news.title
             form.content.data = news.content
@@ -699,6 +728,7 @@ def admin_news_item(slug,id):
 def admin_news_delete(slug,id):
     news = News.query.filter_by(id=id).first()
     if news is not None:
+        s3.delete('newsimages/' + news.filename)
         title = news.title
         db.session.delete(news)
         db.session.commit()
@@ -713,9 +743,10 @@ def admin_news_delete(slug,id):
 def admin_news_removeimage(slug,id):
     news = News.query.filter_by(id=id).first()
     if news is not None:
-        path = newsimages.path(news.filename)
-        if os.path.isfile(path):
-            os.remove(path)
+        #path = newsimages.path(news.filename)
+        #if os.path.isfile(path):
+        #    os.remove(path)
+        s3.delete('newsimages/' + news.filename)
         news.filename = None
         db.session.commit()
         return redirect(url_for('admin_news_item',slug=slug,id=id))
@@ -745,9 +776,11 @@ def admin_research_item(slug,id):
     if form.validate_on_submit():
         if 'file' in request.files and request.files['file'].filename != '':
             filename = researchfiles.save(request.files['file'])
+            s3.upload('researchfiles/' + filename,open(researchfiles.path(filename),'rb'))
             research.filename = filename
         if 'image' in request.files and request.files['image'].filename != '':
             imagename = researchimages.save(request.files['image'])
+            s3.upload('researchimages/' + imagename,open(researchimages.path(imagename),'rb'))
             research.imagename = imagename
         research.title = form.title.data
         research.body = form.body.data
@@ -761,8 +794,11 @@ def admin_research_item(slug,id):
               (form.title.data))
         return redirect(url_for('admin_research_list',slug=slug))
     else:
-        fileurl = researchfiles.url(research.filename) if research.filename else None
-        imageurl = researchimages.url(research.imagename) if research.imagename else None
+        #fileurl = researchfiles.url(research.filename) if research.filename else None
+        #imageurl = researchimages.url(research.imagename) if research.imagename else None
+        fileurl = app.config['S3_URL'] + 'researchfiles/' + research.filename if research.filename else None
+        imageurl = app.config['S3_URL'] + 'researchimages/' + research.imagename if research.imagename else None
+        
         if request.method == 'GET':
             form.title.data = research.title
             form.body.data = research.body
@@ -783,6 +819,8 @@ def admin_research_item(slug,id):
 def admin_research_delete(slug,id):
     research = Research.query.filter_by(id=id).first()
     if research is not None:
+        s3.delete('researchfiles/' + research.filename)
+        s3.delete('researchimages/' + research.imagename)
         title = research.title
         db.session.delete(research)
         db.session.commit()
@@ -797,9 +835,10 @@ def admin_research_delete(slug,id):
 def admin_research_removefile(slug,id):
     research = Research.query.filter_by(id=id).first()
     if research is not None:
-        path = researchfiles.path(research.filename)
-        if os.path.isfile(path):
-            os.remove(path)
+        #path = researchfiles.path(research.filename)
+        #if os.path.isfile(path):
+        #    os.remove(path)
+        s3.delete('researchfiles/' + research.filename)
         research.filename = None
         db.session.commit()
         return redirect(url_for('admin_research_item',slug=slug,id=id))
@@ -811,9 +850,10 @@ def admin_research_removefile(slug,id):
 def admin_research_removeimage(slug,id):
     research = Research.query.filter_by(id=id).first()
     if research is not None:
-        path = researchimages.path(research.imagename)
-        if os.path.isfile(path):
-            os.remove(path)
+        #path = researchimages.path(research.imagename)
+        #if os.path.isfile(path):
+        #    os.remove(path)
+        s3.delete('researchimages/' + research.imagename)
         research.imagename = None
         db.session.commit()
         return redirect(url_for('admin_research_item',slug=slug,id=id))
@@ -840,6 +880,7 @@ def admin_staff_item(slug,id):
     if form.validate_on_submit():
         if 'image' in request.files and request.files['image'].filename != '':
             filename = staffimages.save(request.files['image'])
+            s3.upload('staffimages/' + filename,open(staffimages.path(filename),'rb'))
             staff.filename = filename
         staff.name = form.name.data
         staff.title = form.title.data
@@ -854,7 +895,10 @@ def admin_staff_item(slug,id):
               (form.name.data))
         return redirect(url_for('admin_staff_list',slug=slug))
     else:
-        url = staffimages.url(staff.filename) if staff.filename else None
+        #url = staffimages.url(staff.filename) if staff.filename else None
+        url = app.config['S3_URL'] + 'staffimages/' + staff.filename if staff.filename else None
+        
+        
         if request.method == 'GET':
             form.name.data = staff.name
             form.title.data = staff.title
@@ -875,6 +919,7 @@ def admin_staff_item(slug,id):
 def admin_staff_delete(slug,id):
     staff = Staff.query.filter_by(id=id).first()
     if staff is not None:
+        s3.delete('staffimages/' + staff.filename)
         title = staff.title
         db.session.delete(staff)
         db.session.commit()
@@ -889,9 +934,10 @@ def admin_staff_delete(slug,id):
 def admin_staff_removefile(slug,id):
     staff = Staff.query.filter_by(id=id).first()
     if staff is not None:
-        path = staffimages.path(staff.filename)
-        if os.path.isfile(path):
-            os.remove(path)
+        #path = staffimages.path(staff.filename)
+        #if os.path.isfile(path):
+        #    os.remove(path)
+        s3.delete('staffimages/' + staff.filename)
         staff.filename = None
         db.session.commit()
         return redirect(url_for('admin_staff_item',slug=slug,id=id))
@@ -951,12 +997,14 @@ def admin_staticdataset_item(slug,id):
     content = False
     if 'content' in request.form and request.form['content'] != '':
         content = request.form['content']
+        s3.upload('datasetfiles/' + content,open(datasetfiles.path(content),'rb'))
         dataset.datasetfilename = content
     
     if form.validate_on_submit():
         
         if 'codebook' in request.files and request.files['codebook'].filename != '':
             codebookfilename = codebookfiles.save(request.files['codebook'])
+            s3.upload('codebookfiles/' + codebookfilename,open(codebookfiles.path(codebookfilename),'rb'))
             dataset.codebookfilename = codebookfilename
         
         if content:
@@ -993,8 +1041,12 @@ def admin_staticdataset_item(slug,id):
 
     else:
     
-        dataseturl= datasetfiles.url(dataset.datasetfilename) if dataset.datasetfilename else None
-        codebookurl = codebookfiles.url(dataset.codebookfilename) if dataset.codebookfilename else None
+        #dataseturl= datasetfiles.url(dataset.datasetfilename) if dataset.datasetfilename else None
+        #codebookurl = codebookfiles.url(dataset.codebookfilename) if dataset.codebookfilename else None
+        dataseturl= app.config['S3_URL'] + 'datasetfiles/' + dataset.datasetfilename if dataset.datasetfilename else None
+        codebookurl = app.config['S3_URL'] + 'codebookfiles/' + dataset.codebookfilename if dataset.codebookfilename else None
+        
+        
         if request.method == 'GET':
             form.display.data = dataset.display
             form.short_display.data = dataset.short_display
@@ -1017,6 +1069,8 @@ def admin_staticdataset_item(slug,id):
 def admin_staticdataset_delete(slug,id):
     dataset = Staticdataset.query.filter_by(id=id).first()
     if dataset is not None:
+        s3.delete('datasetfiles/' + dataset.filename)
+        s3.delete('codebookfiles/' + dataset.codebookfilename)
         title = dataset.display
         db.session.delete(dataset)
         db.session.commit()
@@ -1034,7 +1088,8 @@ def admin_staticdataset_removecontent(slug,id):
         #path = datasetimages.path(dataset.filename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        #dataset.filename = None
+        s3.delete('datasetfiles/' + dataset.filename)
+        dataset.filename = None
         dataset.ready = False
         db.session.commit()
         return redirect(url_for('admin_staticdataset_item',slug=slug,id=id))
@@ -1046,9 +1101,10 @@ def admin_staticdataset_removecontent(slug,id):
 def admin_staticdataset_removecodebook(slug,id):
     dataset = Staticdataset.query.filter_by(id=id).first()
     if dataset is not None:
-        path = codebookfiles.path(dataset.codebookfilename)
-        if os.path.isfile(path):
-            os.remove(path)
+        #path = codebookfiles.path(dataset.codebookfilename)
+        #if os.path.isfile(path):
+        #    os.remove(path)
+        s3.delete('codebookfiles/' + dataset.codebookfilename)
         dataset.codebookfilename = None
         db.session.commit()
         return redirect(url_for('admin_staticdataset_item',slug=slug,id=id))
@@ -1101,12 +1157,13 @@ def admin_dataset_item(slug,id):
     
     if id == 'addbudget':
         dataset.budget = True
-    
+        
     content = False
     if 'content' in request.form and request.form['content'] != '':
         content = request.form['content']
+        s3.upload('datasetfiles/' + content,open(datasetfiles.path(content),'rb'))
         dataset.datasetfilename = content
-    
+        
     form.fieldnames=[]
     if dataset.datasetfilename:
         datasetfilepath = datasetfiles.path(dataset.datasetfilename)
@@ -1118,6 +1175,7 @@ def admin_dataset_item(slug,id):
     if 'topics' in request.files and request.files['topics'].filename != '':
         topicsfilename = topicsfiles.save(request.files['topics'])
         topicsfilepath = topicsfiles.path(topicsfilename)
+        s3.upload('topicsfiles/' + topicsfilename,open(topicsfilepath,'rb'))
         try:
             didit = convert_to_utf8(topicsfilepath)
         except:
@@ -1133,8 +1191,8 @@ def admin_dataset_item(slug,id):
     if form.validate_on_submit():
         
         if 'codebook' in request.files and request.files['codebook'].filename != '':
-        
             codebookfilename = codebookfiles.save(request.files['codebook'])
+            s3.upload('codebookfiles/' + codebookfilename,open(codebookfiles.path(codebookfilename),'rb'))
             dataset.codebookfilename = codebookfilename
         
         if content:
@@ -1232,9 +1290,14 @@ def admin_dataset_item(slug,id):
         
     else:
     
-        dataseturl= datasetfiles.url(dataset.datasetfilename) if dataset.datasetfilename else None
-        codebookurl = codebookfiles.url(dataset.codebookfilename) if dataset.codebookfilename else None
-        topicsurl = topicsfiles.url(dataset.topicsfilename) if dataset.topicsfilename else None
+        #dataseturl= datasetfiles.url(dataset.datasetfilename) if dataset.datasetfilename else None
+        #codebookurl = codebookfiles.url(dataset.codebookfilename) if dataset.codebookfilename else None
+        #topicsurl = topicsfiles.url(dataset.topicsfilename) if dataset.topicsfilename else None
+        
+        dataseturl= app.config['S3_URL'] + 'datasetfiles/' + dataset.datasetfilename if dataset.datasetfilename else None
+        codebookurl = app.config['S3_URL'] + 'codebookfiles/' + dataset.codebookfilename if dataset.codebookfilename else None
+        topicsurl = app.config['S3_URL'] + 'topicsfiles/' + dataset.topicsfilename if dataset.topicsfilename else None
+        
         if request.method == 'GET':
             form.display.data = dataset.display
             form.short_display.data = dataset.short_display
@@ -1267,6 +1330,9 @@ def admin_dataset_item(slug,id):
 def admin_dataset_delete(slug,id):
     dataset = Dataset.query.filter_by(id=id).first()
     if dataset is not None:
+        s3.delete('datasetfiles/' + dataset.filename)
+        s3.delete('codebookfiles/' + dataset.codebookfilename)
+        s3.delete('topicsfiles/' + dataset.topicsfilename)
         title = dataset.display
         db.session.delete(dataset)
         db.session.commit()
@@ -1297,7 +1363,8 @@ def admin_dataset_removecontent(slug,id):
         #path = datasetimages.path(dataset.filename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        #dataset.filename = None
+        s3.delete('datasetfiles/' + dataset.filename)
+        dataset.filename = None
         dataset.ready = False
         db.session.commit()
         return redirect(url_for('admin_dataset_item',slug=slug,id=id))
@@ -1309,9 +1376,10 @@ def admin_dataset_removecontent(slug,id):
 def admin_dataset_removecodebook(slug,id):
     dataset = Dataset.query.filter_by(id=id).first()
     if dataset is not None:
-        path = codebookfiles.path(dataset.codebookfilename)
-        if os.path.isfile(path):
-            os.remove(path)
+        #path = codebookfiles.path(dataset.codebookfilename)
+        #if os.path.isfile(path):
+        #    os.remove(path)
+        s3.delete('codebookfiles/' + dataset.codebookfilename)
         dataset.codebookfilename = None
         db.session.commit()
         return redirect(url_for('admin_dataset_item',slug=slug,id=id))
@@ -1324,9 +1392,10 @@ def admin_dataset_removetopics(slug,id):
     #return redirect(url_for('admin_dataset_item',slug=slug,id=id))
     dataset = Dataset.query.filter_by(id=id).first()
     if dataset is not None:
-        path = topicsfiles.path(dataset.topicsfilename)
-        if os.path.isfile(path):
-            os.remove(path)
+        #path = topicsfiles.path(dataset.topicsfilename)
+        #if os.path.isfile(path):
+        #    os.remove(path)
+        s3.delete('topicsfiles/' + dataset.topicsfilename)
         dataset.topicsfilename = None
         db.session.commit()
         return redirect(url_for('admin_dataset_item',slug=slug,id=id))
@@ -1803,8 +1872,13 @@ def country(slug,pane='about'):
         latest_research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date)).paginate(1, 1, False).items
         research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date))
         staff = Staff.query.filter_by(country_id=country.id).order_by(Staff.sort_order)
-        url = countryimages.url(country.filename) if country.filename else None
-        codebookurl = codebookfiles.url(country.codebookfilename) if country.codebookfilename else None
+        #url = countryimages.url(country.filename) if country.filename else None
+        url = app.config['S3_URL'] + 'countryimages/' + country.filename if country.filename else None
+        
+        #codebookurl = codebookfiles.url(country.codebookfilename) if country.codebookfilename else None
+        codebookurl = app.config['S3_URL'] + 'codebookfiles/' + country.codebookfilename if country.codebookfilename else None
+        
+        
         return render_template("country.html",
                                countries=countries,
                                pane=pane,
@@ -1948,10 +2022,10 @@ def convert_to_utf8(filename):
  
     # now get the absolute path of our filename and append .bak
     # to the end of it (for our backup file)
-    fpath = os.path.abspath(filename)
-    newfilename = fpath + '.bak'
+    #fpath = os.path.abspath(filename)
+    #newfilename = fpath + '.bak'
     # and make our backup file with shutil
-    shutil.copy(filename, newfilename)
+    #shutil.copy(filename, newfilename)
  
     # and at last convert it to utf-8
     f = open(filename, 'w')

@@ -151,10 +151,10 @@
                                     This dataset is not available in the trends tool.<br/>
                                     {% endif %}
                                     
-                                    <a class="clickable" href="/_uploads/datasetfiles/{{dataset.datasetfilename}}">download dataset</a>
+                                    <a class="clickable" href="{{config['S3_URL']}}datasetfiles/{{dataset.datasetfilename}}">download dataset</a>
                                                                         
                                     {% if dataset.codebookfilename %}
-                                    &nbsp;&nbsp;<a class="clickable" href="/_uploads/codebookfiles/{{dataset.codebookfilename}}" target="_blank">download codebook</a>
+                                    &nbsp;&nbsp;<a class="clickable" href="{{config['S3_URL']}}codebookfiles/{{dataset.codebookfilename}}" target="_blank">download codebook</a>
                                     {% endif %}
                                     
                                     </div>
@@ -195,7 +195,7 @@
 
                                     <div class="medium-4 columns">
                                     {% if item.imagename %}
-                                    <img class="news-image" src="http://www.comparativeagendas.net/_uploads/researchimages/{{ item.imagename }}"/>
+                                    <img class="news-image" src="{{config['S3_URL']}}researchimages/{{ item.imagename }}"/>
                                     {% endif %}
                                     </div>
 
@@ -233,7 +233,7 @@
                                 <div class="row">
 
                                     <div class="medium-3 columns">
-                                    <img class="staff-image" src="_uploads/staffimages/{{ item.filename }}"/>
+                                    <img class="staff-image" src="{{config['S3_URL']}}staffimages/{{ item.filename }}"/>
                                     </div>
 
                                     <div class="medium-9 columns">
@@ -327,7 +327,7 @@
                                     <div class="medium-12 columns">
                                     <h5>{{ item.title }}</h5>
                                     <p>
-                                    {% if item.imagename %}<img style="float:left; margin-right:10px;" class="featured-research-image" src="http://beta.comparativeagendas.com/_uploads/researchimages/{{ item.imagename }}">{% endif %}
+                                    {% if item.imagename %}<img style="float:left; margin-right:10px;" class="featured-research-image" src="{{config['S3_URL']}}researchimages/{{ item.imagename }}">{% endif %}
                                     {{ smart_truncate(item.body,475)|safe }}
                                     <a class="orange-link" href="{{ url_for('research_item',slug=country.slug,id=item.id) }}">read more</a></p>
                                     
