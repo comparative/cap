@@ -523,7 +523,7 @@ def admin_country_item(slug):
         country.embed_url = form.embed_url.data
         country.sponsoring_institutions = form.sponsoring_institutions.data
         
-        app.logger.debug(form.sponsoring_institutions.data)
+        #app.logger.debug(form.sponsoring_institutions.data)
         
         if slug == 'add':
             country.slug = slugify(country.short_name,to_lower=True)
@@ -1069,7 +1069,7 @@ def admin_staticdataset_item(slug,id):
 def admin_staticdataset_delete(slug,id):
     dataset = Staticdataset.query.filter_by(id=id).first()
     if dataset is not None:
-        s3.delete('datasetfiles/' + dataset.filename)
+        s3.delete('datasetfiles/' + dataset.datasetfilename)
         s3.delete('codebookfiles/' + dataset.codebookfilename)
         title = dataset.display
         db.session.delete(dataset)
@@ -1088,8 +1088,8 @@ def admin_staticdataset_removecontent(slug,id):
         #path = datasetimages.path(dataset.filename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        s3.delete('datasetfiles/' + dataset.filename)
-        dataset.filename = None
+        s3.delete('datasetfiles/' + dataset.datasetfilename)
+        dataset.datasetfilename = None
         dataset.ready = False
         db.session.commit()
         return redirect(url_for('admin_staticdataset_item',slug=slug,id=id))
@@ -1121,7 +1121,7 @@ def admin_dataset_upload(type):
     retval = {}
     datasetfilename = datasetfiles.save(request.files['file'])
     datasetfilepath = datasetfiles.path(datasetfilename)
-    didit = convert_to_utf8(datasetfilepath)
+    #didit = convert_to_utf8(datasetfilepath)
     csvfile = open(datasetfilepath, 'rU')
     reader = csv.DictReader(csvfile)
     #reader.fieldnames = [item.lower() for item in reader.fieldnames]
@@ -1205,17 +1205,18 @@ def admin_dataset_item(slug,id):
             thedata = []
             for row in reader:
                 if 'count' in form.fieldnames:
-                    if row['count']:
+                    if row['id'] and row['year'] and row['majortopic'] and row['count']:
                         thedata.append(row)
                 elif 'amount' in form.fieldnames:
-                    if row['amount']:
+                    if row['id'] and row['year'] and row['majorfunction'] and row['amount']:
                         thedata.append(row)
                 elif 'percent' in form.fieldnames:
-                    if row['percent']:
+                    if row['id'] and row['year'] and row['majortopic'] and row['percent']:
                         row['percent'] = float(row['percent'])
                         thedata.append(row)
                 else:
-                    thedata.append(row)
+                    if row['id'] and row['year'] and row['majortopic']:
+                        thedata.append(row)
                     
             dataset.content = thedata
             dataset.ready = True
@@ -1330,9 +1331,12 @@ def admin_dataset_item(slug,id):
 def admin_dataset_delete(slug,id):
     dataset = Dataset.query.filter_by(id=id).first()
     if dataset is not None:
-        s3.delete('datasetfiles/' + dataset.filename)
-        s3.delete('codebookfiles/' + dataset.codebookfilename)
-        s3.delete('topicsfiles/' + dataset.topicsfilename)
+        if dataset.datasetfilename:
+            s3.delete('datasetfiles/' + dataset.datasetfilename)
+        if dataset.codebookfilename:
+            s3.delete('codebookfiles/' + dataset.codebookfilename)
+        if dataset.topicsfilename:
+            s3.delete('topicsfiles/' + dataset.topicsfilename)
         title = dataset.display
         db.session.delete(dataset)
         db.session.commit()
@@ -1363,8 +1367,8 @@ def admin_dataset_removecontent(slug,id):
         #path = datasetimages.path(dataset.filename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        s3.delete('datasetfiles/' + dataset.filename)
-        dataset.filename = None
+        s3.delete('datasetfiles/' + dataset.datasetfilename)
+        dataset.datasetfilename = None
         dataset.ready = False
         db.session.commit()
         return redirect(url_for('admin_dataset_item',slug=slug,id=id))
@@ -1566,6 +1570,9 @@ def api_instances(dataset,flag,topic,frm,to):
     where = instances_get_where(db,dataset,sub,topic,str(frm),str(to))
     
     sql = sql + where
+    
+    #app.logger.debug(sql)
+    
     cur.execute(sql,[dataset])
     
     def generate():
@@ -1618,7 +1625,7 @@ def api_measures(dataset,flag,topic):
         if (filterval != None):
             filter_predicates.append("datarow->>'" + filter + "'='" + filterval + "'")
     
-    app.logger.debug(filter_predicates);
+    #app.logger.debug(filter_predicates);
     
     topic_col = 'subtopic' if sub else 'majortopic'
     
@@ -1722,7 +1729,7 @@ def api_measures(dataset,flag,topic):
             GROUP BY year) AS yt ORDER by year
             """
             
-            app.logger.debug(sql)
+            #app.logger.debug(sql)
             
             cur.execute(sql,[dataset])
             rows = cur.fetchall()
@@ -1853,7 +1860,7 @@ def country(slug,pane='about'):
         cats = []
         for category in categories:
             
-            app.logger.debug(category)
+            #app.logger.debug(category)
         
             datasets = [u.__dict__ for u in Dataset.query.filter_by(country_id=country.id).filter_by(category_id=category.id).filter_by(ready=True).all()]
             
