@@ -14,7 +14,7 @@
 {% if not current_user.country %}
     <a href="{{ url_for('admin_country_list') }}">Projects</a> >>
 {% endif %}
-<a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> <a href="{{ url_for('admin_dataset_list',slug=country.slug,tab=3) }}">Datasets (Download)</a>
+<a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> <a href="{{ url_for('admin_dataset_list',slug=country.slug,tab=3) }}">Datasets (Download Only)</a>
 </h4>
 <p>
 <a href="{{ url_for('page',slug='dataset-instructions') }}">Click here for dataset instructions.</a>

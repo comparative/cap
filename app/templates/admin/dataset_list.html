@@ -15,7 +15,7 @@
 <dl class="tabs" data-tab>
   <dd {% if tab != 2 and tab != 3 %}class="active"{% endif %}><a class="clickable" href="#panel1">Policy</a></dd>
   <dd {% if tab == 2 %}class="active"{% endif %}><a class="clickable" href="#panel2">Budget</a></dd>
-  <dd {% if tab == 3 %}class="active"{% endif %}><a class="clickable" href="#panel3">Download</a></dd>
+  <dd {% if tab == 3 %}class="active"{% endif %}><a class="clickable" href="#panel3">Download Only</a></dd>
 </dl>
 
 <div class="tabs-content">
@@ -71,7 +71,7 @@
 </p>
 {% endif %}
 
-<a href="{{ url_for('admin_staticdataset_item',slug=country.slug,id='add') }}">Add download dataset</a>
+<a href="{{ url_for('admin_staticdataset_item',slug=country.slug,id='add') }}">Add download only dataset</a>
 
 </div>
 
