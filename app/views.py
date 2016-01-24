@@ -388,7 +388,8 @@ def admin_file_item(slug):
 def admin_file_delete(id):
     file = File.query.filter_by(id=id).first()
     if file is not None:
-        s3.delete('adhocfiles/' + file.filename)
+        if file.filename:
+            s3.delete('adhocfiles/' + file.filename)
         name = file.name
         db.session.delete(file)
         db.session.commit()
@@ -406,7 +407,8 @@ def admin_file_removefile(id):
         #path = adhocfiles.path(file.filename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        s3.delete('adhocfiles/' + file.filename)
+        if file.filename:
+            s3.delete('adhocfiles/' + file.filename)
         file.filename = None
         db.session.commit()
         return redirect(url_for('admin_file_item',slug=file.slug))
@@ -464,7 +466,8 @@ def admin_slide_item(id):
 def admin_slide_delete(id):
     slide = Slide.query.filter_by(id=id).first()
     if slide is not None:
-        s3.delete('slideimages/' + slide.imagename)
+        if slide.imagename:
+            s3.delete('slideimages/' + slide.imagename)
         title = page.heading
         db.session.delete(slide)
         db.session.commit()
@@ -482,7 +485,8 @@ def admin_slide_removeimage(id):
         #path = slideimages.path(slide.imagename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        s3.delete('slideimages/' + slide.imagename)
+        if slide.imagename:
+            s3.delete('slideimages/' + slide.imagename)
         slide.imagename = None
         db.session.commit()
         return redirect(url_for('admin_slide_item',id=id))
@@ -565,8 +569,10 @@ def admin_country_item(slug):
 def admin_country_delete(id):
     country = Country.query.filter_by(id=id).first()
     if country is not None:
-        s3.delete('countryimages/' + country.filename)
-        s3.delete('codebookfiles/' + country.codebookfilename)
+        if country.filename:
+            s3.delete('countryimages/' + country.filename)
+        if country.codebookfilename:
+            s3.delete('codebookfiles/' + country.codebookfilename)
         title = country.name
         db.session.delete(country)
         db.session.commit()
@@ -584,7 +590,8 @@ def admin_country_removeimage(id):
         #path = countryimages.path(country.filename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        s3.delete('countryimages/' + country.filename)
+        if country.filename:
+            s3.delete('countryimages/' + country.filename)
         country.filename = None
         db.session.commit()
         return redirect(url_for('admin_country_item',slug=country.slug))
@@ -599,7 +606,8 @@ def admin_country_removecodebook(id):
         #path = codebookfiles.path(country.codebookfilename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        s3.delete('codebookfiles/' + country.codebookfilename)
+        if country.codebookfilename:
+            s3.delete('codebookfiles/' + country.codebookfilename)
         country.codebookfilename = None
         db.session.commit()
         return redirect(url_for('admin_country_item',slug=country.slug))
@@ -728,7 +736,8 @@ def admin_news_item(slug,id):
 def admin_news_delete(slug,id):
     news = News.query.filter_by(id=id).first()
     if news is not None:
-        s3.delete('newsimages/' + news.filename)
+        if news.filename:
+            s3.delete('newsimages/' + news.filename)
         title = news.title
         db.session.delete(news)
         db.session.commit()
@@ -746,7 +755,8 @@ def admin_news_removeimage(slug,id):
         #path = newsimages.path(news.filename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        s3.delete('newsimages/' + news.filename)
+        if news.filename:
+            s3.delete('newsimages/' + news.filename)
         news.filename = None
         db.session.commit()
         return redirect(url_for('admin_news_item',slug=slug,id=id))
@@ -819,8 +829,10 @@ def admin_research_item(slug,id):
 def admin_research_delete(slug,id):
     research = Research.query.filter_by(id=id).first()
     if research is not None:
-        s3.delete('researchfiles/' + research.filename)
-        s3.delete('researchimages/' + research.imagename)
+        if research.filename:
+            s3.delete('researchfiles/' + research.filename)
+        if research.imagename:
+            s3.delete('researchimages/' + research.imagename)
         title = research.title
         db.session.delete(research)
         db.session.commit()
@@ -838,7 +850,8 @@ def admin_research_removefile(slug,id):
         #path = researchfiles.path(research.filename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        s3.delete('researchfiles/' + research.filename)
+        if research.filename:
+            s3.delete('researchfiles/' + research.filename)
         research.filename = None
         db.session.commit()
         return redirect(url_for('admin_research_item',slug=slug,id=id))
@@ -853,7 +866,8 @@ def admin_research_removeimage(slug,id):
         #path = researchimages.path(research.imagename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        s3.delete('researchimages/' + research.imagename)
+        if research.imagename:
+            s3.delete('researchimages/' + research.imagename)
         research.imagename = None
         db.session.commit()
         return redirect(url_for('admin_research_item',slug=slug,id=id))
@@ -919,7 +933,8 @@ def admin_staff_item(slug,id):
 def admin_staff_delete(slug,id):
     staff = Staff.query.filter_by(id=id).first()
     if staff is not None:
-        s3.delete('staffimages/' + staff.filename)
+        if staff.filename:
+            s3.delete('staffimages/' + staff.filename)
         title = staff.title
         db.session.delete(staff)
         db.session.commit()
@@ -937,7 +952,8 @@ def admin_staff_removefile(slug,id):
         #path = staffimages.path(staff.filename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        s3.delete('staffimages/' + staff.filename)
+        if staff.filename:
+            s3.delete('staffimages/' + staff.filename)
         staff.filename = None
         db.session.commit()
         return redirect(url_for('admin_staff_item',slug=slug,id=id))
@@ -1069,8 +1085,10 @@ def admin_staticdataset_item(slug,id):
 def admin_staticdataset_delete(slug,id):
     dataset = Staticdataset.query.filter_by(id=id).first()
     if dataset is not None:
-        s3.delete('datasetfiles/' + dataset.datasetfilename)
-        s3.delete('codebookfiles/' + dataset.codebookfilename)
+        if dataset.datasetfilename:
+            s3.delete('datasetfiles/' + dataset.datasetfilename)
+        if dataset.codebookfilename:
+            s3.delete('codebookfiles/' + dataset.codebookfilename)
         title = dataset.display
         db.session.delete(dataset)
         db.session.commit()
@@ -1088,7 +1106,8 @@ def admin_staticdataset_removecontent(slug,id):
         #path = datasetimages.path(dataset.filename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        s3.delete('datasetfiles/' + dataset.datasetfilename)
+        if dataset.datasetfilename:
+            s3.delete('datasetfiles/' + dataset.datasetfilename)
         dataset.datasetfilename = None
         dataset.ready = False
         db.session.commit()
@@ -1104,7 +1123,8 @@ def admin_staticdataset_removecodebook(slug,id):
         #path = codebookfiles.path(dataset.codebookfilename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        s3.delete('codebookfiles/' + dataset.codebookfilename)
+        if dataset.codebookfilename:
+            s3.delete('codebookfiles/' + dataset.codebookfilename)
         dataset.codebookfilename = None
         db.session.commit()
         return redirect(url_for('admin_staticdataset_item',slug=slug,id=id))
@@ -1367,7 +1387,8 @@ def admin_dataset_removecontent(slug,id):
         #path = datasetimages.path(dataset.filename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        s3.delete('datasetfiles/' + dataset.datasetfilename)
+        if dataset.datasetfilename:
+            s3.delete('datasetfiles/' + dataset.datasetfilename)
         dataset.datasetfilename = None
         dataset.ready = False
         db.session.commit()
@@ -1383,7 +1404,8 @@ def admin_dataset_removecodebook(slug,id):
         #path = codebookfiles.path(dataset.codebookfilename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        s3.delete('codebookfiles/' + dataset.codebookfilename)
+        if dataset.codebookfilename:
+            s3.delete('codebookfiles/' + dataset.codebookfilename)
         dataset.codebookfilename = None
         db.session.commit()
         return redirect(url_for('admin_dataset_item',slug=slug,id=id))
@@ -1399,7 +1421,8 @@ def admin_dataset_removetopics(slug,id):
         #path = topicsfiles.path(dataset.topicsfilename)
         #if os.path.isfile(path):
         #    os.remove(path)
-        s3.delete('topicsfiles/' + dataset.topicsfilename)
+        if dataset.topicsfilename:
+            s3.delete('topicsfiles/' + dataset.topicsfilename)
         dataset.topicsfilename = None
         db.session.commit()
         return redirect(url_for('admin_dataset_item',slug=slug,id=id))
