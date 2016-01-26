@@ -1,5 +1,3 @@
-# USAGE: docker run --name="export" -d -i -p 8080:8080 IMAGE 
-
 FROM tomcat:7-jre7
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -34,5 +32,10 @@ RUN cd /srv/highcharts-export/highcharts-export-web/ && mvn clean package
 
 # MOVE TO APP SERVER
 RUN cp /srv/highcharts-export/highcharts-export-web/target/highcharts-export-web.war  /usr/local/tomcat/webapps/
+
+# USE PORT 80
+RUN cd /usr/local/tomcat/conf && cat server.xml | sed s/8080/80/g > server_80.xml && mv server_80.xml server.xml
+
+EXPOSE 80
 
 CMD ["catalina.sh","run"]
