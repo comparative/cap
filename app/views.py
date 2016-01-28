@@ -46,6 +46,13 @@ def nocache(view):
 def static_from_root():
     return send_from_directory(app.static_folder, request.path[1:])
 
+######### CATCH ALL
+
+#@app.route('/', defaults={'path': ''})
+#@app.route('/<path:path>')
+#def catch_all(path):
+#    return 'Comparative Agendas is moving to a new server!  Please try again tomorrow.  Thanks for your patience.'
+
 ######### CHARTING ROUTES
 
 @app.route('/tooltest')
