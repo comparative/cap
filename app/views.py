@@ -1003,11 +1003,13 @@ def admin_dataset_list(slug,tab=1,page=1):
 @app.route('/admin/staticdataset/upload', methods=['POST'])
 @login_required
 def admin_staticdataset_upload():
-    retval = {}
-    datasetfilename = datasetfiles.save(request.files['file'])
-    retval['filename'] = datasetfilename
-    resp = Response(dumps(retval), status=200, mimetype='application/json')
-    return resp
+
+    file = request.files['file']
+    disk_filename = datasetfiles.save(file)
+    s3_filename = resolve_conflicts('datasetfiles/',secure_filename(file.filename))
+    s3.upload('datasetfiles/' + s3_filename,open(datasetfiles.path(disk_filename),'rb'))
+    
+    return Response(dumps({'filename':s3_filename}), status=200, mimetype='application/json')
     
 @app.route('/admin/projects/<slug>/staticdataset/<id>', methods=['GET', 'POST'])
 @login_required
@@ -1020,7 +1022,7 @@ def admin_staticdataset_item(slug,id):
     content = False
     if 'content' in request.form and request.form['content'] != '':
         content = request.form['content']
-        s3.upload('datasetfiles/' + content,open(datasetfiles.path(content),'rb'))
+        #s3.upload('datasetfiles/' + content,open(datasetfiles.path(content),'rb'))
         dataset.datasetfilename = content
     
     if form.validate_on_submit():
@@ -2021,6 +2023,24 @@ def update_stats(db,dataset_id,country_id):
     """
     cur.execute(sql,[country_id,country_id,country_id,country_id,country_id])
     db.session.commit() 
+
+def resolve_conflicts(folder,file):
+    
+    conn = tinys3.Connection(app.config['S3_ACCESS_KEY'],app.config['S3_SECRET_KEY'])
+    
+    def recursion(index, folder, file):
+        if index > 0:
+            filename = file.split('.')[0]
+            if index > 1:
+                filename = filename.rsplit('_', 1)[0]
+            ext = file.split('.')[1]
+            file = filename + '_' + str(index) + '.' + ext
+        matches = conn.list(folder + file,app.config['S3_BUCKET'])
+        if sum(1 for _ in matches) > 0:
+            return recursion(index + 1, folder, file)
+        return file
+        
+    return recursion(0, folder, file)
 
 def convert_to_utf8(filename):
     # gather the encodings you think that the file may be

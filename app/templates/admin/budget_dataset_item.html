@@ -289,14 +289,15 @@ Dropzone.options.datasetdropzone = {
 url: "/admin/dataset/upload/budget",
 maxFiles:1,
 init: function() {
+          $('input[value="Save"]').prop('disabled', true);
           this.on("maxfilesexceeded", function(file) {
                 this.removeAllFiles();
                 this.addFile(file);
           });
       },
 success: function( file, response ){
-        console.log(response.filename);
         $("#content").val(response.filename);
+        $('input[value="Save"]').prop('disabled', false);
     }
 
 };
