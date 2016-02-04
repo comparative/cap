@@ -1,4 +1,5 @@
 import shutil
+import requests
 import os
 import uuid
 import psycopg2
@@ -22,6 +23,7 @@ from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, Sta
 from datetime import datetime
 
 s3 = tinys3.Pool(app.config['S3_ACCESS_KEY'],app.config['S3_SECRET_KEY'],app.config['S3_BUCKET'])
+s3conn = tinys3.Connection(app.config['S3_ACCESS_KEY'],app.config['S3_SECRET_KEY'],app.config['S3_BUCKET'])
 
 @lm.user_loader
 def load_user(id):
@@ -364,9 +366,13 @@ def admin_file_item(slug):
     form = FileForm()
     if form.validate_on_submit():
         if 'file' in request.files and request.files['file'].filename != '':
-            filename = adhocfiles.save(request.files['file'])
-            s3.upload('adhocfiles/' + filename,open(adhocfiles.path(filename),'rb'))
-            file.filename = filename
+            
+            file_storage_obj = request.files['file']
+            disk_filename = adhocfiles.save(file_storage_obj)
+            s3_filename = resolve_conflicts('adhocfiles/',secure_filename(file_storage_obj.filename))
+            s3.upload('adhocfiles/' + s3_filename,open(adhocfiles.path(disk_filename),'rb'))
+            file.filename = s3_filename
+            
         file.name = form.name.data
         if slug == 'add':
             file.slug = slugify(file.name,to_lower=True)
@@ -439,9 +445,12 @@ def admin_slide_item(id):
     form = SlideForm()
     if form.validate_on_submit():
         if 'image' in request.files and request.files['image'].filename != '':
-            imagename = slideimages.save(request.files['image'])
-            s3.upload('slideimages/' + imagename,open(slideimages.path(imagename),'rb'))
-            slide.imagename = imagename
+            file_storage_obj = request.files['image']
+            disk_filename = slideimages.save(file_storage_obj)
+            s3_filename = resolve_conflicts('slideimages/',secure_filename(file_storage_obj.filename))
+            s3.upload('slideimages/' + s3_filename,open(slideimages.path(disk_filename),'rb'))
+            slide.imagename = s3_filename
+
         slide.heading = form.heading.data
         slide.subheading = form.subheading.data
         slide.link = form.link.data
@@ -453,7 +462,6 @@ def admin_slide_item(id):
               (form.heading.data))
         return redirect(url_for('admin_slide_list'))
     else:
-        #url = slideimages.url(slide.imagename) if slide.imagename else None
         url = app.config['S3_URL'] + 'slideimages/' + slide.imagename if slide.imagename else None
         
         if request.method == 'GET':
@@ -475,7 +483,7 @@ def admin_slide_delete(id):
     if slide is not None:
         if slide.imagename:
             s3.delete('slideimages/' + slide.imagename)
-        title = page.heading
+        title = slide.heading
         db.session.delete(slide)
         db.session.commit()
         flash('Slide "%s" deleted' %
@@ -515,14 +523,20 @@ def admin_country_item(slug):
     country = Country() if slug == 'add' else Country.query.filter_by(slug=slug).first()
     form = CountryForm()
     if form.validate_on_submit():
-        if 'image' in request.files and request.files['image'].filename != '':
-            filename = countryimages.save(request.files['image'])
-            s3.upload('countryimages/' + filename,open(countryimages.path(filename),'rb'))
-            country.filename = filename
-        if 'codebook' in request.files and request.files['codebook'].filename != '':
-            codebookfilename = codebookfiles.save(request.files['codebook'])
-            s3.upload('codebookfiles/' + codebookfilename,open(codebookfiles.path(codebookfilename),'rb'))
-            country.codebookfilename = codebookfilename
+        if 'image' in request.files and request.files['image'].filename != '':            
+            file_storage_obj = request.files['image']
+            disk_filename = countryimages.save(file_storage_obj)
+            s3_filename = resolve_conflicts('countryimages/',secure_filename(file_storage_obj.filename))
+            s3.upload('countryimages/' + s3_filename,open(countryimages.path(disk_filename),'rb'))
+            country.filename = s3_filename
+            
+        if 'codebook' in request.files and request.files['codebook'].filename != '':            
+            file_storage_obj = request.files['codebook']
+            disk_filename = codebookfiles.save(file_storage_obj)
+            s3_filename = resolve_conflicts('codebookfiles/',secure_filename(file_storage_obj.filename))
+            s3.upload('codebookfiles/' + s3_filename,open(codebookfiles.path(disk_filename),'rb'))
+            country.codebookfilename = s3_filename      
+            
         country.name = form.name.data
         country.short_name = form.short_name.data
         country.principal = form.principal.data
@@ -544,10 +558,8 @@ def admin_country_item(slug):
               (form.name.data))
         return redirect( url_for('admin_country_item',slug=current_user.country.slug) if current_user.country else url_for('admin_country_list') )
     else:
-        #url = countryimages.url(country.filename) if country.filename else None
+    
         url = app.config['S3_URL'] + 'countryimages/' + country.filename if country.filename else None
-        
-        #codebookurl = codebookfiles.url(country.codebookfilename) if country.codebookfilename else None
         codebookurl = app.config['S3_URL'] + 'codebookfiles/' + country.codebookfilename if country.codebookfilename else None
         
         if request.method == 'GET':
@@ -594,9 +606,6 @@ def admin_country_delete(id):
 def admin_country_removeimage(id):
     country = Country.query.filter_by(id=id).first()
     if country is not None:
-        #path = countryimages.path(country.filename)
-        #if os.path.isfile(path):
-        #    os.remove(path)
         if country.filename:
             s3.delete('countryimages/' + country.filename)
         country.filename = None
@@ -610,9 +619,6 @@ def admin_country_removeimage(id):
 def admin_country_removecodebook(id):
     country = Country.query.filter_by(id=id).first()
     if country is not None:
-        #path = codebookfiles.path(country.codebookfilename)
-        #if os.path.isfile(path):
-        #    os.remove(path)
         if country.codebookfilename:
             s3.delete('codebookfiles/' + country.codebookfilename)
         country.codebookfilename = None
@@ -701,7 +707,7 @@ def admin_news_list(slug,page=1):
     return render_template('admin/news_list.html',
                            country=country,
                            news=news)
-  #NNN                  
+              
 @app.route('/admin/projects/<slug>/news/<id>', methods=['GET', 'POST'])
 @login_required
 def admin_news_item(slug,id):
@@ -709,10 +715,13 @@ def admin_news_item(slug,id):
     news = News() if id == 'add' else News.query.filter_by(id=id).first()
     form = NewsForm()
     if form.validate_on_submit():
-        if 'image' in request.files and request.files['image'].filename != '':
-            filename = newsimages.save(request.files['image'])
-            s3.upload('newsimages/' + filename,open(newsimages.path(filename),'rb'))
-            news.filename = filename
+        if 'image' in request.files and request.files['image'].filename != '':            
+            file_storage_obj = request.files['image']
+            disk_filename = newsimages.save(file_storage_obj)
+            s3_filename = resolve_conflicts('newsimages/',secure_filename(file_storage_obj.filename))
+            s3.upload('newsimages/' + s3_filename,open(newsimages.path(disk_filename),'rb'))
+            news.filename = s3_filename
+            
         news.title = form.title.data
         news.content = form.content.data
         if id == 'add':
@@ -725,7 +734,6 @@ def admin_news_item(slug,id):
               (form.title.data))
         return redirect(url_for('admin_news_list',slug=slug))
     else:
-        #url = newsimages.url(news.filename) if news.filename else None
         url = app.config['S3_URL'] + 'newsimages/' + news.filename if news.filename else None
         if request.method == 'GET':
             form.title.data = news.title
@@ -791,14 +799,21 @@ def admin_research_item(slug,id):
     research = Research() if id == 'add' else Research.query.filter_by(id=id).first()
     form = ResearchForm()
     if form.validate_on_submit():
+    
         if 'file' in request.files and request.files['file'].filename != '':
-            filename = researchfiles.save(request.files['file'])
-            s3.upload('researchfiles/' + filename,open(researchfiles.path(filename),'rb'))
-            research.filename = filename
+            file_storage_obj = request.files['file']
+            disk_filename = researchfiles.save(file_storage_obj)
+            s3_filename = resolve_conflicts('researchfiles/',secure_filename(file_storage_obj.filename))
+            s3.upload('researchfiles/' + s3_filename,open(researchfiles.path(disk_filename),'rb'))
+            research.filename = s3_filename
+            
         if 'image' in request.files and request.files['image'].filename != '':
-            imagename = researchimages.save(request.files['image'])
-            s3.upload('researchimages/' + imagename,open(researchimages.path(imagename),'rb'))
-            research.imagename = imagename
+            file_storage_obj = request.files['image']
+            disk_filename = researchimages.save(file_storage_obj)
+            s3_filename = resolve_conflicts('researchimages/',secure_filename(file_storage_obj.filename))
+            s3.upload('researchimages/' + s3_filename,open(researchimages.path(disk_filename),'rb'))
+            research.imagename = s3_filename
+            
         research.title = form.title.data
         research.body = form.body.data
         research.featured = form.featured.data
@@ -811,8 +826,6 @@ def admin_research_item(slug,id):
               (form.title.data))
         return redirect(url_for('admin_research_list',slug=slug))
     else:
-        #fileurl = researchfiles.url(research.filename) if research.filename else None
-        #imageurl = researchimages.url(research.imagename) if research.imagename else None
         fileurl = app.config['S3_URL'] + 'researchfiles/' + research.filename if research.filename else None
         imageurl = app.config['S3_URL'] + 'researchimages/' + research.imagename if research.imagename else None
         
@@ -900,9 +913,12 @@ def admin_staff_item(slug,id):
     form = StaffForm()
     if form.validate_on_submit():
         if 'image' in request.files and request.files['image'].filename != '':
-            filename = staffimages.save(request.files['image'])
-            s3.upload('staffimages/' + filename,open(staffimages.path(filename),'rb'))
-            staff.filename = filename
+            file_storage_obj = request.files['image']
+            disk_filename = staffimages.save(file_storage_obj)
+            s3_filename = resolve_conflicts('staffimages/',secure_filename(file_storage_obj.filename))
+            s3.upload('staffimages/' + s3_filename,open(staffimages.path(disk_filename),'rb'))
+            staff.filename = s3_filename
+            
         staff.name = form.name.data
         staff.title = form.title.data
         staff.institution = form.institution.data
@@ -916,9 +932,7 @@ def admin_staff_item(slug,id):
               (form.name.data))
         return redirect(url_for('admin_staff_list',slug=slug))
     else:
-        #url = staffimages.url(staff.filename) if staff.filename else None
         url = app.config['S3_URL'] + 'staffimages/' + staff.filename if staff.filename else None
-        
         
         if request.method == 'GET':
             form.name.data = staff.name
@@ -1003,10 +1017,9 @@ def admin_dataset_list(slug,tab=1,page=1):
 @app.route('/admin/staticdataset/upload', methods=['POST'])
 @login_required
 def admin_staticdataset_upload():
-
-    file = request.files['file']
-    disk_filename = datasetfiles.save(file)
-    s3_filename = resolve_conflicts('datasetfiles/',secure_filename(file.filename))
+    file_storage_obj = request.files['file']
+    disk_filename = datasetfiles.save(file_storage_obj)
+    s3_filename = resolve_conflicts('datasetfiles/',secure_filename(file_storage_obj.filename))
     s3.upload('datasetfiles/' + s3_filename,open(datasetfiles.path(disk_filename),'rb'))
     
     return Response(dumps({'filename':s3_filename}), status=200, mimetype='application/json')
@@ -1022,15 +1035,17 @@ def admin_staticdataset_item(slug,id):
     content = False
     if 'content' in request.form and request.form['content'] != '':
         content = request.form['content']
-        #s3.upload('datasetfiles/' + content,open(datasetfiles.path(content),'rb'))
         dataset.datasetfilename = content
     
     if form.validate_on_submit():
         
-        if 'codebook' in request.files and request.files['codebook'].filename != '':
-            codebookfilename = codebookfiles.save(request.files['codebook'])
-            s3.upload('codebookfiles/' + codebookfilename,open(codebookfiles.path(codebookfilename),'rb'))
-            dataset.codebookfilename = codebookfilename
+        if 'codebook' in request.files and request.files['codebook'].filename != '':#TEST
+        
+            file_storage_obj = request.files['codebook']
+            disk_filename = codebookfiles.save(file_storage_obj)
+            s3_filename = resolve_conflicts('codebookfiles/',secure_filename(file_storage_obj.filename))
+            s3.upload('codebookfiles/' + s3_filename,open(codebookfiles.path(disk_filename),'rb'))
+            dataset.codebookfilename = s3_filename
         
         if content:
             dataset.ready = True
@@ -1066,11 +1081,8 @@ def admin_staticdataset_item(slug,id):
 
     else:
     
-        #dataseturl= datasetfiles.url(dataset.datasetfilename) if dataset.datasetfilename else None
-        #codebookurl = codebookfiles.url(dataset.codebookfilename) if dataset.codebookfilename else None
         dataseturl= app.config['S3_URL'] + 'datasetfiles/' + dataset.datasetfilename if dataset.datasetfilename else None
         codebookurl = app.config['S3_URL'] + 'codebookfiles/' + dataset.codebookfilename if dataset.codebookfilename else None
-        
         
         if request.method == 'GET':
             form.display.data = dataset.display
@@ -1112,9 +1124,6 @@ def admin_staticdataset_delete(slug,id):
 def admin_staticdataset_removecontent(slug,id):
     dataset = Staticdataset.query.filter_by(id=id).first()
     if dataset is not None:
-        #path = datasetimages.path(dataset.filename)
-        #if os.path.isfile(path):
-        #    os.remove(path)
         if dataset.datasetfilename:
             s3.delete('datasetfiles/' + dataset.datasetfilename)
         dataset.datasetfilename = None
@@ -1129,9 +1138,6 @@ def admin_staticdataset_removecontent(slug,id):
 def admin_staticdataset_removecodebook(slug,id):
     dataset = Staticdataset.query.filter_by(id=id).first()
     if dataset is not None:
-        #path = codebookfiles.path(dataset.codebookfilename)
-        #if os.path.isfile(path):
-        #    os.remove(path)
         if dataset.codebookfilename:
             s3.delete('codebookfiles/' + dataset.codebookfilename)
         dataset.codebookfilename = None
@@ -1144,20 +1150,25 @@ def admin_staticdataset_removecodebook(slug,id):
 
 @app.route('/admin/dataset/upload/<type>', methods=['POST'])
 @login_required
-def admin_dataset_upload(type):
-    #dataset = Dataset.query.filter_by(id=id).first()
-    #if dataset is not None:
-    retval = {}
-    datasetfilename = datasetfiles.save(request.files['file'])
-    datasetfilepath = datasetfiles.path(datasetfilename)
-    #didit = convert_to_utf8(datasetfilepath)
-    csvfile = open(datasetfilepath, 'rU')
-    reader = csv.DictReader(csvfile)
-    #reader.fieldnames = [item.lower() for item in reader.fieldnames]
-    errors = ''
+def admin_dataset_upload(type):#TEST
     
+    file_storage_obj = request.files['file']
+    disk_filename = datasetfiles.save(file_storage_obj)
+    disk_filepath = datasetfiles.path(disk_filename)
+    
+    try:
+        didit = convert_to_utf8(disk_filepath)
+    except:
+        didit = False
+    if (didit == False):
+        flash('Topics not converted to UTF-8!')
+        return redirect(url_for('admin'))
+    
+    csvfile = open(disk_filepath, 'rU')
+    reader = csv.DictReader(csvfile)
+    reader.fieldnames = [item.lower() for item in reader.fieldnames]
+    errors = ''
     if reader.fieldnames:
-        #required_fieldnames = ['id','year','majortopic','subtopic']
         if type=='policy':
             required_fieldnames = ['id','year','majortopic']
         if type=='budget':
@@ -1166,14 +1177,13 @@ def admin_dataset_upload(type):
             if required_fieldname not in reader.fieldnames:
                 errors += 'Missing column: "' + required_fieldname + '" '
     if len(errors) > 0: #validation failed
-        retval['error'] = errors
-        resp = Response(dumps(retval), status=412, mimetype='application/json')
-        return resp
-    
+        return Response(dumps({'error':errors}), status=412, mimetype='application/json')
+        
     #validation succeeded
-    retval['filename'] = datasetfilename
-    resp = Response(dumps(retval), status=200, mimetype='application/json')
-    return resp
+    s3_filename = resolve_conflicts('datasetfiles/',secure_filename(file_storage_obj.filename))
+    s3.upload('datasetfiles/' + s3_filename,open(datasetfiles.path(disk_filename),'rb'))
+    
+    return Response(dumps({'filename':s3_filename}), status=200, mimetype='application/json')
                      
 @app.route('/admin/projects/<slug>/dataset/<id>', methods=['GET', 'POST'])
 @login_required
@@ -1190,29 +1200,44 @@ def admin_dataset_item(slug,id):
     content = False
     if 'content' in request.form and request.form['content'] != '':
         content = request.form['content']
-        s3.upload('datasetfiles/' + content,open(datasetfiles.path(content),'rb'))
+        #s3.upload('datasetfiles/' + content,open(datasetfiles.path(content),'rb'))
         dataset.datasetfilename = content
         
     form.fieldnames=[]
     if dataset.datasetfilename:
-        datasetfilepath = datasetfiles.path(dataset.datasetfilename)
-        csvfile = open(datasetfilepath, 'rU')
+    
+        #file_storage_obj = s3conn.get('datasetfiles/' + dataset.datasetfilename)
+        
+        url = 'http://comparativeagendas.s3.amazonaws.com/datasetfiles/' + dataset.datasetfilename
+        response = requests.get(url, stream=True)
+        with open('temp_' + dataset.datasetfilename, 'wb') as out_file:
+            shutil.copyfileobj(response.raw, out_file)
+        del response
+        
+        csvfile = open('temp_' + dataset.datasetfilename, 'rU')
         reader = csv.DictReader(csvfile)
         form.fieldnames = [item.lower() for item in reader.fieldnames]
         
     form.topicsfieldnames=[]
-    if 'topics' in request.files and request.files['topics'].filename != '':
-        topicsfilename = topicsfiles.save(request.files['topics'])
-        topicsfilepath = topicsfiles.path(topicsfilename)
-        s3.upload('topicsfiles/' + topicsfilename,open(topicsfilepath,'rb'))
+    if 'topics' in request.files and request.files['topics'].filename != '':#TEST
+        
+        file_storage_obj = request.files['topics']
+        disk_filename = topicsfiles.save(file_storage_obj)
+        disk_filepath = topicsfiles.path(disk_filename)
+        
         try:
-            didit = convert_to_utf8(topicsfilepath)
+            didit = convert_to_utf8(disk_filepath)
         except:
             didit = False
         if (didit == False):
             flash('Topics not converted to UTF-8!')
             return redirect(url_for('admin_dataset_list',slug=slug))
-        topicscsvfile = open(topicsfilepath, 'rU')
+        
+        s3_filename = resolve_conflicts('topicsfiles/',secure_filename(file_storage_obj.filename))
+        s3.upload('topicsfiles/' + s3_filename,open(topicsfiles.path(disk_filename),'rb'))
+        topicsfilename = s3_filename
+        
+        topicscsvfile = open(disk_filepath, 'rU')
         topicsreader = csv.DictReader(topicscsvfile)
         form.topicsfieldnames = [item.lower() for item in topicsreader.fieldnames]
     
@@ -1220,12 +1245,16 @@ def admin_dataset_item(slug,id):
     if form.validate_on_submit():
         
         if 'codebook' in request.files and request.files['codebook'].filename != '':
-            codebookfilename = codebookfiles.save(request.files['codebook'])
-            s3.upload('codebookfiles/' + codebookfilename,open(codebookfiles.path(codebookfilename),'rb'))
-            dataset.codebookfilename = codebookfilename
-        
+            file_storage_obj = request.files['codebook']
+            disk_filename = codebookfiles.save(file_storage_obj)
+            s3_filename = resolve_conflicts('codebookfiles/',secure_filename(file_storage_obj.filename))
+            s3.upload('codebookfiles/' + s3_filename,open(codebookfiles.path(disk_filename),'rb'))
+            dataset.codebookfilename = s3_filename
+            
         if content:
-        
+            
+            dataset.datasetfilename = content
+            
             filters = []
             for fieldname in form.fieldnames:
                 if fieldname.split('_')[0] == 'filter':
@@ -2026,7 +2055,7 @@ def update_stats(db,dataset_id,country_id):
 
 def resolve_conflicts(folder,file):
     
-    conn = tinys3.Connection(app.config['S3_ACCESS_KEY'],app.config['S3_SECRET_KEY'])
+    #conn = tinys3.Connection(app.config['S3_ACCESS_KEY'],app.config['S3_SECRET_KEY'])
     
     def recursion(index, folder, file):
         if index > 0:
@@ -2035,7 +2064,7 @@ def resolve_conflicts(folder,file):
                 filename = filename.rsplit('_', 1)[0]
             ext = file.split('.')[1]
             file = filename + '_' + str(index) + '.' + ext
-        matches = conn.list(folder + file,app.config['S3_BUCKET'])
+        matches = s3conn.list(folder + file)
         if sum(1 for _ in matches) > 0:
             return recursion(index + 1, folder, file)
         return file
