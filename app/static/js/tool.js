@@ -172,7 +172,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
         saved = [];
         angular.forEach(data, function (chart, index) {
-            item = new Saved(chart.slug, baseUrl + '/charts/' + chart.slug, JSON.parse(chart.options));
+            item = new Saved(chart.slug, baseUrl + '/charts/' + chart.slug, chart.options);
             saved.unshift(item);
         });
         $scope.saved = saved;
@@ -1167,6 +1167,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         $scope.chart.slug = $scope.saved[index].slug;
         $scope.chart = JSON.parse($scope.saved[index].options).CAP_chart;
+       // $scope.chart = $scope.saved[index].options.CAP_chart;
         $scope.preserve_date_range = true;
         $scope.drawChart(false); 
     
