@@ -154,22 +154,22 @@
 
 {% block scripts %}
 
-
 Dropzone.options.datasetdropzone = {
-url: "/admin/staticdataset/upload",
-maxFiles:1,
-init: function() {
-          $('input[value="Save"]').prop('disabled', true);
-          this.on("maxfilesexceeded", function(file) {
-                this.removeAllFiles();
-                this.addFile(file);
-          });
-      },
-success: function( file, response ){
+    url: "/admin/staticdataset/upload",
+    maxFiles:1,
+    init: function() {
+        this.on("maxfilesexceeded", function(file) {
+            this.removeAllFiles();
+            this.addFile(file);
+        });
+    },
+    sending: function() {
+        $('input[value="Save"]').prop('disabled', true);
+    },
+    success: function(file, response) {
         $("#content").val(response.filename);
         $('input[value="Save"]').prop('disabled', false);
     }
-
 };
 
 {% endblock %}

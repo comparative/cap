@@ -70,7 +70,7 @@ class DatasetForm(Form):
     
     def validate(self):
         rv = Form.validate(self)
-        if self.fieldnames and self.aggregation_level > 0:
+        if hasattr(self, 'fieldnames') and self.aggregation_level > 0:
             if self.aggregation_level.data=='1' and 'count' not in self.fieldnames:
                 self.aggregation_level.errors.append('To choose this option, your data needs a "count" column.')
             if self.aggregation_level.data=='2' and 'percent' not in self.fieldnames:

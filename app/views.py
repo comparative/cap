@@ -17,7 +17,7 @@ from flask.ext.login import login_user, logout_user, current_user, login_require
 from werkzeug import secure_filename
 from json import dump, dumps, loads
 from slugify import slugify
-from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles, slideimages, codebookfiles, datasetfiles, topicsfiles
+from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles, slideimages, codebookfiles, datasetfiles, topicsfiles, celery
 from .models import User, News, Country, Research, Staff, Page, File, Slide, Chart, Dataset, Category, Staticdataset
 from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm, SlideForm, DatasetForm, StaticDatasetForm
 from datetime import datetime
@@ -127,7 +127,6 @@ def remove_chart(slug):
 def charts(slug,switch=None):
     exists = Chart.query.filter_by(slug=slug).first()
     if exists and switch != "embed":
-        url = 'http://104.237.136.8:8080/highcharts-export-web/'
         values = {}
         myoptions = loads(exists.options)
         #myoptions.update({'legend': {'enabled': 'true'}})        
@@ -137,7 +136,7 @@ def charts(slug,switch=None):
         values['width'] = '600'
         values['constr'] = 'Chart'
         data = urllib.urlencode(values)
-        req = urllib2.Request(url, data)
+        req = urllib2.Request(app.config['HIGHCHARTS_EXPORT_URL'], data)
         response = urllib2.urlopen(req)
         resp = make_response(response.read())
         resp.headers['Content-Type'] = 'image/png'
@@ -520,6 +519,7 @@ def admin_country_list():
                                                
 @app.route('/admin/projects/<slug>', methods=['GET', 'POST'])
 def admin_country_item(slug):
+
     country = Country() if slug == 'add' else Country.query.filter_by(slug=slug).first()
     form = CountryForm()
     if form.validate_on_submit():
@@ -1039,7 +1039,7 @@ def admin_staticdataset_item(slug,id):
     
     if form.validate_on_submit():
         
-        if 'codebook' in request.files and request.files['codebook'].filename != '':#TEST
+        if 'codebook' in request.files and request.files['codebook'].filename != '':
         
             file_storage_obj = request.files['codebook']
             disk_filename = codebookfiles.save(file_storage_obj)
@@ -1049,7 +1049,6 @@ def admin_staticdataset_item(slug,id):
         
         if content:
             dataset.ready = True
-            newdata = True
         
         dataset.display = form.display.data
         dataset.short_display = form.short_display.data
@@ -1148,9 +1147,57 @@ def admin_staticdataset_removecodebook(slug,id):
 
 # routes for REAL datasets, i.e. the ones in the trends tool
 
+@celery.task
+def long_datasave(datafile_name):
+ 
+    url = 'http://comparativeagendas.s3.amazonaws.com/datasetfiles/' + datafile_name
+    response = requests.get(url, stream=True)
+    with open('temp_' + datafile_name, 'wb') as out_file:
+        shutil.copyfileobj(response.raw, out_file)
+    del response
+    
+    csvfile = open('temp_' + datafile_name, 'rU')
+    reader = csv.DictReader(csvfile)
+    fieldnames = [item.lower() for item in reader.fieldnames]
+    
+    filters = []
+    for fieldname in fieldnames:
+        if fieldname.split('_')[0] == 'filter':
+            filters.append(fieldname)
+            
+    thedata = []
+    for row in reader:
+        if 'count' in fieldnames:
+            if row['id'] and row['year'] and row['majortopic'] and row['count']:
+                thedata.append(row)
+        elif 'amount' in fieldnames:
+            if row['id'] and row['year'] and row['majorfunction'] and row['amount']:
+                thedata.append(row)
+        elif 'percent' in fieldnames:
+            if row['id'] and row['year'] and row['majortopic'] and row['percent']:
+                row['percent'] = float(row['percent'])
+                thedata.append(row)
+        else:
+            if row['id'] and row['year'] and row['majortopic']:
+                thedata.append(row)
+    
+    #os.remove('temp_' + datafile_name)
+    
+    dataset = Dataset.query.filter_by(datasetfilename=datafile_name).first()
+    
+    if dataset:
+        dataset.filters = filters
+        dataset.content = thedata
+        dataset.ready = True
+        db.session.commit()
+    
+    update_stats(db,dataset.id,dataset.country_id)
+    
+    
+
 @app.route('/admin/dataset/upload/<type>', methods=['POST'])
 @login_required
-def admin_dataset_upload(type):#TEST
+def admin_dataset_upload(type):
     
     file_storage_obj = request.files['file']
     disk_filename = datasetfiles.save(file_storage_obj)
@@ -1161,7 +1208,7 @@ def admin_dataset_upload(type):#TEST
     except:
         didit = False
     if (didit == False):
-        flash('Topics not converted to UTF-8!')
+        flash('Data not converted to UTF-8!')
         return redirect(url_for('admin'))
     
     csvfile = open(disk_filepath, 'rU')
@@ -1188,8 +1235,7 @@ def admin_dataset_upload(type):#TEST
 @app.route('/admin/projects/<slug>/dataset/<id>', methods=['GET', 'POST'])
 @login_required
 def admin_dataset_item(slug,id):
-    
-    newdata = False
+
     country = Country.query.filter_by(slug=slug).first()
     dataset = Dataset() if (id == 'add' or id=='addbudget') else Dataset.query.filter_by(id=id).first()
     form = DatasetForm()
@@ -1197,29 +1243,8 @@ def admin_dataset_item(slug,id):
     if id == 'addbudget':
         dataset.budget = True
         
-    content = False
-    if 'content' in request.form and request.form['content'] != '':
-        content = request.form['content']
-        #s3.upload('datasetfiles/' + content,open(datasetfiles.path(content),'rb'))
-        dataset.datasetfilename = content
-        
-    form.fieldnames=[]
-    if dataset.datasetfilename:
-    
-        #file_storage_obj = s3conn.get('datasetfiles/' + dataset.datasetfilename)
-        
-        url = 'http://comparativeagendas.s3.amazonaws.com/datasetfiles/' + dataset.datasetfilename
-        response = requests.get(url, stream=True)
-        with open('temp_' + dataset.datasetfilename, 'wb') as out_file:
-            shutil.copyfileobj(response.raw, out_file)
-        del response
-        
-        csvfile = open('temp_' + dataset.datasetfilename, 'rU')
-        reader = csv.DictReader(csvfile)
-        form.fieldnames = [item.lower() for item in reader.fieldnames]
-        
     form.topicsfieldnames=[]
-    if 'topics' in request.files and request.files['topics'].filename != '':#TEST
+    if 'topics' in request.files and request.files['topics'].filename != '':
         
         file_storage_obj = request.files['topics']
         disk_filename = topicsfiles.save(file_storage_obj)
@@ -1241,7 +1266,6 @@ def admin_dataset_item(slug,id):
         topicsreader = csv.DictReader(topicscsvfile)
         form.topicsfieldnames = [item.lower() for item in topicsreader.fieldnames]
     
-        
     if form.validate_on_submit():
         
         if 'codebook' in request.files and request.files['codebook'].filename != '':
@@ -1250,36 +1274,7 @@ def admin_dataset_item(slug,id):
             s3_filename = resolve_conflicts('codebookfiles/',secure_filename(file_storage_obj.filename))
             s3.upload('codebookfiles/' + s3_filename,open(codebookfiles.path(disk_filename),'rb'))
             dataset.codebookfilename = s3_filename
-            
-        if content:
-            
-            dataset.datasetfilename = content
-            
-            filters = []
-            for fieldname in form.fieldnames:
-                if fieldname.split('_')[0] == 'filter':
-                    filters.append(fieldname)
-            dataset.filters = filters
-            thedata = []
-            for row in reader:
-                if 'count' in form.fieldnames:
-                    if row['id'] and row['year'] and row['majortopic'] and row['count']:
-                        thedata.append(row)
-                elif 'amount' in form.fieldnames:
-                    if row['id'] and row['year'] and row['majorfunction'] and row['amount']:
-                        thedata.append(row)
-                elif 'percent' in form.fieldnames:
-                    if row['id'] and row['year'] and row['majortopic'] and row['percent']:
-                        row['percent'] = float(row['percent'])
-                        thedata.append(row)
-                else:
-                    if row['id'] and row['year'] and row['majortopic']:
-                        thedata.append(row)
                     
-            dataset.content = thedata
-            dataset.ready = True
-            newdata = True
-        
         if 'topics' in request.files and request.files['topics'].filename != '':
         
             dataset.topicsfilename = topicsfilename
@@ -1323,9 +1318,19 @@ def admin_dataset_item(slug,id):
             
         dataset.aggregation_level = 1 if dataset.budget else form.aggregation_level.data
         
+        
+        if 'content' in request.form and request.form['content'] != '':
+            
+            content = request.form['content']
+            dataset.datasetfilename = content
+            dataset.ready = None
+            task = long_datasave.delay(content)
+
+        
         tab = 2 if dataset.budget else 1
         
         if id == 'add' or id == 'addbudget':
+            dataset.ready = False
             dataset.country_id = country.id
             try:
                 db.session.add(dataset) 
@@ -1342,16 +1347,12 @@ def admin_dataset_item(slug,id):
             flash('Something went wrong, dataset not saved!')
             return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
             
-        if newdata == True:
-            update_stats(db,dataset.id,country.id)
+        #if newdata == True:
+        #    update_stats(db,dataset.id,country.id)
             
         return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
         
     else:
-    
-        #dataseturl= datasetfiles.url(dataset.datasetfilename) if dataset.datasetfilename else None
-        #codebookurl = codebookfiles.url(dataset.codebookfilename) if dataset.codebookfilename else None
-        #topicsurl = topicsfiles.url(dataset.topicsfilename) if dataset.topicsfilename else None
         
         dataseturl= app.config['S3_URL'] + 'datasetfiles/' + dataset.datasetfilename if dataset.datasetfilename else None
         codebookurl = app.config['S3_URL'] + 'codebookfiles/' + dataset.codebookfilename if dataset.codebookfilename else None
@@ -1368,6 +1369,8 @@ def admin_dataset_item(slug,id):
             form.topics.data = dataset.topics
             if dataset.budget==False:
                 form.aggregation_level.data = str(dataset.aggregation_level)
+            if (id == 'add' or id=='addbudget'):
+                dataset.ready = False
             
     template = 'admin/budget_dataset_item.html' if dataset.budget else 'admin/dataset_item.html'
     

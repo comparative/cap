@@ -24,7 +24,7 @@
 
 <table>
 {% for item in datasets_policy.items %}
-<tr><td><a href="{{ url_for('admin_dataset_item', slug=country.slug, id=item.id) }}">edit</a></td><td>{{ item.display }}</td></tr>
+<tr><td><a href="{{ url_for('admin_dataset_item', slug=country.slug, id=item.id) }}">edit</a></td><td>{{ item.display }}{% if item.ready is none %} <span style="color:red">PENDING</span> {% endif %}</td></tr>
 {% endfor %}
 </table>
 
@@ -42,7 +42,7 @@
 
 <table>
 {% for item in datasets_budget.items %}
-<tr><td><a href="{{ url_for('admin_dataset_item',slug=country.slug,id=item.id) }}">edit</a></td><td>{{ item.display }}</td></tr>
+<tr><td><a href="{{ url_for('admin_dataset_item',slug=country.slug,id=item.id) }}">edit</a></td><td>{{ item.display }}{% if item.ready is none %} <span style="color:red">PENDING</span> {% endif %}</td></tr>
 {% endfor %}
 </table>
 

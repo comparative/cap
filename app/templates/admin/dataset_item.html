@@ -28,13 +28,17 @@
 	</div>
 	<div class="small-10 columns">
 	
-	  {% if ready %}
+	  {% if ready==True %}
 	  
 	      <p>
 	      <a href="{{ dataseturl }}" target="_blank">{{ datasetfilename }}</a>
 	      <br>
 	      <a href="{{ url_for('admin_dataset_removecontent',slug=slug,id=id) }}">update</a>
 	      </p>
+	  
+	  {% elif ready==None %}
+	  
+	        <p style="color:red">PENDING</p>
 	      
       {% else %}
           
@@ -212,22 +216,22 @@
 
 {% block scripts %}
 
-
 Dropzone.options.datasetdropzone = {
-url: "/admin/dataset/upload/policy",
-maxFiles:1,
-init: function() {
-          $('input[value="Save"]').prop('disabled', true);
-          this.on("maxfilesexceeded", function(file) {
-                this.removeAllFiles();
-                this.addFile(file);
-          });
-      },
-success: function( file, response ){
+    url: "/admin/dataset/upload/policy",
+    maxFiles:1,
+    init: function() {
+        this.on("maxfilesexceeded", function(file) {
+            this.removeAllFiles();
+            this.addFile(file);
+        });
+    },
+    sending: function() {
+        $('input[value="Save"]').prop('disabled', true);
+    },
+    success: function(file, response) {
         $("#content").val(response.filename);
         $('input[value="Save"]').prop('disabled', false);
     }
-
 };
 
 {% endblock %}
