@@ -64,6 +64,7 @@ class Dataset(db.Model):
     budgetcategory = db.relationship('Budgetcategory',backref=db.backref('budget_categories', lazy='dynamic'))
     topics = db.Column(JSON)
     topicsfilename = db.Column(db.String(200))
+    fieldnames = db.Column(JSON)
 
 class Staticdataset(db.Model):
 

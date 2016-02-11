@@ -1158,7 +1158,8 @@ def long_datasave(datafile_name):
     
     csvfile = open('temp_' + datafile_name, 'rU')
     reader = csv.DictReader(csvfile)
-    fieldnames = [item.lower() for item in reader.fieldnames]
+    #fieldnames = [item.lower() for item in reader.fieldnames]
+    fieldnames = [item for item in reader.fieldnames]
     
     filters = []
     for fieldname in fieldnames:
@@ -1181,11 +1182,12 @@ def long_datasave(datafile_name):
             if row['id'] and row['year'] and row['majortopic']:
                 thedata.append(row)
     
-    #os.remove('temp_' + datafile_name)
+    os.remove('temp_' + datafile_name)
     
     dataset = Dataset.query.filter_by(datasetfilename=datafile_name).first()
     
     if dataset:
+        dataset.fieldnames = fieldnames
         dataset.filters = filters
         dataset.content = thedata
         dataset.ready = True
@@ -1203,18 +1205,18 @@ def admin_dataset_upload(type):
     disk_filename = datasetfiles.save(file_storage_obj)
     disk_filepath = datasetfiles.path(disk_filename)
     
+    errors = ''
     try:
         didit = convert_to_utf8(disk_filepath)
     except:
         didit = False
     if (didit == False):
-        flash('Data not converted to UTF-8!')
-        return redirect(url_for('admin'))
+        errors += 'Data not converted to UTF-8. '
     
     csvfile = open(disk_filepath, 'rU')
     reader = csv.DictReader(csvfile)
-    reader.fieldnames = [item.lower() for item in reader.fieldnames]
-    errors = ''
+    #reader.fieldnames = [item.lower() for item in reader.fieldnames]
+    
     if reader.fieldnames:
         if type=='policy':
             required_fieldnames = ['id','year','majortopic']
@@ -1240,9 +1242,15 @@ def admin_dataset_item(slug,id):
     dataset = Dataset() if (id == 'add' or id=='addbudget') else Dataset.query.filter_by(id=id).first()
     form = DatasetForm()
     
+    if (id == 'add' or id=='addbudget'):
+        dataset.ready = False
+    
     if id == 'addbudget':
         dataset.budget = True
-        
+    
+    if dataset.fieldnames:
+        form.fieldnames = dataset.fieldnames
+    
     form.topicsfieldnames=[]
     if 'topics' in request.files and request.files['topics'].filename != '':
         
@@ -1264,7 +1272,8 @@ def admin_dataset_item(slug,id):
         
         topicscsvfile = open(disk_filepath, 'rU')
         topicsreader = csv.DictReader(topicscsvfile)
-        form.topicsfieldnames = [item.lower() for item in topicsreader.fieldnames]
+        #form.topicsfieldnames = [item.lower() for item in topicsreader.fieldnames]
+        form.topicsfieldnames = [item for item in topicsreader.fieldnames]
     
     if form.validate_on_submit():
         
@@ -1325,12 +1334,10 @@ def admin_dataset_item(slug,id):
             dataset.datasetfilename = content
             dataset.ready = None
             task = long_datasave.delay(content)
-
         
         tab = 2 if dataset.budget else 1
         
         if id == 'add' or id == 'addbudget':
-            dataset.ready = False
             dataset.country_id = country.id
             try:
                 db.session.add(dataset) 
@@ -1346,9 +1353,6 @@ def admin_dataset_item(slug,id):
         except:
             flash('Something went wrong, dataset not saved!')
             return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
-            
-        #if newdata == True:
-        #    update_stats(db,dataset.id,country.id)
             
         return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
         
@@ -1369,8 +1373,6 @@ def admin_dataset_item(slug,id):
             form.topics.data = dataset.topics
             if dataset.budget==False:
                 form.aggregation_level.data = str(dataset.aggregation_level)
-            if (id == 'add' or id=='addbudget'):
-                dataset.ready = False
             
     template = 'admin/budget_dataset_item.html' if dataset.budget else 'admin/dataset_item.html'
     
@@ -1431,6 +1433,8 @@ def admin_dataset_removecontent(slug,id):
         if dataset.datasetfilename:
             s3.delete('datasetfiles/' + dataset.datasetfilename)
         dataset.datasetfilename = None
+        dataset.filters = None
+        dataset.fieldnames = None
         dataset.ready = False
         db.session.commit()
         return redirect(url_for('admin_dataset_item',slug=slug,id=id))
@@ -1617,10 +1621,30 @@ def api_instances(dataset,flag,topic,frm,to):
     else:
         abort(404)
     
-    # INSTANCES
-    
+    # GET FIELDNAMES (JSONB does not maintain order)
+        
     sql = """
-    select datarow
+    select fieldnames from dataset WHERE dataset.id = %s
+    """
+    cur.execute(sql,[dataset])
+    r = cur.fetchone()
+    fieldnames = r['fieldnames']
+    
+    select_clause = ''
+    if fieldnames != None:
+        have_fieldnames = True
+        for fieldname in fieldnames:
+            select_clause = select_clause + "datarow->>'" + fieldname + "' AS " + '"' + fieldname + '"' + ", "
+        select_clause = select_clause[:-2]
+    else:
+        have_fieldnames = False
+        select_clause = "datarow"
+    
+    app.logger.debug(select_clause)
+    
+    sql = "select " + select_clause
+    
+    sql = sql + """
     from (
       select jsonb_array_elements(content)
       from dataset WHERE dataset.id = %s
@@ -1635,18 +1659,25 @@ def api_instances(dataset,flag,topic,frm,to):
     
     sql = sql + where
     
-    #app.logger.debug(sql)
+    app.logger.debug(sql)
     
     cur.execute(sql,[dataset])
     
-    def generate():
-        firstrow = cur.fetchone()['datarow']
-        yield ','.join(firstrow.keys()) + '\n'
-        yield '"' + '","'.join(map(str,firstrow.values())) + '"' + '\n'
-        for u in cur.fetchall():
-            yield '"' + '","'.join(map(str,u['datarow'].values())) + '"' + '\n'
+    def generate(h):
+        if h:
+            yield ','.join(fieldnames) + '\n'
+            for u in cur.fetchall():
+                for fieldname in fieldnames:
+                    yield '"' + u[fieldname] + '",'
+                yield '\n'    
+        else:
+            firstrow = cur.fetchone()['datarow']
+            yield ','.join(firstrow.keys()) + '\n'
+            yield '"' + '","'.join(map(str,firstrow.values())) + '"' + '\n'
+            for u in cur.fetchall():
+                yield '"' + '","'.join(map(str,u['datarow'].values())) + '"' + '\n'
             
-    return Response(generate(), mimetype='text/csv')
+    return Response(generate(have_fieldnames), mimetype='text/csv')
     
     
 @app.route('/api/measures/dataset/<dataset>/<flag>/<topic>')
