@@ -1230,7 +1230,7 @@ def admin_dataset_upload(type):
         
     #validation succeeded
     s3_filename = resolve_conflicts('datasetfiles/',secure_filename(file_storage_obj.filename))
-    s3.upload('datasetfiles/' + s3_filename,open(datasetfiles.path(disk_filename),'rb'))
+    s3conn.upload('datasetfiles/' + s3_filename,open(datasetfiles.path(disk_filename),'rb'))
     
     return Response(dumps({'filename':s3_filename}), status=200, mimetype='application/json')
                      
