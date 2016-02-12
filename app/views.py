@@ -89,6 +89,7 @@ def tool(slug=None):
 @app.route('/charts/save/<user>/<slug>', methods=['POST'])
 @nocache
 def save_chart(user,slug):
+    data = request.get_data()
     exists = Chart.query.filter_by(slug=slug).first()
     if exists:
         exists.unpinned = False
@@ -96,7 +97,7 @@ def save_chart(user,slug):
         chart = Chart()
         chart.slug = slug
         chart.user = user
-        chart.options = request.get_data()
+        chart.options = data
         db.session.add(chart)
     db.session.commit()
     return 'cool',200
@@ -104,12 +105,13 @@ def save_chart(user,slug):
 @app.route('/charts/saveunpinned/<user>/<slug>', methods=['POST'])
 @nocache
 def save_chart_unpinned(user,slug):
+    data = request.get_data()
     exists = Chart.query.filter_by(slug=slug).first()
     if not exists:
         chart = Chart()
         chart.slug = slug
         chart.user = user
-        chart.options = request.get_data()
+        chart.options = 
         chart.unpinned = True
         db.session.add(chart)
         db.session.commit()
@@ -118,6 +120,7 @@ def save_chart_unpinned(user,slug):
 @app.route('/charts/unpin/<slug>', methods=['POST'])
 @nocache
 def remove_chart(slug):
+    dummy = request.form
     chart = Chart.query.filter_by(slug=slug).first()
     if chart is not None:
         chart.unpinned = True
