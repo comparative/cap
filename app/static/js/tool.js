@@ -145,12 +145,13 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     $scope.export_options = [
         {"num":0,"display":""},
         {"num":1,"display":"Download PNG"},
-        {"num":2,"display":"Download JPEG"},
-        {"num":3,"display":"Download SVG"},
-        {"num":4,"display":"Download PDF"},
-        {"num":5,"display":"Copy Image URL"},
-        {"num":6,"display":"Copy Tool URL"},
-        {"num":7,"display":"Copy Embed URL"}
+        {"num":2,"display":"Download Clean PNG"},
+        {"num":3,"display":"Download JPEG"},
+        {"num":4,"display":"Download SVG"},
+        {"num":5,"display":"Download PDF"},
+        {"num":6,"display":"Copy Image URL"},
+        {"num":7,"display":"Copy Tool URL"},
+        {"num":8,"display":"Copy Embed URL"},
     ];
     
     
@@ -213,7 +214,12 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     });
     
     $http.get(baseUrl + '/api/categories').success(function(data){
+
+        // remove budget!!  because we have a tab for it!! it's kind of a category but kind of not!!
+        var removeIndex = data.map(function(item) { return item.name; }).indexOf("Budget");
+        removeIndex > -1 && data.splice(removeIndex, 1);
         $scope.categories = data;
+        
     });
     
     $http.get(baseUrl + '/api/topics').success(function(data){
@@ -1263,8 +1269,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     $scope.chartExport = function(option) {
         
-        console.log('woo wee');
-        console.log($scope.chart.slug);
+        //console.log('woo wee');
+        //console.log($scope.chart.slug);
         
         //var save = false;
     
@@ -1275,24 +1281,12 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             var optionOverride =
             {
                 legend:{
-                    enabled: true,
-                    align: 'left',
-                    verticalAlign: 'bottom',
-                    floating: true 
-                },
-                yAxis: [{
-                    gridLineWidth: 0,
-                    title: {
-                        text: $scope.chart.series[0].measure.split('_').join(' ').capitalizeFirstLetter()
-                    }
-                }]
+                    enabled: true
+                }
             };
         
-         
             strOptions = JSON.stringify(options);
-        
-        
-        
+
             // SAVE CHART, UNPINNED
             resp = $.ajax({
                 type: 'POST',
@@ -1313,7 +1307,34 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                             );
                             break;
             
-                        case 2: //JPEG
+                        case 2: //CLEAN PNG
+                            
+                            optionOverride.legend = angular.extend(optionOverride.legend,{enabled: false});
+                            optionOverride.yAxis = [{
+                                gridLineWidth: 0,
+                                minorGridLineWidth: 0,
+                                gridLineColor: 'transparent',
+                                labels: {
+                                    enabled: false
+                                },
+                                title: {
+                                    text: options.yAxis[0].title.text
+                                },
+                                floor: 0
+                            }];
+                            
+                            theChart.exportChart(
+                                {
+                                type: 'image/png',
+                                filename: $scope.chart.slug,
+                                sourceWidth: 960,
+                                },
+                                optionOverride
+                                
+                            );
+                            break;
+                        
+                        case 3: //JPEG
                             theChart.exportChart(
                                 {
                                 type: 'image/jpeg',
@@ -1324,7 +1345,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                             );
                             break;
             
-                        case 3: //SVG
+                        case 4: //SVG
                             theChart.exportChart(
                                 {
                                 type: 'image/svg+xml',
@@ -1335,7 +1356,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                             );
                             break;
             
-                        case 4: //PDF
+                        case 5: //PDF
                             theChart.exportChart(
                                 {
                                 type: 'application/pdf',
@@ -1346,15 +1367,15 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                             );
                             break;
             
-                        case 5:
+                        case 6:
                             window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/charts/" + $scope.chart.slug );
                             break;
             
-                        case 6:
+                        case 7:
                             window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/tool/" + $scope.chart.slug );
                             break;
                 
-                        case 7:
+                        case 8:
                             window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/embed/" + $scope.chart.slug );
                             break;
                 

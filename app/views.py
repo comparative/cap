@@ -264,8 +264,10 @@ def file(slug):
     file = File.query.filter_by(slug=slug).first()
     if file:
         if file.filename:
-            path = adhocfiles.path(file.filename)
-            return send_file(path)
+            url = 'http://comparativeagendas.s3.amazonaws.com/adhocfiles/' + file.filename
+            return redirect(url)
+            #path = adhocfiles.path(file.filename)
+            #return send_file(path)
     else:
         abort(404)
 

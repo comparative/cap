@@ -635,11 +635,19 @@ var scatterOptions = {
             },
             
             exporting:{
-                buttons:{
+
+                buttons: { 
+                    exportButton: {
+                        enabled:false
+                    },
+                    printButton: {
+                        enabled:false
+                    },
                     contextButton:{
                         enabled: false
                     }
                 },
+ 
                 url: exportUrl,
                 width: '960'
             },
@@ -742,10 +750,16 @@ var defaultOptions = {
     },
 
     exporting:{
-        buttons:{
+        buttons: { 
+            exportButton: {
+                enabled:false
+            },
+            printButton: {
+                enabled:false
+            },
             contextButton:{
                 enabled: false
-            }	 
+            }
         },
         url: exportUrl,
         width: '960'
