@@ -23,21 +23,21 @@ class LoginForm(Form):
     password = PasswordField('password', validators=[DataRequired()])
 
 class PageForm(Form):
-    title = StringField('title', validators=[DataRequired()])
+    title = StringField('title', validators=[DataRequired(),Length(max=80)])
     body = StringField('body', validators=[DataRequired()],widget=TextArea())
     
 class FileForm(Form):
-    name = StringField('name', validators=[DataRequired()])
+    name = StringField('name', validators=[DataRequired(),Length(max=80)])
     file = FileField('file')
 
 class NewsForm(Form):
-    title = StringField('title', validators=[DataRequired()])
+    title = StringField('title', validators=[DataRequired(),Length(max=80)])
     image = FileField('image',validators=[FileAllowed(IMAGES, 'Please choose an image file.')])
     content = StringField('content', validators=[DataRequired()],widget=TextArea())
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
 
 class ResearchForm(Form):
-    title = StringField('title')
+    title = StringField('title',validators=[Length(max=80)])
     file = FileField('file',validators=[FileAllowed(['pdf'], 'Papers must be formatted as .pdf')])
     image = FileField('image')
     body = StringField('content', validators=[Length(min=0, max=9000)],widget=TextArea()) 
@@ -45,19 +45,19 @@ class ResearchForm(Form):
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
     
 class StaffForm(Form):
-    name = StringField('name', validators=[DataRequired()])
-    title = StringField('title')
-    institution = StringField('institution')
+    name = StringField('name', validators=[DataRequired(),Length(max=80)])
+    title = StringField('title', validators=[Length(max=80)])
+    institution = StringField('institution', validators=[Length(max=80)])
     sort_order = IntegerField('sort_order', validators=[NumberRange(min=0, max=50)],default=0)
     image = FileField('image',validators=[FileAllowed(IMAGES, 'Please choose an image file.')])
     body = StringField('content', validators=[],widget=TextArea()) 
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True) 
 
 class DatasetForm(Form):
-    display = StringField('display', validators=[DataRequired()])
-    short_display = StringField('short_display', validators=[DataRequired()])
+    display = StringField('display', validators=[DataRequired(),Length(max=80)])
+    short_display = StringField('short_display', validators=[DataRequired(),Length(max=80)])
     description = StringField('content', validators=[DataRequired()],widget=TextArea())
-    unit = StringField('unit',validators=[DataRequired()])
+    unit = StringField('unit',validators=[DataRequired(),Length(max=80)])
     source = StringField('source')
     #content = FileField('content',validators=[FileAllowed(['csv'], 'Data must be formatted as .csv')])
     content = HiddenField("content")
@@ -96,16 +96,16 @@ class StaticDatasetForm(Form):
     category = QuerySelectField(query_factory=categories_factory,allow_blank=True)
 
 class CountryForm(Form):
-    name = StringField('name', validators=[DataRequired()])
-    short_name = StringField('short_name', validators=[])
-    principal = StringField('principal')
-    location = StringField('location')
-    email = StringField('email')
+    name = StringField('name', validators=[DataRequired(),Length(max=80)])
+    short_name = StringField('short_name', validators=[Length(max=80)])
+    principal = StringField('principal', validators=[Length(max=200)])
+    location = StringField('location', validators=[Length(max=200)])
+    email = StringField('email', validators=[Length(max=200)])
     image = FileField('image',validators=[FileAllowed(IMAGES, 'Please choose an image file.')])
-    heading = StringField('heading', validators=[DataRequired()])
+    heading = StringField('heading', validators=[DataRequired(),Length(max=80)])
     about = StringField('content', validators=[DataRequired()],widget=TextArea())
     datasets_intro = StringField('datasets_intro', validators=[],widget=TextArea())
-    embed_url = principal = StringField('embed_url')
+    embed_url = StringField('embed_url', validators=[DataRequired(),Length(max=200)])
     budget_topics = StringField('budget_topics')
     sponsoring_institutions = StringField('sponsoring_institutions', validators=[],widget=TextArea())
     codebook = FileField('codebook',validators=[])
