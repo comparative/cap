@@ -87,6 +87,7 @@ def tool(slug=None):
     return resp
 
 @app.route('/charts/save/<user>/<slug>', methods=['POST'])
+@nocache
 def save_chart(user,slug):
     exists = Chart.query.filter_by(slug=slug).first()
     if exists:
@@ -101,6 +102,7 @@ def save_chart(user,slug):
     return 'cool',200
     
 @app.route('/charts/saveunpinned/<user>/<slug>', methods=['POST'])
+@nocache
 def save_chart_unpinned(user,slug):
     exists = Chart.query.filter_by(slug=slug).first()
     if not exists:
@@ -114,6 +116,7 @@ def save_chart_unpinned(user,slug):
     return 'cool',200
     
 @app.route('/charts/unpin/<slug>', methods=['POST'])
+@nocache
 def remove_chart(slug):
     chart = Chart.query.filter_by(slug=slug).first()
     if chart is not None:
