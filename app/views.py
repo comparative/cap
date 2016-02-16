@@ -8,6 +8,7 @@ import urllib2
 import csv
 import time
 import tinys3
+import gc
 from sqlalchemy import desc
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
@@ -111,7 +112,7 @@ def save_chart_unpinned(user,slug):
         chart = Chart()
         chart.slug = slug
         chart.user = user
-        chart.options = 
+        chart.options = data
         chart.unpinned = True
         db.session.add(chart)
         db.session.commit()
@@ -1162,10 +1163,16 @@ def long_datasave(datafile_name):
     response = requests.get(url, stream=True)
     with open('temp_' + datafile_name, 'wb') as out_file:
         shutil.copyfileobj(response.raw, out_file)
+    
     del response
+    gc.collect()
     
     csvfile = open('temp_' + datafile_name, 'rU')
     reader = csv.DictReader(csvfile)
+    
+    del csvfile
+    gc.collect()
+    
     #fieldnames = [item.lower() for item in reader.fieldnames]
     fieldnames = [item for item in reader.fieldnames]
     
@@ -1190,18 +1197,24 @@ def long_datasave(datafile_name):
             if row['id'] and row['year'] and row['majortopic']:
                 thedata.append(row)
     
+    del reader
+    gc.collect()
+    
     os.remove('temp_' + datafile_name)
     
-    dataset = Dataset.query.filter_by(datasetfilename=datafile_name).first()
+    #content = dumps(thedata)
+    #del thedata
+    #gc.collect()
     
+    dataset = Dataset.query.filter_by(datasetfilename=datafile_name).first()
     if dataset:
         dataset.fieldnames = fieldnames
         dataset.filters = filters
         dataset.content = thedata
         dataset.ready = True
         db.session.commit()
-    
-    update_stats(db,dataset.id,dataset.country_id)
+        
+        update_stats(db,dataset.id,dataset.country_id)
     
     
 
