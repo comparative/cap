@@ -271,7 +271,7 @@ def file(slug):
     file = File.query.filter_by(slug=slug).first()
     if file:
         if file.filename:
-            url = 'http://comparativeagendas.s3.amazonaws.com/adhocfiles/' + file.filename
+            url = app.config['S3_URL'] + 'adhocfiles/' + file.filename
             return redirect(url)
             #path = adhocfiles.path(file.filename)
             #return send_file(path)
@@ -1159,7 +1159,7 @@ def admin_staticdataset_removecodebook(slug,id):
 @celery.task
 def long_datasave(datafile_name):
  
-    url = 'http://comparativeagendas.s3.amazonaws.com/datasetfiles/' + datafile_name
+    url = app.config['S3_URL'] + 'datasetfiles/' + datafile_name
     response = requests.get(url, stream=True)
     with open('temp_' + datafile_name, 'wb') as out_file:
         shutil.copyfileobj(response.raw, out_file)
@@ -1206,8 +1206,30 @@ def long_datasave(datafile_name):
     #del thedata
     #gc.collect()
     
+    #cur = db.session.connection().connection.cursor()
+    
+    #sql = "UPDATE dataset SET fieldnames = %s WHERE datasetfilename = %s"
+    #cur.execute(sql,[dumps(fieldnames),datafile_name])
+    #db.session.commit()
+    
+    #sql = "UPDATE dataset SET filters = %s WHERE datasetfilename = %s"
+    #cur.execute(sql,[dumps(filters),datafile_name])
+    #db.session.commit()
+    
+    #app.logger.debug("we started this")
+    
+    #sql = "UPDATE dataset SET content = %s, ready = True WHERE datasetfilename = %s"
+    #cur.execute(sql,[content,datafile_name])
+    #db.session.commit()
+    
+    #cur.close()
+    
+    #del content
+    #gc.collect()
+    
     dataset = Dataset.query.filter_by(datasetfilename=datafile_name).first()
     if dataset:
+        
         dataset.fieldnames = fieldnames
         dataset.filters = filters
         dataset.content = thedata
