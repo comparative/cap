@@ -849,7 +849,12 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                             value: 0,
                             width: 1,
                             color: '#808080'
-                        }]
+                        }],
+                        labels: {
+                            formatter: function() {
+                                return this.value;
+                            }
+                        }
                     };
                     if (index > 0) {
                         axis.opposite = true;
@@ -1553,6 +1558,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 
                 if (idx >= 0 && (data[idx+1] != null) ) {
                     var val = (data[idx] + data[idx+1]);
+                    if (val != Math.round(val)) {
+                        val = Number(parseFloat(val).toFixed(3));
+                    }
                     new_data.push(val);
                 } else {
                     new_data.push(null);
@@ -1574,7 +1582,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         for (var i = 0; i < count.length; i++) {
             pc = (count[i - 1] > 0) ? (count[i] - count[i - 1]) / count[i - 1] * 100 : null;
             if (pc != null) {
-                percent_change.push(pc);
+                percent_change.push(Number(parseFloat(pc).toFixed(3)));
             } else {
                 percent_change.push(null);
             }
@@ -1673,7 +1681,11 @@ var drilldown = function(filters,dataset,flag,topic,agg,year) {
     
     console.log(agg);
     
-    if (agg==0) {
+    if (topic==0) {
+    
+        alert('All topics series!! No drilldown available.');
+    
+    } else if (agg==0) {
     
         var uri = getInstancesUri(filters,dataset,flag,topic,year);
         var url = baseUrl + "/api/drilldown/" + uri;
@@ -1688,7 +1700,7 @@ var drilldown = function(filters,dataset,flag,topic,agg,year) {
     
     } else {
         
-        alert('Pre-aggregated dataset, no drilldown available.');
+        alert('Pre-aggregated dataset!! No drilldown available.');
         
     }
 

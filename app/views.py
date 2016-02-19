@@ -1646,6 +1646,9 @@ def api_drilldown(dataset,flag,topic,year):
     
     where = instances_get_where(db,dataset,sub,topic,str(frm),str(to))
     sql = sql + where
+    
+    app.logger.debug(sql)
+    
     cur.execute(sql,[dataset])
     
     return dumps(cur.fetchall())

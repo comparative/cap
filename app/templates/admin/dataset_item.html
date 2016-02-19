@@ -226,11 +226,11 @@ Dropzone.options.datasetdropzone = {
         });
     },
     sending: function() {
-        $('input[value="Save"]').prop('disabled', true);
+        $('input[type="submit"]').prop('disabled', true).val('uploading...');
     },
     success: function(file, response) {
         $("#content").val(response.filename);
-        $('input[value="Save"]').prop('disabled', false);
+        $('input[type="submit"]').prop('disabled', false).val('Save');
     }
 };
 
