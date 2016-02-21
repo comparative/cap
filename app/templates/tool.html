@@ -100,7 +100,7 @@
                 
                     
                      <label><h5>Chart type</h5></label>
-                 <select class="type" ng-change="allSeriesSameType('{@chart.chartType@}')" ng-model="chart.chartType" ng-options="type.type as type.display for type in chart_types"></select>
+                 <select class="type" ng-change="allSeriesSameType('{@chart.chartType@}')" ng-model="chart.chartType" ng-options="type.type as type.display for type in chart_types | filter:filterChartTypeOptions()"></select>
  
                     
                     

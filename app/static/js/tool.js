@@ -507,11 +507,22 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     	
     	if ($scope.chart.scatter) {
     	    
+    	    // FOREACH scope.chart.series, dammit
+    	    
     	   // alert('Scatter plot chart type requires exactly two series.');
     	   $scope.chart.scatter = false;
     	   $scope.chart.chartType = "line";
     	        
     	}
+    	
+    	if ($scope.chart.stacked && result.agg == 2) {
+    	    
+    	    $scope.chart.stacked = false;
+    	    $scope.chart.chartType = "line";
+    	    //alert('something funky');    
+    	}
+    	
+    	
     	
         result.color = $scope.getRgbaColor();
     
@@ -775,7 +786,19 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
 
                     if ($scope.chart.timeSeries == "congresses") {
                     
-                        var dataThisMeasure = series.measure == "percent_change" ? $scope.percent_change_by_congress(series.alldata['count'],series.alldata['years'][0] % 2) : $scope.aggregate_by_congress(series.alldata[series.measure],series.alldata['years'][0] % 2);
+                        if (series.measure == "percent_change") {
+                    
+                            var dataThisMeasure = $scope.percent_change_by_congress(series.alldata['count'],series.alldata['years'][0] % 2) 
+                        
+                        } else if (series.measure == "percent_total") {
+                            
+                            var dataThisMeasure = $scope.percent_total_by_congress(series.alldata['percent_total'],series.alldata['years'][0] % 2);
+                            
+                        } else {
+                        
+                            var dataThisMeasure = $scope.aggregate_by_congress(series.alldata[series.measure],series.alldata['years'][0] % 2);
+                        
+                        }
                     
                     } else {
                         
@@ -861,6 +884,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     }
                     if (ax.measure != 'percent_change') {
                         axis.min = 0;
+                        axis.minRange = 1;
                     }
             
                     options.yAxis.push(axis);
@@ -1007,76 +1031,86 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         switch($scope.chart.chartType) {
         
             case "stacked_area_count":
-
-                if ($scope.chart.series.length < 2) {
+                
+                /*if ($scope.chart.series.length < 2) {
                     validation_err = "This chart type requires at least two series!";
-                } else {                
+                } else if ($scope.allSeriesHaveCount()==false) {
+                    validation_err = "Count data not available for all series.";
+                } else {    */            
                     theType = "area";
                     theMeasure = "count";
                     $scope.chart.scatter = false;
                     $scope.chart.stacked = true;
-                }
+              //  }
                 
                 break;
                 
             case "stacked_area_percent_total":
                 
-                if ($scope.chart.series.length < 2) {
+               /* if ($scope.chart.series.length < 2) {
                     validation_err = "This chart type requires at least two series!";
-                } else {   
+                } else {  */
                     theType = "area";
                     theMeasure = "percent_total";
                     $scope.chart.scatter = false;
                     $scope.chart.stacked = true;
-                }
+             //   }
                 
                 break;
                 
             case "stacked_column_count":
                 
-                if ($scope.chart.series.length < 2) {
+                /*if ($scope.chart.series.length < 2) {
                     validation_err = "This chart type requires at least two series!";
-                } else {               
+                } else if ($scope.allSeriesHaveCount()==false) {
+                    validation_err = "Count data not available for all series.";
+                } else {   */
                     theType = "column";
                     theMeasure = "count";
                     $scope.chart.scatter = false;
                     $scope.chart.stacked = true;
-                }
+             //   }
                 
                 break;
                 
             case "stacked_column_percent_total":
                 
-                if ($scope.chart.series.length < 2) {
+            /*    if ($scope.chart.series.length < 2) {
                     validation_err = "This chart type requires at least two series!";
-                } else {   
+                } else {   */
                     theType = "column";
                     theMeasure = "percent_total";
                     $scope.chart.scatter = false;
                     $scope.chart.stacked = true;
-                }
+             //   }
                 
                 break;
                 
             case "scatter_plot":
                 
-                if ($scope.chart.series.length != 2) {
+              /*  if ($scope.chart.series.length != 2) {
                     validation_err = "This chart type requires exactly two series!";
-                } else {
+                } else if ($scope.allSeriesHaveCount()==false) {
+                    validation_err = "Count data not available for all series.";
+                } else { */
+                    theMeasure = "count";
                     $scope.chart.scatter = true;
                     $scope.chart.stacked = false;
-                }
+              //  }
                 
                 break;
                 
             case "scatter_plot_regression":
                 
-                if ($scope.chart.series.length != 2) {
+               /* if ($scope.chart.series.length != 2) {
                     validation_err = "This chart type requires exactly two series!";
-                } else {   
+                } else if ($scope.allSeriesHaveCount()==false) {
+                    validation_err = "Count data not available for all series.";
+                } else { */
+                    theMeasure = "count";
                     $scope.chart.scatter = true;
                     $scope.chart.stacked = false;
-                }
+               // }
                 
                 break;
                 
@@ -1559,7 +1593,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 if (idx >= 0 && (data[idx+1] != null) ) {
                     var val = (data[idx] + data[idx+1]);
                     if (val != Math.round(val)) {
-                        val = Number(parseFloat(val).toFixed(3));
+                        val = Number(parseFloat(Math.round(val*1000)/1000).toFixed(3));
                     }
                     new_data.push(val);
                 } else {
@@ -1572,6 +1606,37 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         return new_data;
     
     }
+    
+    
+    $scope.percent_total_by_congress = function(data,starts_odd) {
+                    
+        var percent_total = [];
+        
+        for (var i = 0; i < data.length; i++) {
+        
+            if (i % 2 == starts_odd) {
+                
+                var idx = starts_odd == 1 ? i - 1 : i + 1;
+                
+                if (idx >= 0 && (data[idx+1] != null) ) {
+                    var val = (data[idx] + data[idx+1]) / 2;
+                    if (val != Math.round(val)) {
+                        val = Number(parseFloat(Math.round(val*1000)/1000).toFixed(3));
+                    }
+                    percent_total.push(val);
+                } else {
+                    percent_total.push(null);
+                }
+
+            }
+        }
+        
+        return percent_total;
+    
+    }
+    
+    
+    
     
     $scope.percent_change_by_congress = function(preAggCount,starts_odd) {
         
@@ -1590,6 +1655,56 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         return percent_change;
     }
+    
+    $scope.allSeriesHaveCount = function() {
+        for (var i=0;i<$scope.chart.series.length;i++) { 
+            if ($scope.chart.series[i].agg == 2) {
+                return false;
+            }
+        }
+       return true;
+    }
+    
+    // only see chart types that are available for your selected series
+    $scope.filterChartTypeOptions = function () {  
+        return function (item) {
+            
+            if ($scope.chart) {
+                
+                // SOME SERIES DON'T HAVE COUNT, SOME CHART TYPES RELY ON IT
+                if (
+                    (item.type == 'stacked_area_count' ||
+                    item.type == 'stacked_column_count' ||
+                    item.type == 'scatter_plot' ||
+                    item.type == 'scatter_plot_regression')
+                    &&
+                    ($scope.allSeriesHaveCount() == false)
+                ) { return false; }
+                
+                // NEED EXACTLY TWO SERIES FOR SCATTER CHART TYPE
+                if (
+                    (item.type == 'scatter_plot' ||
+                    item.type == 'scatter_plot_regression')
+                    &&
+                    ($scope.chart.series.length != 2)
+                ) { return false; }
+                
+                // NEED AT LEAST TWO SERIES FOR STACKED CHART TYPE
+                if (
+                    (item.type == 'stacked_area_count' ||
+                    item.type == 'stacked_column_count' ||
+                    item.type == 'stacked_area_percent_total' ||
+                    item.type == 'stacked_column_percent_total')
+                    &&
+                    ($scope.chart.series.length < 2)
+                ) { return false; }
+            
+            }
+            
+            return true;
+        };
+    }
+    
     
     
 }]).config(function($interpolateProvider){
