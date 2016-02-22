@@ -56,7 +56,7 @@ function Series (dataset,topic,name,filters,sub,unit,aggregation_level,budget) {
     this.chartdata = [];
     
     this.alldata = [];
-    this.alldata.years = [];
+    //this.alldata.years = [];
     
     
     for (var i = 0; i < this.measures.length; i++) {
@@ -505,9 +505,14 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
     $scope.addToChart = function(result) {
     	
+    	// WHEN WE ADD *ANYTHING* TO A SCATTER, IT RUINS IT!!  GO BACK TO LINE
+    	
     	if ($scope.chart.scatter) {
     	    
-    	    // FOREACH scope.chart.series, dammit
+    	    angular.forEach($scope.chart.series, function (series, index) {
+                    $scope.chart.series[index].type = "line";
+                    $scope.chart.series[index].measure = result.agg == 2 ? "percent_total" : "count";
+            });
     	    
     	   // alert('Scatter plot chart type requires exactly two series.');
     	   $scope.chart.scatter = false;
@@ -515,13 +520,16 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     	        
     	}
     	
-    	if ($scope.chart.stacked && result.agg == 2) {
+    	// WHEN WE ADD A DATASET WITH AGGREGATION LEVEL = "percent" ... to a stacked count ... change it to stacked percent
+    	    	
+    	if ( ($scope.chart.chartType== "stacked_area_count" || $scope.chart.chartType=="stacked_column_count") && result.agg == 2) {
     	    
-    	    $scope.chart.stacked = false;
-    	    $scope.chart.chartType = "line";
-    	    //alert('something funky');    
+    	    angular.forEach($scope.chart.series, function (series, index) {
+                    $scope.chart.series[index].measure = "percent_total";
+            });
+    	    
+    	    $scope.chart.chartType = $scope.chart.chartType=="stacked_area_count" ? "stacked_area_percent_total" : "stacked_column_percent_total";  
     	}
-    	
     	
     	
         result.color = $scope.getRgbaColor();
@@ -581,15 +589,13 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         if ($scope.chart.scatter) {
             
-            
             $scope.chart.scatter = false;
             $scope.chart.chartType = "line";
-            //alert('Scatter plot chart type requires exactly two series.');
         
         }
         
         // RESET TO DEFAULTS FOR NEXT ADD
-        $scope.chart.series[index].measure = "count";
+        $scope.chart.series[index].measure = $scope.chart.series[index].agg == 2 ? "percent_total" : "count";
         $scope.chart.series[index].type = "line";
         $scope.chart.series[index].yaxis = 0;
         $scope.chart.series[index].measure_on_multiple_axes = false; 	
@@ -1681,12 +1687,12 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     ($scope.allSeriesHaveCount() == false)
                 ) { return false; }
                 
-                // NEED EXACTLY TWO SERIES FOR SCATTER CHART TYPE
+                // NEED EXACTLY TWO SERIES FOR SCATTER CHART TYPE, ALSO DOESN'T WORK WITH CONGRESS OPTION
                 if (
                     (item.type == 'scatter_plot' ||
                     item.type == 'scatter_plot_regression')
                     &&
-                    ($scope.chart.series.length != 2)
+                    ( ($scope.chart.series.length != 2) || ($scope.chart.timeSeries=="congresses") )
                 ) { return false; }
                 
                 // NEED AT LEAST TWO SERIES FOR STACKED CHART TYPE
