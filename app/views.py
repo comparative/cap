@@ -22,6 +22,7 @@ from app import app, db, lm, newsimages, countryimages, staffimages, researchfil
 from .models import User, News, Country, Research, Staff, Page, File, Slide, Chart, Dataset, Category, Staticdataset
 from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm, SlideForm, DatasetForm, StaticDatasetForm
 from datetime import datetime
+from random import randint
 
 s3 = tinys3.Pool(app.config['S3_ACCESS_KEY'],app.config['S3_SECRET_KEY'],app.config['S3_BUCKET'])
 s3conn = tinys3.Connection(app.config['S3_ACCESS_KEY'],app.config['S3_SECRET_KEY'],app.config['S3_BUCKET'])
@@ -83,7 +84,7 @@ def tool(slug=None):
     projectid = request.args.get('project')
     
     # send response
-    resp=make_response(render_template('tool.html',baseUrl=app.config['TOOL_BASE_URL'],exportUrl=app.config['HIGHCHARTS_EXPORT_URL'],user=user,slug=slug,options=options,recent=recent,projectid=projectid))    
+    resp=make_response(render_template('tool.html',baseUrl=app.config['TOOL_BASE_URL'],exportUrl=app.config['HIGHCHARTS_EXPORT_URL'],user=user,slug=slug,options=options,recent=recent,projectid=projectid,v=randint(0,999999)))    
     resp.set_cookie('captool_user',value=user)
     return resp
 
