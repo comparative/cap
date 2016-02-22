@@ -122,6 +122,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     ];
     */
     
+    $scope.pending = false;
+    
     $scope.chart_types = [
         {"type":"line","display":"Line"},
         {"type":"spline","display":"Smooth Line"},
@@ -505,81 +507,89 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
     $scope.addToChart = function(result) {
     	
-    	// WHEN WE ADD *ANYTHING* TO A SCATTER, IT RUINS IT!!  GO BACK TO LINE
-    	
-    	if ($scope.chart.scatter) {
+    	if ($scope.pending == false) {
     	    
-    	    angular.forEach($scope.chart.series, function (series, index) {
-                    $scope.chart.series[index].type = "line";
-                    $scope.chart.series[index].measure = result.agg == 2 ? "percent_total" : "count";
-            });
+    	    $scope.pending = true;
     	    
-    	   // alert('Scatter plot chart type requires exactly two series.');
-    	   $scope.chart.scatter = false;
-    	   $scope.chart.chartType = "line";
-    	        
-    	}
-    	
-    	// WHEN WE ADD A DATASET WITH AGGREGATION LEVEL = "percent" ... to a stacked count ... change it to stacked percent
-    	    	
-    	if ( ($scope.chart.chartType== "stacked_area_count" || $scope.chart.chartType=="stacked_column_count") && result.agg == 2) {
-    	    
-    	    angular.forEach($scope.chart.series, function (series, index) {
-                    $scope.chart.series[index].measure = "percent_total";
-            });
-    	    
-    	    $scope.chart.chartType = $scope.chart.chartType=="stacked_area_count" ? "stacked_area_percent_total" : "stacked_column_percent_total";  
-    	}
-    	
-    	
-        result.color = $scope.getRgbaColor();
+            // WHEN WE ADD *ANYTHING* TO A SCATTER, IT RUINS IT!!  GO BACK TO LINE
+        
+            if ($scope.chart.scatter) {
+            
+                angular.forEach($scope.chart.series, function (series, index) {
+                        $scope.chart.series[index].type = "line";
+                        $scope.chart.series[index].measure = result.agg == 2 ? "percent_total" : "count";
+                });
+            
+               // alert('Scatter plot chart type requires exactly two series.');
+               $scope.chart.scatter = false;
+               $scope.chart.chartType = "line";
+                
+            }
+        
+            // WHEN WE ADD A DATASET WITH AGGREGATION LEVEL = "percent" ... to a stacked count ... change it to stacked percent
+                
+            if ( ($scope.chart.chartType== "stacked_area_count" || $scope.chart.chartType=="stacked_column_count") && result.agg == 2) {
+            
+                angular.forEach($scope.chart.series, function (series, index) {
+                        $scope.chart.series[index].measure = "percent_total";
+                });
+            
+                $scope.chart.chartType = $scope.chart.chartType=="stacked_area_count" ? "stacked_area_percent_total" : "stacked_column_percent_total";  
+            }
+        
+        
+            result.color = $scope.getRgbaColor();
     
-        switch($scope.chart.chartType) {
+            switch($scope.chart.chartType) {
 
-            case "stacked_area_count":
-                result.type = "area";
-                result.measure = "count";
-                break;
-            case "stacked_area_percent_total":
-                result.type = "area";
-                result.measure = "percent_total";
-                break;
-            case "stacked_column_count":
-                result.type = "column";
-                result.measure = "count";
-                break;
-            case "stacked_column_percent_total":
-                result.type = "column";
-                result.measure = "percent_total";
-                break;
-            default:
-                result.type = $scope.chart.chartType;
+                case "stacked_area_count":
+                    result.type = "area";
+                    result.measure = "count";
+                    break;
+                case "stacked_area_percent_total":
+                    result.type = "area";
+                    result.measure = "percent_total";
+                    break;
+                case "stacked_column_count":
+                    result.type = "column";
+                    result.measure = "count";
+                    break;
+                case "stacked_column_percent_total":
+                    result.type = "column";
+                    result.measure = "percent_total";
+                    break;
+                default:
+                    result.type = $scope.chart.chartType;
         
-        }
+            }
     
-        $scope.chart.series.push(result);
+            $scope.chart.series.push(result);
         
-        if (result.sub) {
-            var url = baseUrl + '/api/measures/dataset/' + result.dataset + '/subtopic/' + result.topic;
-        } else {
-            var url = baseUrl + '/api/measures/dataset/' + result.dataset + '/topic/' + result.topic;
-        }
+            if (result.sub) {
+                var url = baseUrl + '/api/measures/dataset/' + result.dataset + '/subtopic/' + result.topic;
+            } else {
+                var url = baseUrl + '/api/measures/dataset/' + result.dataset + '/topic/' + result.topic;
+            }
         
-        $.getJSON(url, function (retval) {
+            $.getJSON(url, function (retval) {
         
-            // async... find the right series and assign the data
+                // async... find the right series and assign the data
             
-            angular.forEach($scope.chart.series, function (series, index) { 
-                if (result.name == series.name) {
-                    $scope.chart.series[index].alldata = retval;
-                }
+                angular.forEach($scope.chart.series, function (series, index) { 
+                    if (result.name == series.name) {
+                        $scope.chart.series[index].alldata = retval;
+                    }
+                });
+        
+                // redraw the chart
+            
+                $scope.drawChart(); 
+                
+                //$scope.pending = false;
+        
             });
         
-            // redraw the chart
-            
-            $scope.drawChart(); 
-        
-        });
+        }
     
     }
     
@@ -587,33 +597,40 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     $scope.removeFromChart = function(index) {
         
-        if ($scope.chart.scatter) {
+        if ($scope.pending == false) {
+        
+            $scope.pending = true;
+        
+            if ($scope.chart.scatter) {
             
-            $scope.chart.scatter = false;
-            $scope.chart.chartType = "line";
+                $scope.chart.scatter = false;
+                $scope.chart.chartType = "line";
+        
+            }
+        
+            // RESET TO DEFAULTS FOR NEXT ADD
+            $scope.chart.series[index].measure = $scope.chart.series[index].agg == 2 ? "percent_total" : "count";
+            $scope.chart.series[index].type = "line";
+            $scope.chart.series[index].yaxis = 0;
+            $scope.chart.series[index].measure_on_multiple_axes = false; 	
+    
+            // REMOVE FROM CHART
+            $scope.chart.series.splice(index,1);
+    
+            // RESET CHART TYPE IF RESTRICTED
+            if ( $scope.chart.stacked && $scope.chart.series.length == 1) {
+                $scope.chart.stacked = false;
+                $scope.chart.chartType = $scope.chart.series[0].type;   
+            }
+            if ($scope.chart.series.length == 0) {   
+                $scope.chart.chartType = "line";
+            }
+    
+            doSeriesRemain = $scope.chart.series.length > 0;            
+            $scope.drawChart(doSeriesRemain); 
+        
         
         }
-        
-        // RESET TO DEFAULTS FOR NEXT ADD
-        $scope.chart.series[index].measure = $scope.chart.series[index].agg == 2 ? "percent_total" : "count";
-        $scope.chart.series[index].type = "line";
-        $scope.chart.series[index].yaxis = 0;
-        $scope.chart.series[index].measure_on_multiple_axes = false; 	
-    
-        // REMOVE FROM CHART
-        $scope.chart.series.splice(index,1);
-    
-        // RESET CHART TYPE IF RESTRICTED
-        if ( $scope.chart.stacked && $scope.chart.series.length == 1) {
-            $scope.chart.stacked = false;
-            $scope.chart.chartType = $scope.chart.series[0].type;   
-        }
-        if ($scope.chart.series.length == 0) {   
-            $scope.chart.chartType = "line";
-        }
-    
-        doSeriesRemain = $scope.chart.series.length > 0;            
-        $scope.drawChart(doSeriesRemain); 
         
     }
     
@@ -935,6 +952,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     $scope.applyFilters = function(series) {
         
+        $scope.pending = true;
+        
 		// have filters been checked?
 		var params = [];
 		angular.forEach(series.filters, function (filter, index) { 
@@ -974,7 +993,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     
     $scope.changeYears = function() {
-    
+        
+        $scope.pending = true;
         $scope.preserve_date_range = true;
         $scope.drawChart();
         
@@ -1015,12 +1035,15 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     item = new Saved(slug, exportUrl + data, obj.options);
                     $scope.recent.unshift(item);
                     $scope.$apply();
+                    $scope.pending = false;
                 
                 }
             });
         
         }
-        
+        else {
+            $scope.pending = false;
+        }
 	
     }      
     
@@ -1135,7 +1158,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             $scope.chart.chartType = oldType;
             
         } else {
-        
+            
+            $scope.pending = true;
+            
             if (!$scope.chart.scatter) {
         
                 angular.forEach($scope.chart.series, function (series, index) {
