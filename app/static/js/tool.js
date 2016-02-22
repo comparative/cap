@@ -528,7 +528,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
             // WHEN WE ADD A DATASET WITH AGGREGATION LEVEL = "percent" ... to a stacked count ... change it to stacked percent
                 
-            if ( ($scope.chart.chartType== "stacked_area_count" || $scope.chart.chartType=="stacked_column_count") && result.agg == 2) {
+            if ( ($scope.chart.chartType== "stacked_area_count" || $scope.chart.chartType=="stacked_column_count") && (result.agg == 2 || result.budget == true)) {
             
                 angular.forEach($scope.chart.series, function (series, index) {
                         $scope.chart.series[index].measure = "percent_total";
