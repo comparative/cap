@@ -1689,7 +1689,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     $scope.allSeriesHaveCount = function() {
         for (var i=0;i<$scope.chart.series.length;i++) { 
-            if ($scope.chart.series[i].agg == 2) {
+            if ($scope.chart.series[i].agg == 2 || $scope.chart.series[i].budget == true) {
                 return false;
             }
         }
