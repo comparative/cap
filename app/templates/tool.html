@@ -3,7 +3,7 @@
 {% block head %}
 
 <link href="/static/css/menutree.css" rel="stylesheet">
-<link href="/static/css/tool.css" rel="stylesheet">
+<link href="/static/css/tool.css?v={{v}}" rel="stylesheet">
 
 {% endblock %}
 
@@ -25,7 +25,7 @@
      	    </div>
      	    
      	    <div class="tool-help medium-1 columns text-left">
-     	    <a class="orange-link" href="pages/Help">help</a>
+     	    <a class="orange-link" href="pages/Help" target="_blank">help</a>
      	    </div>
      	    
      	 </div>
@@ -187,8 +187,11 @@
                       <tr>
                          <td></td>
                          <td ng-style="{@series.color@}" ng-repeat="series in chart.series">
-                         <div class="text-center">
+                         <div ng-if="series.topic!=0" class="text-center">
                          <a class="clickable" ng-href="{@ getInstancesUrl(series.filters,series.dataset,series.sub,series.topic) @}">Download all data</a>
+                         </div>
+                         <div ng-if="series.topic==0" class="text-center">
+                         <a class="clickable" onclick="alert('To download data for all topics, please visit the Datasets and Codebooks page.');">Download all data</a>
                          </div>
                          </td>
                       </tr>
@@ -311,14 +314,14 @@
             
             <li ng-if="dataset.topics.length>0">
             <label class="menu_label" for="t0">
-                <input type="checkbox" class="choose_budget_topic" subtopic="0" ng-checked="budgetTopicFoundInChart(dataset.id,'0') > -1" ng-click="doBudgetResults(dataset,{id:'0'},'All Topics',false)"">
+                <input type="checkbox" class="choose_budget_topic" subtopic="0" ng-disabled="pending" ng-checked="budgetTopicFoundInChart(dataset.id,'0') > -1" ng-click="doBudgetResults(dataset,{id:'0'},'All Topics',false)"">
                 <span class="major_topic">All Topics</span>
             </label>
             </li>
             
             <li ng-if="dataset.topics.length>0" ng-repeat="topic in dataset.topics">
             <label class="menu_label" for="{@dataset.id@}t{@topic.id@}">
-                <input type="checkbox" class="choose_budget_topic" subtopic="{@topic.id@}" ng-checked="budgetTopicFoundInChart(dataset.id,topic.id) > -1" ng-click="doBudgetResults(dataset,topic,topic.name,false)">
+                <input type="checkbox" class="choose_budget_topic" subtopic="{@topic.id@}" ng-disabled="pending" ng-checked="budgetTopicFoundInChart(dataset.id,topic.id) > -1" ng-click="doBudgetResults(dataset,topic,topic.name,false)">
                 <span class="major_topic" ng-class="{clickable: topic.subtopics.length>0}">{@topic.name | limitTo:33 @}</span>
                 <span style="float:right;" ng-show="topic.subtopics.length>0">
                 <i ng-hide="topic.isOpen" class="fi-arrow-down"></i>
@@ -329,7 +332,7 @@
                 <ol>
                     <li ng-repeat="subtopic in topic.subtopics">
                     <label class="menu_label" for="{@dataset.id@}s{@subtopic.id@}">
-                    <input type="checkbox" class="choose_budget_topic" subtopic="{@subtopic.id@}" ng-checked="budgetTopicFoundInChart(dataset.id,subtopic.id) > -1" ng-click="doBudgetResults(dataset,subtopic,topic.name + ': ' + subtopic.name,true)"><span>{@subtopic.name | limitTo:33 @}</span></label>
+                    <input type="checkbox" class="choose_budget_topic" subtopic="{@subtopic.id@}" ng-disabled="pending" ng-checked="budgetTopicFoundInChart(dataset.id,subtopic.id) > -1" ng-click="doBudgetResults(dataset,subtopic,topic.name + ': ' + subtopic.name,true)"><span>{@subtopic.name | limitTo:33 @}</span></label>
                     <input type="checkbox" id="{@dataset.id@}s{@subtopic.id@}"/>
                     </li>
                 </ol>

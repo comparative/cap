@@ -202,7 +202,7 @@
                                     <div class="medium-8 columns">
                                     <h5>{{ item.title }}</h5>
                                     {{ smart_truncate(item.body,280)|safe }}
-                                    <a class="orange-link" href="{{ url_for('research_item',slug=country.slug,id=item.id) }}">read more</a>
+                                    <a class="orange-link" href="{{ url_for('research_item',slug=country.slug,id=item.id) }}">Read more</a>
                                     </div>
 
                                 </div>
@@ -329,7 +329,7 @@
                                     <p>
                                     {% if item.imagename %}<img style="float:left; margin-right:10px;" class="featured-research-image" src="{{config['S3_URL']}}researchimages/{{ item.imagename }}">{% endif %}
                                     {{ smart_truncate(item.body,475)|safe }}
-                                    <a class="orange-link" href="{{ url_for('research_item',slug=country.slug,id=item.id) }}">read more</a></p>
+                                    <a class="orange-link" href="{{ url_for('research_item',slug=country.slug,id=item.id) }}">Read more</a></p>
                                     
                                     <div id="more-research">
                                     <a class="orange-link" href="{{ url_for('country',slug=country.slug,pane='research') }}">more research</a>

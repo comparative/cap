@@ -406,39 +406,43 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     $scope.budgetResults = [];
 
     $scope.doBudgetResults = function(dataset,topic,name,sub) { 
-                  
-        var found_it = false;
-        /*
-        var idx;
-        for (idx = 0; idx < $scope.budgetResults.length; idx++) {
-            if ($scope.budgetResults[idx].topic === topic.id && $scope.budgetResults[idx].dataset === dataset.id) {
-                $scope.budgetResults.splice(idx, 1);
-                found_it = true;
-                break;
-            }
-        }
-        */
         
-        if ($scope.chart.series) {
+      //  if ($scope.pending == false) {
+           
+            var found_it = false;
+            /*
             var idx;
-            for (idx = 0; idx < $scope.chart.series.length; idx++) {
-                if ($scope.chart.series[idx].topic === topic.id && $scope.chart.series[idx].dataset === dataset.id) {
-                    $scope.removeFromChart(idx);
+            for (idx = 0; idx < $scope.budgetResults.length; idx++) {
+                if ($scope.budgetResults[idx].topic === topic.id && $scope.budgetResults[idx].dataset === dataset.id) {
+                    $scope.budgetResults.splice(idx, 1);
                     found_it = true;
                     break;
                 }
             }
-        }
+            */
+        
+            if ($scope.chart.series) {
+                var idx;
+                for (idx = 0; idx < $scope.chart.series.length; idx++) {
+                    if ($scope.chart.series[idx].topic === topic.id && $scope.chart.series[idx].dataset === dataset.id) {
+                        $scope.removeFromChart(idx);
+                        found_it = true;
+                        break;
+                    }
+                }
+            }
         
         
-        // is newly selected
-        if (found_it==false) {            
-          dataset_name = dataset.country + ': ' + dataset.name + ' #' + name;
-          var obj = new Series(dataset.id,topic.id,dataset_name,dataset.filters,sub,dataset.unit,1,true);
-          //obj.budget = true;
-          $scope.addToChart(obj);
-          //$scope.budgetResults.push(obj);
-        }
+            // is newly selected
+            if (found_it==false) {            
+              dataset_name = dataset.country + ': ' + dataset.name + ' #' + name;
+              var obj = new Series(dataset.id,topic.id,dataset_name,dataset.filters,sub,dataset.unit,1,true);
+              //obj.budget = true;
+              $scope.addToChart(obj);
+              //$scope.budgetResults.push(obj);
+            }
+        
+      //  }
         
         
     }
@@ -1034,8 +1038,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     // ADD THUMBNAIL TO RECENT
                     item = new Saved(slug, exportUrl + data, obj.options);
                     $scope.recent.unshift(item);
-                    $scope.$apply();
                     $scope.pending = false;
+                    $scope.$apply();
+                    
                 
                 }
             });
@@ -1044,6 +1049,10 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         else {
             $scope.pending = false;
         }
+        
+        //console.log($scope.pending);
+        
+        //$scope.$apply();
 	
     }      
     
