@@ -124,13 +124,13 @@ class Budgetcategory(db.Model):
         return self.name
 
 
-class Aggregationlevel(db.Model):
-    
-    id = db.Column(db.Integer, primary_key=True)    
-    name = db.Column(db.String(80))
-    
-    def __repr__(self):
-        return self.name 
+#class Aggregationlevel(db.Model):
+#    
+#    id = db.Column(db.Integer, primary_key=True)    
+#    name = db.Column(db.String(80))
+#    
+#    def __repr__(self):
+#        return self.name 
 
 
 class Research(db.Model):
@@ -187,8 +187,7 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.name
-        
-              
+                     
 class Chart(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     slug = db.Column(db.String(80), unique=True)
@@ -198,4 +197,16 @@ class Chart(db.Model):
     unpinned = db.Column(db.Boolean(),default=False)
     def __repr__(self):
         return self.slug
+
+class Major_topics
+    id = db.Column(db.Integer, primary_key=True)
+    majorname = db.Column(db.String(255))
+    shortname = db.Column(db.String(255))
+    majortopic = db.Column(db.Integer)
     
+class Sub_topics
+    id = db.Column(db.Integer, primary_key=True)
+    majortopic = db.Column(db.Integer)
+    subtopic = db.Column(db.Integer)
+    shortname = db.Column(db.String(50))
+    longname = db.Column(db.String(255))
