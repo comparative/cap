@@ -6,69 +6,53 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 
 ## Getting Started
 
-``` 
-(Example commands are for Ubuntu 14.04 LTS)
-```
+```(Example commands are for Ubuntu 14.04 LTS)```
 
 * Install PostgreSQL > 9.4
 
-```wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-```
+```wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -```
 
-```sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" >> /etc/apt/sources.list.d/postgresql.list'
-```
+```sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" >> /etc/apt/sources.list.d/postgresql.list'```
 
-```apt-get update
-```
+```apt-get update```
 
-```apt-get upgrade
-```
+```apt-get upgrade```
 
-```apt-get install postgresql-9.4
-```
+```apt-get install postgresql-9.4```
 
 * Install Git
 
-```apt-get install git
-```
+```apt-get install git```
 
 * Install Docker
 
-```wget -qO- https://get.docker.com/ | sh
-```
+```wget -qO- https://get.docker.com/ | sh```
 
 * Move to web root
 
-```mkdir /var/www
-```
+```mkdir /var/www```
 
-```cd /var/www
-```
+```cd /var/www```
 
 * Clone this repo
 
-```git clone https://github.com/comparative/cap
-```
+```git clone https://github.com/comparative/cap```
 
 * Move to app root
 
-```cd /var/www/cap
-```
+```cd /var/www/cap```
 
 * Build Docker image
 
-```docker build -t cap:web .
-```
+```docker build -t cap:web .```
 
 * Create config file (& edit to fill in your credentials)
 
-```mv /var/www/cap/config_sample.py /var/www/cap/config.py
-```
+```mv /var/www/cap/config_sample.py /var/www/cap/config.py```
 
 * Run Docker container (add-host flag tells the web server your PostgreSQL address)
 
-```docker run --add-host=mypostgres:123.45.67.89 --name="web" -d -p 80:5000  -v /var/www/cap:/var/www/cap cap:web
-```
+```docker run --add-host=mypostgres:123.45.67.89 --name="web" -d -p 80:5000  -v /var/www/cap:/var/www/cap cap:web```
 
 * Enter Docker container
 
@@ -76,8 +60,7 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 
 * Move to app root
 
-```cd /var/www/cap
-```
+```cd /var/www/cap```
 
 * Create database
 
@@ -89,11 +72,9 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 
 * Create database tables
 
-```>>> from app import db
-```
+```>>> from app import db```
 
-```>>> db.create_all()
-```
+```>>> db.create_all()```
 
 
 ## Deployment
@@ -106,20 +87,18 @@ These are the instructions:
 
 ... but you don't need to follow them because this repo contains a Docker image:
 
-```cd /var/www/cap/highcharts-export
-```
+```cd /var/www/cap/highcharts-export```
 
-```docker build -t cap:export .
-```
+```docker build -t cap:export .```
 
-```docker run --name="export" -d -p 8080:8080 cap:export
-```
+```docker run --name="export" -d -p 8080:8080 cap:export```
 
 ## Built With
 
 * Highcharts
 * AngularJS
 * Flask
+* Celery
 * PostgreSQL
 * Docker
 
