@@ -79,7 +79,7 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 
 ## Deployment
 
-For a production deployment you may need to run your own Highcharts Export Server.
+For production you may need to run your own Highcharts Export Server.
 
 These are the instructions:
 
