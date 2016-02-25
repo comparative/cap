@@ -10,15 +10,20 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 
 * Install PostgreSQL > 9.4
 
-```wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -```
+```wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+```
 
-```sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" >> /etc/apt/sources.list.d/postgresql.list'```
+```sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" >> /etc/apt/sources.list.d/postgresql.list'
+```
 
-```apt-get update```
+```apt-get update
+```
 
-```apt-get upgrade```
+```apt-get upgrade
+```
 
-```apt-get install postgresql-9.4```
+```apt-get install postgresql-9.4
+```
 
 * Install Git
 
