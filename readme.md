@@ -68,7 +68,8 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 
 * Enter python shell
 
-```python```
+```python
+```
 
 * Create database tables
 
