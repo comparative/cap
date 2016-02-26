@@ -12,7 +12,7 @@ S3_BUCKET = 'xxxxxxxxxxxxxxxxxx'
 S3_URL = 'http://xxxxxxxxxxxxxxxxxx.s3.amazonaws.com/'
 
 # If you run your own export server change the URL below
-HIGHCHARTS_EXPORT_URL = 'http://highcharts-export.la.utexas.edu/highcharts-export-web/'
+HIGHCHARTS_EXPORT_URL = 'http://export.highcharts.com'
 
 WTF_CSRF_ENABLED = True
 SECRET_KEY = 'random-string-of-your-choosing'

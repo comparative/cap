@@ -48,7 +48,7 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 
 * Create config file (& edit to fill in your credentials)
 
-```mv /var/www/cap/config_sample.py /var/www/cap/config.py```
+```cp /var/www/cap/config_sample.py /var/www/cap/config.py```
 
 * Run Docker container (add-host flag tells the web server your PostgreSQL address)
 
