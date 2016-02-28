@@ -150,7 +150,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         {"num":2,"display":"Download Clean PNG"},
         {"num":3,"display":"Download JPEG"},
         {"num":4,"display":"Download SVG"},
-        {"num":5,"display":"Download PDF"},
+        /*{"num":5,"display":"Download PDF"},*/
         {"num":6,"display":"Copy Image URL"},
         {"num":7,"display":"Copy Tool URL"},
         {"num":8,"display":"Copy Embed URL"},
@@ -856,6 +856,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                         */
                         sub: series.sub,
                         agg: series.agg,
+                        filters: series.filters,
                         topic: series.topic,
                         dataset: series.dataset,
                         type: series.type,
@@ -1571,19 +1572,19 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     $scope.openDrilldown = function(s,y) {
         
-        console.log(s);
+        //console.log(s);
         
         drilldown(s.filters,s.dataset,s.sub,s.topic,s.agg,y);
         
     }
-    
+    /*
     $scope.hasDrilldown = function(s) {
         
         console.log(s);
         return false;
         
     }
-    
+    */
     $scope.getInstancesUrl = function(f,d,s,t) {
         
         var uri = getInstancesUri(f,d,s,t,$scope.chart.yearFrom,$scope.chart.yearTo);
@@ -1799,7 +1800,7 @@ var clickPoint = function(event) {
             return obj.display == cat;
         });
         
-        console.log(this.series.userOptions);
+        //console.log(this.series.userOptions);
         
         drilldown(
         this.series.userOptions.filters,
@@ -1834,7 +1835,7 @@ var tooltipFormatter = function() {
 
 var drilldown = function(filters,dataset,flag,topic,agg,year) {
     
-    console.log(agg);
+   //console.log(filters);
     
     if (topic==0) {
     

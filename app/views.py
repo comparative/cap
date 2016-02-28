@@ -23,9 +23,18 @@ from .models import User, News, Country, Research, Staff, Page, File, Slide, Cha
 from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm, SlideForm, DatasetForm, StaticDatasetForm
 from datetime import datetime
 from random import randint
+from urlparse import urlparse, urlunparse
 
 s3 = tinys3.Pool(app.config['S3_ACCESS_KEY'],app.config['S3_SECRET_KEY'],app.config['S3_BUCKET'])
 s3conn = tinys3.Connection(app.config['S3_ACCESS_KEY'],app.config['S3_SECRET_KEY'],app.config['S3_BUCKET'])
+
+@app.before_request
+def redirect_nonwww():
+    urlparts = urlparse(request.url)
+    if urlparts.netloc == 'comparativeagendas.net':
+        urlparts_list = list(urlparts)
+        urlparts_list[1] = 'www.comparativeagendas.net'
+        return redirect(urlunparse(urlparts_list), code=301)
 
 @lm.user_loader
 def load_user(id):

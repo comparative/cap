@@ -198,13 +198,13 @@ class Chart(db.Model):
     def __repr__(self):
         return self.slug
 
-class Major_topics
+class Major_topics:
     id = db.Column(db.Integer, primary_key=True)
     majorname = db.Column(db.String(255))
     shortname = db.Column(db.String(255))
     majortopic = db.Column(db.Integer)
     
-class Sub_topics
+class Sub_topics:
     id = db.Column(db.Integer, primary_key=True)
     majortopic = db.Column(db.Integer)
     subtopic = db.Column(db.Integer)

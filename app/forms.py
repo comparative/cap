@@ -105,7 +105,7 @@ class CountryForm(Form):
     heading = StringField('heading', validators=[DataRequired(),Length(max=80)])
     about = StringField('content', validators=[DataRequired()],widget=TextArea())
     datasets_intro = StringField('datasets_intro', validators=[],widget=TextArea())
-    embed_url = StringField('embed_url', validators=[DataRequired(),Length(max=200)])
+    embed_url = StringField('embed_url', validators=[Length(max=200)])
     budget_topics = StringField('budget_topics')
     sponsoring_institutions = StringField('sponsoring_institutions', validators=[],widget=TextArea())
     codebook = FileField('codebook',validators=[])
