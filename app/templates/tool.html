@@ -239,7 +239,7 @@
    
 	<h5 class="picker-label clickable">Select dataset types<span ng-show="categoryCount() > 0" class="selection_count">{@categoryCount()@}</span></h5>
     <div id="categories" class="picker">
-    <div ng-repeat="category in categories">
+    <div ng-repeat="category in filtered_categories = (categories | filter:filterCategories() )">
     <input ng-attr-catid="{@category.category_id@}" type="checkbox" ng-click="doFacets()">
     <label>{@category.name | limitTo : 32@}</label>
     </div>

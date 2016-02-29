@@ -1746,6 +1746,29 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         };
     }
     
+    // only see categories that are available for chosen projects 
+    $scope.filterCategories = function () {  
+        return function (item) {
+        
+            var bAvail = false;
+            
+            angular.element('#projects input:checked').each(function () {
+                var country = $(this).attr('country');
+                angular.forEach($scope.datasets, function (dataset, index) {
+                    if ( 
+                    (item.category_id==dataset.category) &&
+                    (dataset.country == country) 
+                    ) {
+                        bAvail = true;
+                    }
+                });
+            });
+            
+            return bAvail;
+            
+        };
+    }
+    
     
     
 }]).config(function($interpolateProvider){
@@ -1773,10 +1796,21 @@ $(document).ready(function() {
     theChart = new Highcharts.Chart(options);
 
     $('h5.picker-label').click(function(e) {
-    
+        
         e.preventDefault();
-        $('div.picker:visible').slideToggle('fast','linear');
-        $(this).next('div').slideToggle('fast','linear');
+        
+        console.log($(this).text());
+        
+        if ( ( $(this).text() == 'Select dataset types0' ) &&  ( $('#projects input:checked').length == 0 ) ) {
+            
+            alert('Please select a project first!');
+            
+        } else {
+        
+            $('div.picker:visible').slideToggle('fast','linear');
+            $(this).next('div').slideToggle('fast','linear');
+        
+        }
         
         
     });
