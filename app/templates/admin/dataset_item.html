@@ -106,7 +106,7 @@
 	</div>
 	<div class="small-10 columns">
 	  <label class="error">
-	  {{ form.display(size=40,placeholder='ex. Parliamentary Votes') }}
+	  {{ form.display(size=40,placeholder='ex. Government Agreements') }}
 	  </label>
 	  {% for error in form.display.errors %}
 	  <small class="error">{{ error }}</small>
@@ -120,7 +120,7 @@
 	</div>
 	<div class="small-10 columns">
 	  <label class="error">
-	  {{ form.short_display(size=40,placeholder='ex. Votes') }}
+	  {{ form.short_display(size=40,placeholder='ex. Agreements') }}
 	  </label>
 	  {% for error in form.short_display.errors %}
 	  <small class="error">{{ error }}</small>
@@ -134,7 +134,7 @@
 	</div>
 	<div class="small-10 columns">
 	  <label class="error">
-	  {{ form.unit(size=40) }}
+	  {{ form.unit(size=40,placeholder='ex. Quasi-sentences') }}
 	  </label>
 	  {% for error in form.unit.errors %}
 	  <small class="error">{{ error }}</small>
@@ -219,6 +219,7 @@
 Dropzone.options.datasetdropzone = {
     url: "/admin/dataset/upload/policy",
     maxFiles:1,
+    maxFilesize: 50,
     init: function() {
         this.on("maxfilesexceeded", function(file) {
             this.removeAllFiles();

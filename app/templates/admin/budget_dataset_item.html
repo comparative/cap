@@ -179,7 +179,7 @@
 	</div>
 	<div class="small-10 columns">
 	  <label class="error">
-	  {{ form.display(size=40,placeholder='ex. Parliamentary Votes') }}
+	  {{ form.display(size=40,placeholder='ex. Budget Authority (Adjusted)') }}
 	  </label>
 	  {% for error in form.display.errors %}
 	  <small class="error">{{ error }}</small>
@@ -193,7 +193,7 @@
 	</div>
 	<div class="small-10 columns">
 	  <label class="error">
-	  {{ form.short_display(size=40,placeholder='ex. Votes') }}
+	  {{ form.short_display(size=40,placeholder='ex. Budget') }}
 	  </label>
 	  {% for error in form.short_display.errors %}
 	  <small class="error">{{ error }}</small>
@@ -207,7 +207,7 @@
 	</div>
 	<div class="small-10 columns">
 	  <label class="error">
-	  {{ form.unit(size=40) }}
+	  {{ form.unit(size=40,placeholder='ex. Dollars') }}
 	  </label>
 	  {% for error in form.unit.errors %}
 	  <small class="error">{{ error }}</small>
@@ -291,6 +291,7 @@
 Dropzone.options.datasetdropzone = {
     url: "/admin/dataset/upload/budget",
     maxFiles:1,
+    maxFilesize: 50,
     init: function() {
         this.on("maxfilesexceeded", function(file) {
             this.removeAllFiles();
