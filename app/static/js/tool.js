@@ -1162,12 +1162,12 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 
         }
         
-        if (validation_err) {
+       // if (validation_err) {
             
-            alert(validation_err);
-            $scope.chart.chartType = oldType;
+       //     alert(validation_err);
+       //     $scope.chart.chartType = oldType;
             
-        } else {
+       // } else {
             
             $scope.pending = true;
             
@@ -1184,7 +1184,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             
             $scope.drawChart(); 
         
-        }
+      //  }
         
     }
     
@@ -1198,13 +1198,13 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             url: '/charts/save/' + $("#user").val() + '/' + $scope.chart.slug,
             data: strOptions,
             success: function() {
-                alert('Chart pinned!\n\nClick "Chart History" to reload.');
+                my_alert('Chart pinned!\n\nClick "Chart History" to reload.');
                 item = new Saved( $scope.chart.slug, baseUrl + '/charts/' + $scope.chart.slug, strOptions );
                 $scope.saved.unshift(item);
                 $scope.$apply();
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) { 
-                alert('Could not pin chart.  Already pinned?'); 
+                my_alert('Could not pin chart.  Already pinned?'); 
             }
              
         });
@@ -1239,7 +1239,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     $scope.$apply();
                 },
                 error: function(XMLHttpRequest, textStatus, errorThrown) { 
-                    alert('Could not unpin.'); 
+                    my_alert('Could not unpin.'); 
                 }
              
             });
@@ -1466,14 +1466,14 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             
                 },
                 error: function(XMLHttpRequest, textStatus, errorThrown) { 
-                    alert('Error saving chart.'); 
+                    my_alert('Error saving chart.'); 
                 }
          
             });
         
         } else {
         
-            alert('No chart to export!');
+            my_alert('No chart to export!');
             
         }
         
@@ -1756,7 +1756,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 var country = $(this).attr('country');
                 angular.forEach($scope.datasets, function (dataset, index) {
                     if ( 
-                    (item.category_id==dataset.category) &&
+                    (item.category_id == dataset.category) &&
                     (dataset.country == country) 
                     ) {
                         bAvail = true;
@@ -1799,11 +1799,11 @@ $(document).ready(function() {
         
         e.preventDefault();
         
-        console.log($(this).text());
+       // console.log($(this).text());
         
         if ( ( $(this).text() == 'Select dataset types0' ) &&  ( $('#projects input:checked').length == 0 ) ) {
             
-            alert('Please select a project first!');
+            my_alert('Please select a project first!');
             
         } else {
         
@@ -1815,10 +1815,10 @@ $(document).ready(function() {
         
     });
     
-    $('a.coming-soon').click(function(e) {
-        e.preventDefault();
-        alert('Feature coming soon!');
-    });
+    //$('a.coming-soon').click(function(e) {
+    //    e.preventDefault();
+    //    alert('Feature coming soon!');
+    //});
     
                
 });
@@ -1873,7 +1873,7 @@ var drilldown = function(filters,dataset,flag,topic,agg,year) {
     
     if (topic==0) {
     
-        alert('All topics series!! No drilldown available.');
+        my_alert('All topics series!! No drilldown available.');
     
     } else if (agg==0) {
     
@@ -1890,7 +1890,7 @@ var drilldown = function(filters,dataset,flag,topic,agg,year) {
     
     } else {
         
-        alert('Pre-aggregated dataset!! No drilldown available.');
+        my_alert('Pre-aggregated dataset!! No drilldown available.');
         
     }
 
@@ -1958,3 +1958,9 @@ function getInstancesUri(filters,dataset,flag,topic,frm,to) {
     
 }
 
+function my_alert(text) {
+    
+    $('#my_alert').find('#message').text(text);
+    $('#my_alert').foundation('reveal', 'open');
+    
+}

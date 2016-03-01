@@ -297,3 +297,7 @@ i.fi-check {
 margin-left:0 !important;
 margin-right:0 !important;
 }
+
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important;
+}

@@ -65,7 +65,7 @@
           
             </div>
             
-            <div class="row">
+            <div ng-cloak class="row">
             		
             		<div title="Click to remove!" id="chosen" style="margin-left:62px;">
             
@@ -224,7 +224,7 @@
   <dd><a class="clickable" href="#panel3">Budgets</a></dd>
   <dd><a class="clickable" href="#panel2">Chart History</a></dd>
 </dl>
-<div class="tabs-content contained">
+<div ng-cloak class="tabs-content contained">
 
   <!-- BEGIN policies panel -->
   <div class="content active" id="panel1">
@@ -528,6 +528,15 @@
 
 </div>
 
+</div>
+
+<div id="my_alert" class="reveal-modal small" style="display: none" data-reveal>
+<div id="message">
+Hi
+</div>
+<div style="float:right;">
+<a class="close-reveal-modal"><i style="font-size:40px; color:black;" class="fi-x clickable"></i></a>
+</div>
 </div>
 
 {% endblock %}
