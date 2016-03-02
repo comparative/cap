@@ -2,9 +2,9 @@
 
 TOOL_BASE_URL = 'http://xxxxxxxxxxxxxxxxxx'
 
-CONN_STRING = "host='mypostgres' dbname='cap' user='xxxx'"
-SQLALCHEMY_DATABASE_URI = 'postgresql://xxxx@mypostgres/cap'
-CELERY_BROKER_URL = 'sqla+postgresql://xxxx@mypostgres/cap'
+CONN_STRING = "host='mypostgres' dbname='cap' user='postgres'"
+SQLALCHEMY_DATABASE_URI = 'postgresql://postgres@mypostgres/cap'
+CELERY_BROKER_URL = 'sqla+postgresql://postgres@mypostgres/cap'
 
 S3_ACCESS_KEY = 'xxxxxxxxxxxxxxxxxx'
 S3_SECRET_KEY = 'xxxxxxxxxxxxxxxxxx'

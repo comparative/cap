@@ -5,10 +5,17 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.uploads import UploadSet, configure_uploads, IMAGES, ALL
 from celery import Celery
 from HTMLParser import HTMLParser
+from sqlalchemy import create_engine
+from sqlalchemy_utils import database_exists, create_database
+
 app = Flask(__name__)
 app.config.from_object('config')
 app.debug = True
 db = SQLAlchemy(app)
+
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+if not database_exists(engine.url):
+    create_database(engine.url)
 
 lm = LoginManager()
 lm.login_view = "login"

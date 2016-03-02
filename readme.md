@@ -6,7 +6,7 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 
 ## Getting Started
 
-```(Example commands are for Ubuntu 14.04 LTS)```
+```(Example commands assume root user on Ubuntu 14.04 LTS)```
 
 * Install PostgreSQL > 9.4
 
@@ -19,6 +19,12 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 ```apt-get upgrade```
 
 ```apt-get install postgresql-9.4```
+
+```sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" /etc/postgresql/9.4/main/postgresql.conf```
+
+```echo 'host    all    all    0.0.0.0/0    trust' >> /etc/postgresql/9.4/main/pg_hba.conf```
+
+```service postgresql start```
 
 * Install Git
 
@@ -61,10 +67,6 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 * Move to app root
 
 ```cd /var/www/cap```
-
-* Create database
-
-```python create_db.py```
 
 * Enter python shell
 
