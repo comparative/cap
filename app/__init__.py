@@ -4,6 +4,7 @@ from flask.ext.login import LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.uploads import UploadSet, configure_uploads, IMAGES, ALL
 from celery import Celery
+from HTMLParser import HTMLParser
 app = Flask(__name__)
 app.config.from_object('config')
 app.debug = True
@@ -42,11 +43,27 @@ celery = make_celery(app)
 from app import views, models
 
 def smart_truncate(content, length=100, suffix='...'):
-    content = content[3:-4]
+    content = strip_tags(content)
+    #content = content[3:-4]
     if len(content) <= length:
         return content
     else:
         return ' '.join(content[:length+1].split(' ')[0:-1]) + suffix
         
+class MLStripper(HTMLParser):
+    def __init__(self):
+        self.reset()
+        self.fed = []
+    def handle_data(self, d):
+        self.fed.append(d)
+    def get_data(self):
+        return ''.join(self.fed)
+
+def strip_tags(html):
+    s = MLStripper()
+    s.feed(html)
+    return s.get_data()
+
+
 app.jinja_env.globals.update(smart_truncate=smart_truncate)
 
