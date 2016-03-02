@@ -1080,7 +1080,8 @@ def admin_staticdataset_item(slug,id):
             dataset.country_id = country.id
             try:
                 db.session.add(dataset) 
-            except:
+            except Exception as e:
+                app.logger.debug(e[0])
                 flash('Something went wrong, dataset not saved!')
                 return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
     
@@ -1089,7 +1090,8 @@ def admin_staticdataset_item(slug,id):
         try:
             db.session.commit()
             flash('Dataset "%s" saved' % (form.display.data))
-        except:
+        except Exception as e:
+            app.logger.debug(e[0])
             flash('Something went wrong, dataset not saved!')
             return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
             
@@ -1261,7 +1263,8 @@ def admin_dataset_upload(type):
     errors = ''
     try:
         didit = convert_to_utf8(disk_filepath)
-    except:
+    except Exception as e:
+        app.logger.debug(e[0])
         didit = False
     if (didit == False):
         errors += 'Data not converted to UTF-8. '
@@ -1313,7 +1316,8 @@ def admin_dataset_item(slug,id):
         
         try:
             didit = convert_to_utf8(disk_filepath)
-        except:
+        except Exception as e:
+            app.logger.debug(e[0])
             didit = False
         if (didit == False):
             flash('Topics not converted to UTF-8!')
@@ -1394,7 +1398,8 @@ def admin_dataset_item(slug,id):
             dataset.country_id = country.id
             try:
                 db.session.add(dataset) 
-            except:
+            except Exception as e:
+                app.logger.debug(e[0])
                 flash('Something went wrong, dataset not saved!')
                 return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
                 
@@ -1403,7 +1408,8 @@ def admin_dataset_item(slug,id):
         try:
             db.session.commit()
             flash('Dataset "%s" saved' % (form.display.data))
-        except:
+        except Exception as e:
+            app.logger.debug(e[0])
             flash('Something went wrong, dataset not saved!')
             return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
             
@@ -2169,7 +2175,8 @@ def convert_to_utf8(filename):
     # try to open the file and exit if some IOError occurs
     try:
         f = open(filename, 'r').read()
-    except Exception:
+    except Exception as e:
+        app.logger.debug(e[0])
         return False
         #sys.exit(1)
  
@@ -2185,7 +2192,8 @@ def convert_to_utf8(filename):
             # the data variable will hold our decoded text
             data = f.decode(enc)
             break
-        except Exception:
+        except Exception as e:
+            app.logger.debug(e[0])
             # if the first encoding fail, then with the continue
             # keyword will start again with the second encoding
             # from the tuple an so on.... until it succeeds.
@@ -2209,6 +2217,7 @@ def convert_to_utf8(filename):
         f.write(data.encode('utf-8'))
         f.close()
         return True
-    except Exception, e:
+    except Exception as e:
+        app.logger.debug(e[0])
         f.close()
         return e
