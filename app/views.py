@@ -975,11 +975,11 @@ def admin_staff_delete(slug,id):
     if staff is not None:
         if staff.filename:
             s3.delete('staffimages/' + staff.filename)
-        title = staff.title
+        name = staff.name
         db.session.delete(staff)
         db.session.commit()
         flash('Staff member "%s" deleted' %
-              (title))
+              (name))
         return redirect(url_for('admin_staff_list',slug=slug))
     flash('Staff member not found!')
     return redirect(url_for('admin'))

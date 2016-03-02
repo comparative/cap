@@ -1631,8 +1631,10 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 
                 var idx = starts_odd == 1 ? i - 1 : i + 1;
                 
-                if (idx >= 0 && (data[idx+1] != null) ) {
-                    var val = (data[idx] + data[idx+1]);
+                if (idx >= 0  ) {
+                    var thisyear = data[idx] != null ? data[idx] : 0;
+                    var nextyear = data[idx+1] != null ? data[idx+1] : 0;
+                    var val = (thisyear + nextyear);
                     if (val != Math.round(val)) {
                         val = Number(parseFloat(Math.round(val*1000)/1000).toFixed(3));
                     }
