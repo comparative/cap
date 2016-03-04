@@ -8,7 +8,7 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 
 ```(Example commands assume root user on Ubuntu 14.04 LTS)```
 
-* Install PostgreSQL > 9.4
+* Install PostgreSQL >= 9.4
 
 ```wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -```
 
@@ -26,13 +26,13 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 
 ```service postgresql start```
 
-* Install Git
-
-```apt-get install git```
-
 * Install Docker
 
 ```wget -qO- https://get.docker.com/ | sh```
+
+* Install Git
+
+```apt-get install git```
 
 * Move to web root
 
@@ -64,7 +64,7 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 
 ```docker exec -it web bash```
 
-* Move to app root
+* Move to app root in Docker container
 
 ```cd /var/www/cap```
 
