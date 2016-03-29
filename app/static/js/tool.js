@@ -353,6 +353,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     $http.get(baseUrl + '/api/budgetprojects').success(function(data){
         
+        /*
         for (i = 0; i < data.length; ++i) {
             for (j = 0; j < data[i].datasets.length; ++j) {
                 if (data[i].datasets[j].topics) { 
@@ -360,6 +361,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 }
             }
         }
+        */
         
         $scope.budgetProjects = data;
                         

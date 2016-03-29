@@ -1329,6 +1329,7 @@ def admin_dataset_item(slug,id):
         
         topicscsvfile = open(disk_filepath, 'rU')
         topicsreader = csv.DictReader(topicscsvfile)
+        
         #form.topicsfieldnames = [item.lower() for item in topicsreader.fieldnames]
         form.topicsfieldnames = [item for item in topicsreader.fieldnames]
     
@@ -1361,11 +1362,12 @@ def admin_dataset_item(slug,id):
                 for subrow in subfunctions:
                     if subrow['majorfunction'] == row['majorfunction']:
                         thesub = {}
-                        thesub['id'] = subrow['subfunction']
+                        thesub['id'] = '{0:g}'.format(float(subrow['subfunction'])) #drop trailing 0's introduced by DictReader
                         thesub['name'] = subrow['shortname']
                         thesubs.append(thesub)
                 if len(thesubs) > 0:
                     therow['subtopics'] = thesubs
+                    app.logger.debug(thesubs)
                 
                 thedata.append(therow)
                 
@@ -1663,7 +1665,7 @@ def api_drilldown(dataset,flag,topic,year):
     where = instances_get_where(db,dataset,sub,topic,str(frm),str(to))
     sql = sql + where
     
-    app.logger.debug(sql)
+    #app.logger.debug(sql)
     
     cur.execute(sql,[dataset])
     
@@ -1702,7 +1704,7 @@ def api_instances(dataset,flag,topic,frm,to):
         have_fieldnames = False
         select_clause = "datarow"
     
-    app.logger.debug(select_clause)
+    #app.logger.debug(select_clause)
     
     sql = "select " + select_clause
     
@@ -1721,7 +1723,7 @@ def api_instances(dataset,flag,topic,frm,to):
     
     sql = sql + where
     
-    app.logger.debug(sql)
+    #app.logger.debug(sql)
     
     cur.execute(sql,[dataset])
     
@@ -1850,7 +1852,9 @@ def api_measures(dataset,flag,topic):
                 ) yt
                 GROUP BY yt.year  ORDER by yt.year
                 """
-            
+                
+                #app.logger.debug(sql)
+                
                 cur.execute(sql,[dataset,topic])
                 rows = cur.fetchall()
     
