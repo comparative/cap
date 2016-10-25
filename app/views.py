@@ -1758,15 +1758,15 @@ def api_measures(dataset,flag,topic):
     #app.logger.debug(flag);
     
     # CHECK CACHE
-    #cached_path = '/var/www/cap/datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
+    cached_path = app.config['UPLOADS_DEFAULT_DEST'] + '/../datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
     #app.logger.debug(cached_path);
     
-    #if (os.path.isfile(cached_path)):
-    #    return send_file(cached_path)
+    if (os.path.isfile(cached_path)):
+        return send_file(cached_path)
     
     # NO CACHE, GO TO THE DB!!
     
-    conn = psycopg2.connect(app.config['CONN_STRING'])
+    conn = psycopg2.connect(app.config['CONN_STRING']) #problems here
     cur = conn.cursor(cursor_factory=RealDictCursor)
     data = {}
     
@@ -1816,7 +1816,7 @@ def api_measures(dataset,flag,topic):
             GROUP BY yt.year  ORDER by yt.year
             """
         
-            cur.execute(sql,[dataset])
+            cur.execute(sql,[dataset]) #problems here
             rows = cur.fetchall()
     
             totals = []
@@ -1892,7 +1892,7 @@ def api_measures(dataset,flag,topic):
             
             #app.logger.debug(sql)
             
-            cur.execute(sql,[dataset])
+            cur.execute(sql,[dataset])  #problems here
             rows = cur.fetchall()
     
             totals = []
@@ -1933,7 +1933,7 @@ def api_measures(dataset,flag,topic):
                 GROUP BY year) AS yc ORDER by year
                 """
     
-                cur.execute(sql,[dataset,topic])
+                cur.execute(sql,[dataset,topic])  #problems here
                 rows = cur.fetchall()
     
                 count = []
@@ -2005,8 +2005,8 @@ def api_measures(dataset,flag,topic):
         data['percent_total'] = percent_total
     
     # WRITE CACHE
-    #with open(cached_path, 'w') as outfile:
-    #    dump(data, outfile)
+    with open(cached_path, 'w') as outfile:
+        dump(data, outfile)
          
     return dumps(data)
 
