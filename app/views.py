@@ -1,6 +1,7 @@
 import shutil
 import requests
 import os
+import glob
 import uuid
 import psycopg2
 import urllib
@@ -1249,8 +1250,6 @@ def long_datasave(datafile_name):
         db.session.commit()
         
         update_stats(db,dataset.id,dataset.country_id)
-    
-    
 
 @app.route('/admin/dataset/upload/<type>', methods=['POST'])
 @login_required
@@ -1476,7 +1475,8 @@ def admin_dataset_delete(slug,id):
         """
         cur = db.session.connection().connection.cursor()
         cur.execute(sql,[country_id,country_id,country_id,country_id,country_id])
-        db.session.commit() 
+        db.session.commit()
+        clear_cache(id)
         flash('Dataset "%s" deleted' %
               (title))
         return redirect(url_for('admin_dataset_list',slug=slug))
@@ -1488,9 +1488,6 @@ def admin_dataset_delete(slug,id):
 def admin_dataset_removecontent(slug,id):
     dataset = Dataset.query.filter_by(id=id).first()
     if dataset is not None:
-        #path = datasetimages.path(dataset.filename)
-        #if os.path.isfile(path):
-        #    os.remove(path)
         if dataset.datasetfilename:
             s3.delete('datasetfiles/' + dataset.datasetfilename)
         dataset.datasetfilename = None
@@ -1498,6 +1495,7 @@ def admin_dataset_removecontent(slug,id):
         dataset.fieldnames = None
         dataset.ready = False
         db.session.commit()
+        clear_cache(id)
         return redirect(url_for('admin_dataset_item',slug=slug,id=id))
     flash('Dataset not found!')
     return redirect(url_for('admin')) 
@@ -1507,9 +1505,6 @@ def admin_dataset_removecontent(slug,id):
 def admin_dataset_removecodebook(slug,id):
     dataset = Dataset.query.filter_by(id=id).first()
     if dataset is not None:
-        #path = codebookfiles.path(dataset.codebookfilename)
-        #if os.path.isfile(path):
-        #    os.remove(path)
         if dataset.codebookfilename:
             s3.delete('codebookfiles/' + dataset.codebookfilename)
         dataset.codebookfilename = None
@@ -1524,9 +1519,6 @@ def admin_dataset_removetopics(slug,id):
     #return redirect(url_for('admin_dataset_item',slug=slug,id=id))
     dataset = Dataset.query.filter_by(id=id).first()
     if dataset is not None:
-        #path = topicsfiles.path(dataset.topicsfilename)
-        #if os.path.isfile(path):
-        #    os.remove(path)
         if dataset.topicsfilename:
             s3.delete('topicsfiles/' + dataset.topicsfilename)
         dataset.topicsfilename = None
@@ -2152,6 +2144,14 @@ def update_stats(db,dataset_id,country_id):
     """
     cur.execute(sql,[country_id,country_id,country_id,country_id,country_id])
     db.session.commit() 
+
+def clear_cache(dataset_id):
+
+  app_path = app.config['UPLOADS_DEFAULT_DEST'][:-len('uploads')]
+  cache_wildcard = app_path + 'datacache/' + dataset_id + '-*'    
+  for filename in glob.glob(cache_wildcard):
+      app.logger.debug(filename)
+      os.remove(filename)
 
 def resolve_conflicts(folder,file):
     
