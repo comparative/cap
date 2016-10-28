@@ -98,10 +98,19 @@ function Chart() {
 }
 
 function Saved(slug, imgsrc, options) {
-    
+
     this.slug = slug;
     this.imgsrc = imgsrc;
     this.options = options;
+    
+}
+
+function Recent(key) {
+    
+    this.key = key;
+    this.options = undefined;
+    this.slug = undefined;
+    this.imgsrc = undefined;    
     
 }
 
@@ -635,7 +644,6 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             doSeriesRemain = $scope.chart.series.length > 0;            
             $scope.drawChart(doSeriesRemain); 
         
-        
         }
         
     }
@@ -1018,16 +1026,22 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         options = $scope.chartToOptions();
         
         theChart.destroy();
-		theChart = new Highcharts.Chart(options);
+		    theChart = new Highcharts.Chart(options);
 		
-		if (burnThumb) {
-		
+		    if (burnThumb) {
+		        
             var obj = {};
             //exportUrl = 'http://104.237.136.8:8080/highcharts-export-web/';
             obj.options = JSON.stringify(options);
             obj.type = 'image/png';
             obj.async = true;
-        
+            
+            // ADD THUMBNAIL TO RECENT
+            var d = new Date();
+            var stamp = d.getTime();
+            item = new Recent(stamp);
+            $scope.recent.push(item);
+            
             // GET THUMBNAIL (& SLUG, from export server)
             $.ajax({
                 type: 'post',
@@ -1035,15 +1049,20 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 data: obj,
                 success: function (data) {
                 
-                    slug = data.substr(6,8) // slug is between 'files/' & '.png' in return value
+                    var slug = data.substr(6,8) // slug is between 'files/' & '.png' in return value
                     $scope.chart.slug = slug;
-                                
-                    // ADD THUMBNAIL TO RECENT
-                    item = new Saved(slug, exportUrl + data, obj.options);
-                    $scope.recent.unshift(item);
+                    
+                    // find correct thumbnail by key and assign
+                    angular.forEach($scope.recent, function (item,index) {
+                        if (item.key == stamp) {
+                            $scope.recent[index].slug = slug;
+                            $scope.recent[index].imgsrc = exportUrl + data;
+                            $scope.recent[index].options = obj.options;
+                        }
+                    });
+                    
                     $scope.pending = false;
                     $scope.$apply();
-                    
                 
                 }
             });
@@ -1264,8 +1283,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     $scope.recallRecent = function(index) {
         
-        $scope.chart.slug = $scope.recent[index].slug;
-        $scope.chart = JSON.parse($scope.recent[index].options).CAP_chart;
+        var reverse_index = $scope.recent.length - index - 1;
+        $scope.chart.slug = $scope.recent[reverse_index].slug;
+        $scope.chart = JSON.parse($scope.recent[reverse_index].options).CAP_chart;
         $scope.preserve_date_range = true;
         $scope.drawChart(false);     
         
@@ -1926,6 +1946,14 @@ function getQueryVariable(variable) {
                if(pair[0] == variable){return pair[1];}
        }
        return(false);
+}
+
+function createGuid()
+{
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
+        return v.toString(16);
+    });
 }
 
 function getInstancesUri(filters,dataset,flag,topic,frm,to) {
