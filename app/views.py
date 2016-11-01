@@ -1215,31 +1215,6 @@ def long_datasave(datafile_name):
     
     os.remove('temp_' + datafile_name)
     
-    #content = dumps(thedata)
-    #del thedata
-    #gc.collect()
-    
-    #cur = db.session.connection().connection.cursor()
-    
-    #sql = "UPDATE dataset SET fieldnames = %s WHERE datasetfilename = %s"
-    #cur.execute(sql,[dumps(fieldnames),datafile_name])
-    #db.session.commit()
-    
-    #sql = "UPDATE dataset SET filters = %s WHERE datasetfilename = %s"
-    #cur.execute(sql,[dumps(filters),datafile_name])
-    #db.session.commit()
-    
-    #app.logger.debug("we started this")
-    
-    #sql = "UPDATE dataset SET content = %s, ready = True WHERE datasetfilename = %s"
-    #cur.execute(sql,[content,datafile_name])
-    #db.session.commit()
-    
-    #cur.close()
-    
-    #del content
-    #gc.collect()
-    
     dataset = Dataset.query.filter_by(datasetfilename=datafile_name).first()
     if dataset:
         
