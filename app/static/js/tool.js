@@ -522,6 +522,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
     $scope.addToChart = function(result) {
     	
+    	ga('send', 'event', 'Dataset', 'Add to Chart', result.name, result.dataset);
+    	
     	if ($scope.pending == false) {
     	    
     	    $scope.pending = true;
@@ -664,6 +666,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             
             angular.forEach($scope.chart.series, function (series, index) {            
                 
+               // console.log(series);
+                
+                           
                 timePeriods = $scope.chart.timeSeries == "congresses" ? $scope.years_to_congresses(series.alldata.years) : series.alldata.years;
                 
                 thisMax = Math.max.apply(null, timePeriods);
