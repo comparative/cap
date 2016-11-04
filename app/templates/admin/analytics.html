@@ -10,6 +10,12 @@
 <a href="{{ url_for('admin_country_item',slug=country.slug) }}">{{ country.name }}</a> >> Analytics
 </h4>
 
-<img src="http://speckycdn.sdm.netdna-cdn.com/wp-content/uploads/2008/10/underconstruction3.gif"/>
+<!--<img src="http://speckycdn.sdm.netdna-cdn.com/wp-content/uploads/2008/10/underconstruction3.gif"/>-->
+
+<ul>
+{% for item in stats %}
+	  <li>{{ item.name }}: {{ item.charts }} charts, {{ item.downloads }} downloads</li>
+{% endfor %}
+</ul>
 
 {% endblock %}

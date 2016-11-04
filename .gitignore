@@ -5,3 +5,4 @@ search.db
 flask
 config.py
 .DS_Store
+*.p12

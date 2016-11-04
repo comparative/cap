@@ -10,6 +10,7 @@ import csv
 import time
 import tinys3
 import gc
+import httplib2
 from sqlalchemy import desc
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
@@ -25,6 +26,14 @@ from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, Sta
 from datetime import datetime
 from random import randint
 from urlparse import urlparse, urlunparse
+from apiclient.discovery import build
+from oauth2client.service_account import ServiceAccountCredentials
+from oauth2client import client
+from oauth2client import file
+from oauth2client import tools
+from operator import itemgetter
+from itertools import groupby
+
 
 s3 = tinys3.Pool(app.config['S3_ACCESS_KEY'],app.config['S3_SECRET_KEY'],app.config['S3_BUCKET'])
 s3conn = tinys3.Connection(app.config['S3_ACCESS_KEY'],app.config['S3_SECRET_KEY'],app.config['S3_BUCKET'])
@@ -178,6 +187,7 @@ def embed(slug):
 
 @app.route('/')
 def index():
+      
     #slides = Slide.query.filter_by(active=True).paginate(1,3,False).items
     slides = Slide.query.filter_by(active=True).all()
     for item in slides:
@@ -1007,10 +1017,22 @@ def admin_staff_removefile(slug,id):
 @app.route('/admin/projects/<slug>/analytics')
 @login_required
 def admin_analytics(slug):
+    service = get_analytics()
     country = Country.query.filter_by(slug=slug).first()
+    datasets_policy = Dataset.query.filter_by(country_id=country.id)
+    stats = []
+    for d in datasets_policy:
+      totals = get_totals(d.id,service)
+      x = {}
+      x['name'] = d.display
+      x['charts'] = totals[0]
+      x['downloads'] = totals[1]
+      stats.append(x)
+    
+    app.logger.debug(stats)
+    
     return render_template('admin/analytics.html',
-                           country=country)
-
+                           country=country,stats=stats)
 
 ## DATASETS
 
@@ -2145,6 +2167,49 @@ def resolve_conflicts(folder,file):
         return file
         
     return recursion(0, folder, file)
+
+def get_analytics():
+
+  credentials = ServiceAccountCredentials.from_p12_keyfile(
+    app.config['GA_SERVICE_ACCOUNT_EMAIL'], app.config['GA_KEY_FILE_LOCATION'], scopes=app.config['GA_SCOPE'])
+
+  http = credentials.authorize(httplib2.Http())
+
+  # Build the service object.
+  service = build('analytics', 'v3', http=http)
+
+  return service
+
+def get_totals(dataset_id,service):
+
+  filterByDatasetId = 'ga:eventValue==' + str(dataset_id)
+
+  api_query = service.data().ga().get(
+    ids='ga:132813226',
+    start_date='2016-11-01',
+    end_date=datetime.now().strftime('%Y-%m-%d'),
+    metrics='ga:eventValue',
+    dimensions='ga:eventAction,ga:eventLabel,ga:date',
+    sort='-ga:date',
+    filters=filterByDatasetId)
+    
+  results = api_query.execute()
+  
+  addtochart = (0,)
+  download = (0,)
+  
+  if 'rows' in results.keys():
+    events = results['rows']
+    events.sort(key=itemgetter(0))
+    for ea, items in groupby(events, itemgetter(0)):
+      if ea == 'Add to Chart':
+        addtochart = (sum(1 for _ in items),)
+      if ea == 'Download':
+        download = (sum(1 for _ in items),)
+  
+  totals = addtochart + download
+  
+  return totals
 
 def convert_to_utf8(filename):
     # gather the encodings you think that the file may be
