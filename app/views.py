@@ -1019,20 +1019,44 @@ def admin_staff_removefile(slug,id):
 def admin_analytics(slug):
     service = get_analytics()
     country = Country.query.filter_by(slug=slug).first()
-    datasets_policy = Dataset.query.filter_by(country_id=country.id)
-    stats = []
+    
+    datasets_policy = Dataset.query.filter_by(country_id=country.id).filter_by(budget=False).order_by(desc(Dataset.saved_date))
+    stats_policy = []
     for d in datasets_policy:
-      totals = get_totals(d.id,service)
+      totals = get_totals(d.id,service, False)
       x = {}
       x['name'] = d.display
       x['charts'] = totals[0]
       x['downloads'] = totals[1]
-      stats.append(x)
+      stats_policy.append(x)
     
-    app.logger.debug(stats)
+    
+    datasets_budget = Dataset.query.filter_by(country_id=country.id).filter_by(budget=True).order_by(desc(Dataset.saved_date))
+    stats_budget = []
+    for d in datasets_budget:
+      totals = get_totals(d.id,service, False)
+      x = {}
+      x['name'] = d.display
+      x['charts'] = totals[0]
+      x['downloads'] = totals[1]
+      stats_budget.append(x)
+    
+    
+    datasets_download = Staticdataset.query.filter_by(country_id=country.id).order_by(desc(Staticdataset.saved_date))
+    stats_download=[]
+    for d in datasets_download:
+      totals = get_totals(d.id, service, True)
+      x = {}
+      x['name'] = d.display
+      x['charts'] = totals[0]
+      x['downloads'] = totals[1]
+      stats_download.append(x)
     
     return render_template('admin/analytics.html',
-                           country=country,stats=stats)
+                           country=country,
+                           stats_policy=stats_policy,
+                           stats_budget=stats_budget,
+                           stats_download=stats_download)
 
 ## DATASETS
 
@@ -2180,16 +2204,16 @@ def get_analytics():
 
   return service
 
-def get_totals(dataset_id,service):
-
-  filterByDatasetId = 'ga:eventValue==' + str(dataset_id)
+def get_totals(dataset_id,service,static):
+  
+  filterByDatasetId = 'ga:eventAction==' + str(dataset_id)
 
   api_query = service.data().ga().get(
     ids='ga:132813226',
     start_date='2016-11-01',
     end_date=datetime.now().strftime('%Y-%m-%d'),
-    metrics='ga:eventValue',
-    dimensions='ga:eventAction,ga:eventLabel,ga:date',
+    metrics='ga:totalEvents',
+    dimensions='ga:eventAction,ga:eventCategory,ga:date',
     sort='-ga:date',
     filters=filterByDatasetId)
     
@@ -2199,13 +2223,13 @@ def get_totals(dataset_id,service):
   download = (0,)
   
   if 'rows' in results.keys():
-    events = results['rows']
-    events.sort(key=itemgetter(0))
-    for ea, items in groupby(events, itemgetter(0)):
-      if ea == 'Add to Chart':
-        addtochart = (sum(1 for _ in items),)
-      if ea == 'Download':
-        download = (sum(1 for _ in items),)
+    for r in results['rows']:
+      if r[1] == 'Add Series to Chart':
+        addtochart = (r[3],)
+      if r[1] == 'Dataset Download':
+        download = (r[3],)
+      if static and (r[1] == 'Static Dataset Download'):
+        download = (r[3],)
   
   totals = addtochart + download
   

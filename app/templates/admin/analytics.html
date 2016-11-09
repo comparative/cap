@@ -12,10 +12,36 @@
 
 <!--<img src="http://speckycdn.sdm.netdna-cdn.com/wp-content/uploads/2008/10/underconstruction3.gif"/>-->
 
-<ul>
-{% for item in stats %}
-	  <li>{{ item.name }}: {{ item.charts }} charts, {{ item.downloads }} downloads</li>
+<h5>Policy Datasets</h5>
+<table>
+<tr><th>&nbsp;</th><th>Charts</th><th>Downloads</th></tr>
+{% for item in stats_policy %}
+	  <tr><td>{{ item.name }}</td><td class="center-text">{{ item.charts }}</td><td class="center-text">{{ item.downloads }}</td></tr>
 {% endfor %}
-</ul>
+</table>
+
+{% if stats_budget|length > 0 %}
+
+<h5>Budget Datasets</h5>
+<table>
+<tr><th>&nbsp;</th><th>Charts</th><th>Downloads</th></tr>
+{% for item in stats_budget %}
+	  <tr><td>{{ item.name }}</td><td class="center-text">{{ item.charts }}</td><td class="center-text">{{ item.downloads }}</td></tr>
+{% endfor %}
+</table>
+
+{% endif %}
+
+{% if stats_download|length > 0 %}
+
+<h5>Download Only Datasets</h5>
+<table>
+<tr><th>&nbsp;</th><th>Downloads</th></tr>
+{% for item in stats_download %}
+	  <tr><td>{{ item.name }}</td><td class="center-text">{{ item.downloads }}</td></tr>
+{% endfor %}
+</table>
+
+{% endif %}
 
 {% endblock %}

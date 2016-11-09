@@ -147,12 +147,13 @@
                                     {% if dataset.stats_observations %}
                                     {{dataset.stats_observations}} observations spanning the years {{dataset.stats_year_from}} to {{dataset.stats_year_to}}
                                     <br/>
+                                    <a class="clickable" onclick="ga('send', 'event', 'Dataset Download', '{{dataset.id}}', '{{country.name}}: {{dataset.short_display}}');" href="{{config['S3_URL']}}datasetfiles/{{dataset.datasetfilename}}">download dataset</a>
                                     {% else %}
                                     This dataset is not available in the trends tool.<br/>
+                                    <a class="clickable" onclick="ga('send', 'event', 'Static Dataset Download', '{{dataset.id}}', '{{country.name}}: {{dataset.display}}');" href="{{config['S3_URL']}}datasetfiles/{{dataset.datasetfilename}}">download dataset</a>
+         
                                     {% endif %}
-                                    
-                                    <a class="clickable" onclick="ga('send', 'event', 'Dataset', 'Download', '{{country.name}}: {{dataset.display}}', {{dataset.id}});" href="{{config['S3_URL']}}datasetfiles/{{dataset.datasetfilename}}">download dataset</a>
-                                                                        
+                                                                         
                                     {% if dataset.codebookfilename %}
                                     &nbsp;&nbsp;<a class="clickable" href="{{config['S3_URL']}}codebookfiles/{{dataset.codebookfilename}}" target="_blank">download codebook</a>
                                     {% endif %}

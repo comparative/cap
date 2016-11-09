@@ -522,7 +522,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
     $scope.addToChart = function(result) {
     	
-    	ga('send', 'event', 'Dataset', 'Add to Chart', result.name, result.dataset);
+    	ga('send', 'event', 'Add Series to Chart', result.dataset, result.name);
     	
     	if ($scope.pending == false) {
     	    
