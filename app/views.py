@@ -1217,7 +1217,7 @@ def admin_staticdataset_removecodebook(slug,id):
 
 @celery.task
 def long_datasave(datafile_name):
- 
+    
     url = app.config['S3_URL'] + 'datasetfiles/' + datafile_name
     response = requests.get(url, stream=True)
     with open('temp_' + datafile_name, 'wb') as out_file:
@@ -1227,13 +1227,8 @@ def long_datasave(datafile_name):
     gc.collect()
     
     csvfile = open('temp_' + datafile_name, 'rU')
-    reader = csv.DictReader(csvfile)
-    
-    del csvfile
-    gc.collect()
-    
-    #fieldnames = [item.lower() for item in reader.fieldnames]
-    fieldnames = [item for item in reader.fieldnames]
+    reader = csv.reader(csvfile)
+    fieldnames = reader.next()
     
     filters = []
     for fieldname in fieldnames:
@@ -1242,18 +1237,18 @@ def long_datasave(datafile_name):
             
     thedata = []
     for row in reader:
-        if 'count' in fieldnames:
-            if row['id'] and row['year'] and row['majortopic'] and row['count']:
+        if 'count' in fieldnames:                                                   # aggregation level = count
+            if row_has_vals(row, ['id','year','majortopic','count'], fieldnames):
                 thedata.append(row)
-        elif 'amount' in fieldnames:
-            if row['id'] and row['year'] and row['majorfunction'] and row['amount']:
+        elif 'amount' in fieldnames:                                                # budget
+            if row_has_vals(row, ['id','year','majorfunction','amount'], fieldnames):
                 thedata.append(row)
-        elif 'percent' in fieldnames:
-            if row['id'] and row['year'] and row['majortopic'] and row['percent']:
+        elif 'percent' in fieldnames:                                               # aggregation level = percent
+            if row_has_vals(row, ['id','year','majortopic','percent'], fieldnames):
                 row['percent'] = float(row['percent'])
                 thedata.append(row)
-        else:
-            if row['id'] and row['year'] and row['majortopic']:
+        else:                                                                       # aggregation level = raw
+            if row_has_vals(row,['id','year','majortopic'], fieldnames):
                 thedata.append(row)
     
     del reader
@@ -1270,7 +1265,7 @@ def long_datasave(datafile_name):
         dataset.ready = True
         db.session.commit()
         
-        update_stats(db,dataset.id,dataset.country_id)
+        update_stats(db,dataset.id,dataset.country_id,fieldnames)
 
 @app.route('/admin/dataset/upload/<type>', methods=['POST'])
 @login_required
@@ -1413,7 +1408,8 @@ def admin_dataset_item(slug,id):
             dataset.datasetfilename = content
             dataset.ready = None
             task = long_datasave.delay(content)
-        
+            #long_datasave(content)
+            
         tab = 2 if dataset.budget else 1
         
         if id == 'add' or id == 'addbudget':
@@ -1658,10 +1654,27 @@ def api_drilldown(dataset,flag,topic,year):
     else:
         abort(404)
     
+    # RETRIEVE METADATA
+    sql = """
+    select fieldnames from dataset WHERE dataset.id = %s
+    """
+    cur.execute(sql,[dataset])
+    r = cur.fetchone()
+    fieldnames = r["fieldnames"]
+    
     # DRILLDOWN
     
-    sql = """
-    select datarow->>'source' as source, datarow->>'description' as description
+    sql = "select "
+    if 'source' in fieldnames and 'description' in fieldnames:
+      sql = sql + "datarow->>" + str(fieldnames.index('source')) + " as source, datarow->>" + str(fieldnames.index('description')) + " as description "
+    elif 'source' in fieldnames:
+      sql = sql + "datarow->>" + str(fieldnames.index('source')) + " as source "
+    elif 'description' in fieldnames:
+      sql = sql + "datarow->>" + str(fieldnames.index('description')) + " as description "
+    else:
+      return dumps([])
+    
+    sql = sql + """
     from (
       select jsonb_array_elements(content)
       from dataset WHERE dataset.id = %s
@@ -1675,10 +1688,10 @@ def api_drilldown(dataset,flag,topic,year):
         frm = year
         to = year
     
-    where = instances_get_where(db,dataset,sub,topic,str(frm),str(to))
+    where = instances_get_where(db,dataset,sub,topic,str(frm),str(to),fieldnames)
     sql = sql + where
     
-    #app.logger.debug(sql)
+    app.logger.debug(sql)
     
     cur.execute(sql,[dataset])
     
@@ -1732,7 +1745,7 @@ def api_instances(dataset,flag,topic,frm,to):
         frm = (int(frm) * 2) + 1787
         to = (int(to) * 2) + 1788
     
-    where = instances_get_where(db,dataset,sub,topic,str(frm),str(to))
+    where = instances_get_where(db,dataset,sub,topic,str(frm),str(to),fieldnames)
     
     sql = sql + where
     
@@ -1774,8 +1787,8 @@ def api_measures(dataset,flag,topic):
     cached_path = app.config['UPLOADS_DEFAULT_DEST'] + '/../datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
     #app.logger.debug(cached_path);
     
-    if (os.path.isfile(cached_path)):
-        return send_file(cached_path)
+    #if (os.path.isfile(cached_path)):
+    #    return send_file(cached_path)
     
     # NO CACHE, GO TO THE DB!!
     
@@ -1785,17 +1798,20 @@ def api_measures(dataset,flag,topic):
     
     # RETRIEVE METADATA
     sql = """
-    select filters, aggregation_level, budget from dataset WHERE dataset.id = %s
+    select fieldnames, filters, aggregation_level, budget from dataset WHERE dataset.id = %s
     """
     cur.execute(sql,[dataset])
     r = cur.fetchone()
-    filters = r["filters"] if r["filters"] != None else []
     
+    fieldnames = r["fieldnames"]
+    year_index = str(fieldnames.index('year'))
+    
+    filters = r["filters"] if r["filters"] != None else []
     filter_predicates = []
     for filter in filters:
         filterval = request.args.get(filter)
         if (filterval != None):
-            filter_predicates.append("datarow->>'" + filter + "'='" + filterval + "'")
+            filter_predicates.append("datarow->>" + str(fieldnames.index(filter)) + "='" + filterval + "'")
     
     #app.logger.debug(filter_predicates);
     
@@ -1814,8 +1830,8 @@ def api_measures(dataset,flag,topic):
             # TOTALS ALL TOPICS
     
             sql = "SELECT yt.year::int, SUM(yt." + count_col
-            sql = sql + "::float) as total FROM (select datarow->>'year' AS year, datarow->>'"
-            sql = sql + count_col + "' AS " + count_col
+            sql = sql + "::float) as total FROM (select datarow->>""" + year_index + " AS year, datarow->>"
+            sql = sql + str(fieldnames.index(count_col)) + " AS " + count_col
             sql = sql + """
             FROM (
               select jsonb_array_elements(content)
@@ -1823,8 +1839,8 @@ def api_measures(dataset,flag,topic):
              ) s(datarow)
             WHERE 1=1"""
             sql = sql + """
-            AND datarow->>'year' ~ '^[0-9]'
-            AND datarow->>'year' != '0'
+            AND datarow->>""" + year_index + """ ~ '^[0-9]'
+            AND datarow->>""" + year_index + """ != '0'
             ) yt
             GROUP BY yt.year  ORDER by yt.year
             """
@@ -1851,17 +1867,17 @@ def api_measures(dataset,flag,topic):
                 count = totals
             else :
                 sql = "SELECT yt.year::int, SUM(yt." + count_col
-                sql = sql + "::float) as cnt FROM (select datarow->>'year' AS year, datarow->>'"
-                sql = sql + count_col + "' AS " + count_col
+                sql = sql + "::float) as cnt FROM (select datarow->>""" + year_index + " AS year, datarow->>"
+                sql = sql + str(fieldnames.index(count_col)) + " AS " + count_col
                 sql = sql + """
                 FROM (
                   select jsonb_array_elements(content)
                   from dataset WHERE dataset.id = %s
                  ) s(datarow)
-                where datarow->>'""" + topic_col + "' = %s"
+                where datarow->>""" + str(fieldnames.index(topic_col)) + " = %s"
                 sql = sql + """
-                AND datarow->>'year' ~ '^[0-9]'
-                AND datarow->>'year' != '0'
+                AND datarow->>""" + year_index + """ ~ '^[0-9]'
+                AND datarow->>""" + year_index + """ != '0'
                 ) yt
                 GROUP BY yt.year  ORDER by yt.year
                 """
@@ -1886,7 +1902,7 @@ def api_measures(dataset,flag,topic):
     
             sql = """
             SELECT yt.year::int, yt.total::int FROM (
-            select datarow->>'year' AS year, COUNT(datarow->'id') as total
+            select datarow->>""" + year_index + """ AS year, COUNT(datarow->""" + str(fieldnames.index('id')) + """) as total
             from (
               select jsonb_array_elements(content)
               from dataset WHERE dataset.id = %s
@@ -1898,8 +1914,8 @@ def api_measures(dataset,flag,topic):
                     sql = sql + " AND " + pred 
     
             sql = sql + """
-            AND datarow->>'year' ~ '^[0-9]'
-            AND datarow->>'year' != '0'
+            AND datarow->>""" + year_index + """ ~ '^[0-9]'
+            AND datarow->>""" + year_index + """ != '0'
             GROUP BY year) AS yt ORDER by year
             """
             
@@ -1929,22 +1945,25 @@ def api_measures(dataset,flag,topic):
             else :
                 sql = """
                 SELECT yc.year::int, yc.cnt::int FROM (
-                select datarow->>'year' AS year, COUNT(datarow->'id') as cnt
+                select datarow->>""" + year_index + """ AS year, COUNT(datarow->""" + str(fieldnames.index('id')) + """) as cnt
                 from (
                 select jsonb_array_elements(content)
                 from dataset WHERE dataset.id = %s
                 ) s(datarow)
-                where datarow->>'""" + topic_col + "' = %s"
+                where datarow->>""" + str(fieldnames.index(topic_col)) + " = %s"
     
                 if len(filter_predicates) > 0:
                     for pred in filter_predicates:
                         sql = sql + " AND " + pred 
             
                 sql = sql + """
-                AND datarow->>'year' ~ '^[0-9]'
-                AND datarow->>'year' != '0'
+                AND datarow->>""" + year_index + """ ~ '^[0-9]'
+                AND datarow->>""" + year_index + """ != '0'
                 GROUP BY year) AS yc ORDER by year
                 """
+    
+                app.logger.debug(sql)
+                
     
                 cur.execute(sql,[dataset,topic])  #problems here
                 rows = cur.fetchall()
@@ -1991,16 +2010,16 @@ def api_measures(dataset,flag,topic):
     
         sql = """
         SELECT yc.year::int, yc.percent::text::float FROM (
-        select datarow->>'year' AS year, datarow->'percent' as percent
+        select datarow->>""" + year_index + """ AS year, datarow->""" + str(fieldnames.index('percent')) + """ as percent
         from (
         select jsonb_array_elements(content)
         from dataset WHERE dataset.id = %s
         ) s(datarow)
-        where datarow->>'""" + topic_col + "' = %s"
+        where datarow->>""" + str(fieldnames.index(topic_col)) + " = %s"
         
         sql = sql + """
-        AND datarow->>'year' ~ '^[0-9]'
-        AND datarow->>'year' != '0'
+        AND datarow->>""" + year_index + """ ~ '^[0-9]'
+        AND datarow->>""" + year_index + """ != '0'
         ) AS yc ORDER by year
             """
 
@@ -2018,8 +2037,8 @@ def api_measures(dataset,flag,topic):
         data['percent_total'] = percent_total
     
     # WRITE CACHE
-    with open(cached_path, 'w') as outfile:
-        dump(data, outfile)
+    #with open(cached_path, 'w') as outfile:
+    #    dump(data, outfile)
          
     return dumps(data)
 
@@ -2083,7 +2102,7 @@ def research_item(slug,id):
     else:
         abort(404)
 
-def instances_get_where(db,dataset,sub,topic,frm,to):
+def instances_get_where(db,dataset,sub,topic,frm,to,fieldnames):
     
     # get cursor
     cur = db.session.connection().connection.cursor()
@@ -2101,22 +2120,24 @@ def instances_get_where(db,dataset,sub,topic,frm,to):
     for filter in filters:
         filterval = request.args.get(filter)
         if (filterval != None):
-            filter_predicates.append("datarow->>'" + filter + "'='" + filterval + "'")
+            filter_predicates.append("datarow->>" + str(fieldnames.index(filter)) + "='" + filterval + "'")
       
     # CONSTRUCT WHERE CLAUSE
             
     topic_col = 'subtopic' if sub else 'majortopic'
-    sql = " WHERE datarow->>'""" + topic_col + "' = '" + topic + "'"
+    sql = " WHERE datarow->>" + str(fieldnames.index(topic_col)) + " = '" + topic + "'"
     if len(filter_predicates) > 0:
         for pred in filter_predicates:
             sql = sql + " AND " + pred
-    sql = sql + " AND datarow->>'year' >= '" + frm + "' AND datarow->>'year' <= '" + to + "'"
+    sql = sql + " AND datarow->>" + str(fieldnames.index('year')) + " >= '" + frm + "' AND datarow->>" + str(fieldnames.index('year')) + " <= '" + to + "'"
        
     return sql
 
 
-def update_stats(db,dataset_id,country_id):
-
+def update_stats(db,dataset_id,country_id,fieldnames):
+    
+    year_index = str(fieldnames.index('year'))
+    
     # get cursor
     cur = db.session.connection().connection.cursor()
     
@@ -2124,31 +2145,31 @@ def update_stats(db,dataset_id,country_id):
     sql = """
     UPDATE dataset SET stats_year_from =
     (
-    SELECT MIN(datarow->>'year')::int
+    SELECT MIN(datarow->>""" + year_index + """)::int
         from (
         select jsonb_array_elements(content)
         from dataset WHERE dataset.id = %s
         ) s(datarow)
-        WHERE datarow->>'year' ~ '^[0-9]'
-        AND datarow->>'year' != '0'
+        WHERE datarow->>""" + year_index + """ ~ '^[0-9]'
+        AND datarow->>""" + year_index + """ != '0'
     ),
     stats_year_to = (
-    SELECT MAX(datarow->>'year')::int
+    SELECT MAX(datarow->>""" + year_index + """)::int
         from (
         select jsonb_array_elements(content)
         from dataset WHERE dataset.id = %s
         ) s(datarow)
-        WHERE datarow->>'year' ~ '^[0-9]'
-        AND datarow->>'year' != '0'
+        WHERE datarow->>""" + year_index + """ ~ '^[0-9]'
+        AND datarow->>""" + year_index + """ != '0'
     ),
     stats_observations = (
-    SELECT COUNT(datarow->'id')::int
+    SELECT COUNT(datarow->""" + str(fieldnames.index('id')) + """)::int
         from (
         select jsonb_array_elements(content)
         from dataset WHERE dataset.id = %s
         ) s(datarow)
-        WHERE datarow->>'year' ~ '^[0-9]'
-        AND datarow->>'year' != '0'
+        WHERE datarow->>""" + year_index + """ ~ '^[0-9]'
+        AND datarow->>""" + year_index + """ != '0'
     )
     WHERE id = %s
     """   
@@ -2234,6 +2255,13 @@ def get_totals(dataset_id,service,static):
   totals = addtochart + download
   
   return totals
+
+def row_has_vals(row,vals,fieldnames):
+    for val in vals:
+      idx = fieldnames.index(val) if val in fieldnames else None
+      if (idx is None) or (row[idx] is None) or (str(row[idx]).strip() == ""):
+        return False
+    return True
 
 def convert_to_utf8(filename):
     # gather the encodings you think that the file may be
