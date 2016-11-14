@@ -1720,19 +1720,24 @@ def api_instances(dataset,flag,topic,frm,to):
     r = cur.fetchone()
     fieldnames = r['fieldnames']
     
-    select_clause = ''
-    if fieldnames != None:
-        have_fieldnames = True
-        for fieldname in fieldnames:
-            select_clause = select_clause + "datarow->>'" + fieldname + "' AS " + '"' + fieldname + '"' + ", "
-        select_clause = select_clause[:-2]
-    else:
-        have_fieldnames = False
-        select_clause = "datarow"
+    sql = 'select '
+    for fieldname in fieldnames:
+        sql = sql + "datarow->>" + str(fieldnames.index(fieldname)) + " AS " + '"' + fieldname + '"' + ", "
+    sql = sql[:-2]
+    
+    #select_clause = ''
+    # if fieldnames != None:
+    #  have_fieldnames = True
+    #for fieldname in fieldnames:
+    #    select_clause = select_clause + "datarow->>'" + fieldname + "' AS " + '"' + fieldname + '"' + ", "
+    #select_clause = select_clause[:-2]
+    # else:
+    #    have_fieldnames = False
+    #    select_clause = "datarow"
     
     #app.logger.debug(select_clause)
     
-    sql = "select " + select_clause
+    # sql = "select " + select_clause
     
     sql = sql + """
     from (
@@ -1749,25 +1754,35 @@ def api_instances(dataset,flag,topic,frm,to):
     
     sql = sql + where
     
-    #app.logger.debug(sql)
+    app.logger.debug(sql)
+    app.logger.debug(dataset)
     
     cur.execute(sql,[dataset])
     
-    def generate(h):
-        if h:
-            yield ','.join(fieldnames) + '\n'
-            for u in cur.fetchall():
-                for fieldname in fieldnames:
-                    yield '"' + u[fieldname] + '",'
-                yield '\n'    
-        else:
-            firstrow = cur.fetchone()['datarow']
-            yield ','.join(firstrow.keys()) + '\n'
-            yield '"' + '","'.join(map(str,firstrow.values())) + '"' + '\n'
-            for u in cur.fetchall():
-                yield '"' + '","'.join(map(str,u['datarow'].values())) + '"' + '\n'
+    def generate():
+      yield ','.join(fieldnames) + '\n'
+      for u in cur.fetchall():
+        for fieldname in fieldnames:
+            yield '"' + u[fieldname] + '",'
+        yield '\n'
+    
+   # def generate(h):
+   #     if h:
+   #         yield ','.join(fieldnames) + '\n'
+   #         for u in cur.fetchall():
+   #             for fieldname in fieldnames:
+   #                 yield '"' + u[fieldname] + '",'
+   #             yield '\n'    
+   #     else:
+   #         firstrow = cur.fetchone()['datarow']
+   #         yield ','.join(firstrow.keys()) + '\n'
+   #         yield '"' + '","'.join(map(str,firstrow.values())) + '"' + '\n'
+   #         for u in cur.fetchall():
+   #             yield '"' + '","'.join(map(str,u['datarow'].values())) + '"' + '\n'
             
-    return Response(generate(have_fieldnames), mimetype='text/csv')
+   # return Response(generate(have_fieldnames), mimetype='text/csv')
+    
+    return Response(generate(), mimetype='text/csv')
     
     
 @app.route('/api/measures/dataset/<dataset>/<flag>/<topic>')
