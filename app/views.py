@@ -76,12 +76,25 @@ def static_from_root():
 #def catch_all(path):
 #    return 'Comparative Agendas is moving to a new server!  Please try again tomorrow.  Thanks for your patience.'
 
+######### RE-PROCESS ALL DATASETS
+
+@app.route('/reprocess')
+def reprocess():
+  
+    try:      
+      datasets = Dataset.query.filter(Dataset.ready == False).filter(Dataset.id != 78).filter(Dataset.id != 143).all()
+      for item in datasets:
+        #app.logger.debug(item.datasetfilename)      
+        task = long_datasave.delay(item.datasetfilename)
+        
+    except Exception as e:
+      app.logger.debug(e[0])
+    
+    return render_template('about.html')
+      
+
 ######### CHARTING ROUTES
-
-@app.route('/tooltest')
-def tooltest():
-    return render_template('tooltest.html')
-
+    
 @app.route('/tool')
 @app.route('/tool/<slug>')
 def tool(slug=None):
@@ -1230,6 +1243,8 @@ def long_datasave(datafile_name):
     reader = csv.reader(csvfile)
     fieldnames = reader.next()
     
+    #app.logger.debug(fieldnames)
+    
     filters = []
     for fieldname in fieldnames:
         if fieldname.split('_')[0] == 'filter':
@@ -1245,7 +1260,7 @@ def long_datasave(datafile_name):
                 thedata.append(row)
         elif 'percent' in fieldnames:                                               # aggregation level = percent
             if row_has_vals(row, ['id','year','majortopic','percent'], fieldnames):
-                row['percent'] = float(row['percent'])
+                row[fieldnames.index('percent')] = float(row[fieldnames.index('percent')])
                 thedata.append(row)
         else:                                                                       # aggregation level = raw
             if row_has_vals(row,['id','year','majortopic'], fieldnames):
@@ -1382,7 +1397,7 @@ def admin_dataset_item(slug,id):
                         thesubs.append(thesub)
                 if len(thesubs) > 0:
                     therow['subtopics'] = thesubs
-                    app.logger.debug(thesubs)
+                    #app.logger.debug(thesubs)
                 
                 thedata.append(therow)
                 
@@ -1691,7 +1706,7 @@ def api_drilldown(dataset,flag,topic,year):
     where = instances_get_where(db,dataset,sub,topic,str(frm),str(to),fieldnames)
     sql = sql + where
     
-    app.logger.debug(sql)
+    #app.logger.debug(sql)
     
     cur.execute(sql,[dataset])
     
@@ -1754,8 +1769,8 @@ def api_instances(dataset,flag,topic,frm,to):
     
     sql = sql + where
     
-    app.logger.debug(sql)
-    app.logger.debug(dataset)
+    #app.logger.debug(sql)
+    #app.logger.debug(dataset)
     
     cur.execute(sql,[dataset])
     
@@ -1977,7 +1992,7 @@ def api_measures(dataset,flag,topic):
                 GROUP BY year) AS yc ORDER by year
                 """
     
-                app.logger.debug(sql)
+                #app.logger.debug(sql)
                 
     
                 cur.execute(sql,[dataset,topic])  #problems here
@@ -2207,7 +2222,7 @@ def clear_cache(dataset_id):
   app_path = app.config['UPLOADS_DEFAULT_DEST'][:-len('uploads')]
   cache_wildcard = app_path + 'datacache/' + dataset_id + '-*'    
   for filename in glob.glob(cache_wildcard):
-      app.logger.debug(filename)
+      #app.logger.debug(filename)
       os.remove(filename)
 
 def resolve_conflicts(folder,file):
