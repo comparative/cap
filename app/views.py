@@ -31,8 +31,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 from oauth2client import client
 from oauth2client import file
 from oauth2client import tools
-from operator import itemgetter
-from itertools import groupby
+#from operator import itemgetter
+#from itertools import groupby
 
 
 s3 = tinys3.Pool(app.config['S3_ACCESS_KEY'],app.config['S3_SECRET_KEY'],app.config['S3_BUCKET'])

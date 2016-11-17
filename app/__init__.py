@@ -49,8 +49,9 @@ celery = make_celery(app)
 
 from app import views, models
 
-def smart_truncate(content, length=100, suffix='...'):
-    content = strip_tags(content)
+def smart_truncate(content, length=100, suffix=' ...'):
+    h = HTMLParser() 
+    content = strip_tags(h.unescape(content))
     #content = content[3:-4]
     if len(content) <= length:
         return content
