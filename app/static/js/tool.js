@@ -1909,7 +1909,7 @@ var drilldown = function(filters,dataset,flag,topic,agg,year) {
     
         $.get(url, function( data ) {
       
-            instances = JSON.parse(data);      
+            var instances = JSON.parse(data);      
             
             if (instances.length) {
             
