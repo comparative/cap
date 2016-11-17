@@ -1897,9 +1897,7 @@ var tooltipFormatter = function() {
 }
 
 var drilldown = function(filters,dataset,flag,topic,agg,year) {
-    
-   //console.log(filters);
-    
+        
     if (topic==0) {
     
         my_alert('All topics series!! No drilldown available.');
@@ -1910,10 +1908,20 @@ var drilldown = function(filters,dataset,flag,topic,agg,year) {
         var url = baseUrl + "/api/drilldown/" + uri;
     
         $.get(url, function( data ) {
-        
-            theScope.instances = JSON.parse(data);
-            theScope.$apply();
-            $('#datapoints').foundation('reveal', 'open');
+      
+            instances = JSON.parse(data);      
+            
+            if (instances.length) {
+            
+                theScope.instances = instances;
+                theScope.$apply();
+                $('#datapoints').foundation('reveal', 'open');
+                
+            } else {
+            
+                my_alert('Source/description unavailable for this dataset.');
+            
+            }
         
         });
     

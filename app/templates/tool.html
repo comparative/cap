@@ -504,12 +504,12 @@
         
             <tbody>
                <tr>
-                  <th>Source</th>
-                  <th>Description</th>
+                  <th ng-show="instances[0].source">Source</th>
+                  <th ng-show="instances[0].description">Description</th>
                </tr>
                <tr ng-repeat="instance in instances">
-                  <td>{@ instance.source @}</td>
-                  <td>{@ instance.description @}</td>
+                  <td ng-show="instance.source">{@ instance.source @}</td>
+                  <td ng-show="instance.description">{@ instance.description @}</td>
                </tr>
             </tbody>
         
