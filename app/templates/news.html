@@ -48,8 +48,10 @@
 
 {% if news.has_prev or news.has_next %}
 <br/>	
-{% if news.has_prev %}<a href="{{ url_for('news', page=news.prev_num) }}">&lt;&lt; Newer</a>{% else %}&lt;&lt; Newer{% endif %} | 
-{% if news.has_next %}<a href="{{ url_for('news', page=news.next_num) }}">Older &gt;&gt;</a>{% else %}Older &gt;&gt;{% endif %}
+{% if news.has_prev %}<a href="{{ url_for('news', page=news.prev_num) }}">&lt;&lt; Newer</a>{% endif %}
+{% if news.has_prev and news.has_next %} | {% endif %}
+{% if news.has_next %}<a href="{{ url_for('news', page=news.next_num) }}">Older &gt;&gt;</a>{% endif %}
+<br/><br/>
 {% endif %}			                  
             
 </div>

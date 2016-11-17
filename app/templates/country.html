@@ -226,20 +226,20 @@
                         {% endif %}
                             
                             <div class="medium-12 columns">
-                            
+                              
                                 <h3>Staff</h3>
                                 
                                 {% for item in staff %}
 
                                 <div class="row">
 
-                                    <div class="medium-3 columns">
                                     {% if item.filename %}
+                                    <div class="medium-3 columns">
                                     <img class="staff-image" src="{{config['S3_URL']}}staffimages/{{ item.filename }}"/>
-                                    {% endif %}
                                     </div>
+                                    {% endif %}
 
-                                    <div class="medium-9 columns">
+                                    {% if item.filename %}<div class="medium-9 columns">{% else %}<div class="medium-12 columns">{% endif %}
                                     <h5>{{ item.name }}</h5>
                                     {% if item.title %}<strong>Title:</strong> {{ item.title }}<br>{% endif %}
                                     {% if item.institution %}<strong>Institution:</strong> {{ item.institution }}{% endif %}
@@ -317,8 +317,9 @@
                             
                             <h3>{{ country.heading }}</h3>
                                 
-                                <strong>Featured Research:</strong>
+                                {% if latest_research|length > 0 %}
                                 
+                                <strong>Featured Research:</strong>
                                 
                                 {% for item in latest_research %}
 
@@ -335,15 +336,26 @@
                                     {{ smart_truncate(item.body,475)|safe }}
                                     <a class="orange-link" href="{{ url_for('research_item',slug=country.slug,id=item.id) }}">Read more</a></p>
                                     
-                                    <div id="more-research">
-                                    <a class="orange-link" href="{{ url_for('country',slug=country.slug,pane='research') }}">more research</a>
-                                    </div>
+
+                                    
+                                    
                                     
                                     </div>
 
                                 </div>
 
                                 {% endfor %} 
+                                
+                                
+                                {% if research[1] %}
+                                <div id="more-research">
+                                <a class="orange-link" href="{{ url_for('country',slug=country.slug,pane='research') }}">More research</a>
+                                <br/>
+                                </div>
+                                {% endif %}
+                                
+                                
+                                {% endif %}
                                 
                                 
                                 {% if url %}

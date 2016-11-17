@@ -144,7 +144,7 @@ input#updates {
 
 .news-image {
     margin-bottom:20px; 
-    margin-top:10px;
+    margin-top:9px;
     border:1px solid #3b4e6f;
     /*border-top-right-radius: 5px;
     border-top-left-radius: 5px;
@@ -235,6 +235,7 @@ i {
 
 a.orange-link {
 	color:#cc6633;
+	white-space: nowrap;
 }
 
 #slogan {

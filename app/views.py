@@ -224,7 +224,7 @@ def index():
 @app.route('/news/<int:page>')
 def news(page = 1):
     countries = Country.query.order_by(Country.name)
-    news = News.query.order_by(desc(News.saved_date)).paginate(page, 3, False)
+    news = News.query.order_by(desc(News.saved_date)).paginate(page, 5, False)
     for item in news.items:
         if item.filename:
             #url = newsimages.url(item.filename)
@@ -2099,7 +2099,7 @@ def country(slug,pane='about'):
         #if len(budget_datasets) > 0:
         #        cats.append({'name':'Budget', 'datasets': budget_datasets})
         
-        latest_research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date)).paginate(1, 1, False).items
+        latest_research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date)).paginate(1, 1, False).items        
         research = Research.query.filter_by(country_id=country.id).order_by(desc(Research.saved_date))
         staff = Staff.query.filter_by(country_id=country.id).order_by(Staff.sort_order)
         #url = countryimages.url(country.filename) if country.filename else None
