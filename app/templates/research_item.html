@@ -106,14 +106,15 @@
  
                 <div class="row">      			
                 
-                
+                {% if research.imagename %}
                 <div class="medium-4 columns">
-                    {% if research.imagename %}
+                    
                     <img style="margin-top:24px;" class="news-image" src="{{config['S3_URL']}}researchimages/{{ research.imagename }}">
-                    {% endif %}
+                    
                 </div>
+                {% endif %}
                 
-                <div class="medium-8 columns">
+        {% if research.imagename %}<div class="medium-8 columns">{% else %}<div class="medium-12 columns">{% endif %}
                 
 				<h3>{{ research.title }}</h3>
 				{{ smart_truncate(research.body,5000)|safe }}
