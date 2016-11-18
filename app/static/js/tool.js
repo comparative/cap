@@ -1085,7 +1085,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
     
     // CHART CONTROLS
     
-    $scope.allSeriesSameType = function(oldType) {
+    $scope.allSeriesSameType = function() {
         
         var theType;
         var theMeasure;
@@ -1096,86 +1096,55 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         switch($scope.chart.chartType) {
         
             case "stacked_area_count":
-                
-                /*if ($scope.chart.series.length < 2) {
-                    validation_err = "This chart type requires at least two series!";
-                } else if ($scope.allSeriesHaveCount()==false) {
-                    validation_err = "Count data not available for all series.";
-                } else {    */            
-                    theType = "area";
-                    theMeasure = "count";
-                    $scope.chart.scatter = false;
-                    $scope.chart.stacked = true;
-              //  }
-                
+                          
+                theType = "area";
+                theMeasure = "count";
+                $scope.chart.scatter = false;
+                $scope.chart.stacked = true;
+            
                 break;
                 
             case "stacked_area_percent_total":
                 
-               /* if ($scope.chart.series.length < 2) {
-                    validation_err = "This chart type requires at least two series!";
-                } else {  */
-                    theType = "area";
-                    theMeasure = "percent_total";
-                    $scope.chart.scatter = false;
-                    $scope.chart.stacked = true;
-             //   }
+                theType = "area";
+                theMeasure = "percent_total";
+                $scope.chart.scatter = false;
+                $scope.chart.stacked = true;
                 
                 break;
                 
             case "stacked_column_count":
                 
-                /*if ($scope.chart.series.length < 2) {
-                    validation_err = "This chart type requires at least two series!";
-                } else if ($scope.allSeriesHaveCount()==false) {
-                    validation_err = "Count data not available for all series.";
-                } else {   */
-                    theType = "column";
-                    theMeasure = "count";
-                    $scope.chart.scatter = false;
-                    $scope.chart.stacked = true;
-             //   }
+                theType = "column";
+                theMeasure = "count";
+                $scope.chart.scatter = false;
+                $scope.chart.stacked = true;
                 
                 break;
                 
             case "stacked_column_percent_total":
                 
-            /*    if ($scope.chart.series.length < 2) {
-                    validation_err = "This chart type requires at least two series!";
-                } else {   */
-                    theType = "column";
-                    theMeasure = "percent_total";
-                    $scope.chart.scatter = false;
-                    $scope.chart.stacked = true;
-             //   }
+                theType = "column";
+                theMeasure = "percent_total";
+                $scope.chart.scatter = false;
+                $scope.chart.stacked = true;
                 
                 break;
                 
             case "scatter_plot":
                 
-              /*  if ($scope.chart.series.length != 2) {
-                    validation_err = "This chart type requires exactly two series!";
-                } else if ($scope.allSeriesHaveCount()==false) {
-                    validation_err = "Count data not available for all series.";
-                } else { */
-                    theMeasure = "count";
-                    $scope.chart.scatter = true;
-                    $scope.chart.stacked = false;
-              //  }
+                theMeasure = "count";
+                $scope.chart.scatter = true;
+                $scope.chart.stacked = false;
+
                 
                 break;
                 
             case "scatter_plot_regression":
                 
-               /* if ($scope.chart.series.length != 2) {
-                    validation_err = "This chart type requires exactly two series!";
-                } else if ($scope.allSeriesHaveCount()==false) {
-                    validation_err = "Count data not available for all series.";
-                } else { */
-                    theMeasure = "count";
-                    $scope.chart.scatter = true;
-                    $scope.chart.stacked = false;
-               // }
+                theMeasure = "count";
+                $scope.chart.scatter = true;
+                $scope.chart.stacked = false;
                 
                 break;
                 
@@ -1188,29 +1157,20 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 
         }
         
-       // if (validation_err) {
-            
-       //     alert(validation_err);
-       //     $scope.chart.chartType = oldType;
-            
-       // } else {
-            
-            $scope.pending = true;
-            
-            if (!$scope.chart.scatter) {
+        $scope.pending = true;
         
-                angular.forEach($scope.chart.series, function (series, index) {
-                   series.type = theType;  
-                   if (theMeasure) series.measure = theMeasure;
-                   if ($scope.chart.stacked) series.yaxis = 0;
-                   
-                });
+        if (!$scope.chart.scatter) {
+    
+            angular.forEach($scope.chart.series, function (series, index) {
+               series.type = theType;  
+               if (theMeasure) series.measure = theMeasure;
+               if ($scope.chart.stacked) series.yaxis = 0;
+               
+            });
+    
+        }
         
-            }
-            
-            $scope.drawChart(); 
-        
-      //  }
+        $scope.drawChart(); 
         
     }
     
@@ -1772,6 +1732,26 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             }
             
             return true;
+        };
+    }
+    
+    
+    // only see chart types that are available for your selected series
+    $scope.filterSeriesTypeOptions = function () {  
+        return function (item) {
+
+          // SOME OPTIONS DON'T MAKE SENSE FOR AN INDIVIDUAL SERIES
+          
+          if (item.type == 'scatter_plot' ||
+              item.type == 'scatter_plot_regression' ||
+              item.type == 'stacked_area_count' ||
+              item.type == 'stacked_column_count' ||
+              item.type == 'stacked_area_percent_total' ||
+              item.type == 'stacked_column_percent_total'
+          ) { return false; }
+
+          return true;
+          
         };
     }
     

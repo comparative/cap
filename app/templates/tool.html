@@ -100,9 +100,10 @@
                 
                     
                      <label><h5>Chart type</h5></label>
-                 <select class="type" ng-change="allSeriesSameType('{@chart.chartType@}')" ng-model="chart.chartType" ng-options="type.type as type.display for type in chart_types | filter:filterChartTypeOptions()"></select>
+                     
+                 <select class="type" ng-change="allSeriesSameType()" ng-model="chart.chartType" ng-options="type.type as type.display for type in chart_types | filter:filterChartTypeOptions()"></select>
  
-                    
+          
                     
                     <label><h5>Chart export</h5></label>
 					
@@ -455,7 +456,7 @@
             <label> Measure: </label>
             <select ng-disabled="chart.stacked" ng-model="series.measure" ng-options="measure as measure.split('_').join(' ').capitalizeFirstLetter() for measure in series.measures"></select>
             <label>Type:</label>
-            <select ng-disabled="chart.stacked" ng-model="series.type" ng-options="type.type as type.display for type in chart_types"></select>
+            <select ng-disabled="chart.stacked" ng-model="series.type" ng-options="type.type as type.display for type in chart_types | filter:filterSeriesTypeOptions()"></select>
             <label>Y-axis: </label>
             <select ng-disabled="chart.stacked" ng-change="checkAxes(series)" ng-model="series.yaxis" ng-options="axis.num as axis.display for axis in yaxischoices | filter:choiceIsVisible(series)"></select>
             
