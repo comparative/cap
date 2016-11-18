@@ -78,19 +78,19 @@ def static_from_root():
 
 ######### RE-PROCESS ALL DATASETS
 
-@app.route('/reprocess')
-def reprocess():
-  
-    try:      
-      datasets = Dataset.query.filter(Dataset.ready == False).filter(Dataset.id != 78).filter(Dataset.id != 143).all()
-      for item in datasets:
-        #app.logger.debug(item.datasetfilename)      
-        task = long_datasave.delay(item.datasetfilename)
-        
-    except Exception as e:
-      app.logger.debug(e[0])
-    
-    return render_template('about.html')
+#@app.route('/reprocess')
+#def reprocess():
+#  
+#    try:      
+#      datasets = Dataset.query.filter(Dataset.ready == False).filter(Dataset.id != 78).filter(Dataset.id != 143).all()
+#      for item in datasets:
+#        #app.logger.debug(item.datasetfilename)      
+#        task = long_datasave.delay(item.datasetfilename)
+#        
+#    except Exception as e:
+#      app.logger.debug(e[0])
+#    
+#    return render_template('about.html')
       
 
 ######### CHARTING ROUTES
@@ -1740,20 +1740,6 @@ def api_instances(dataset,flag,topic,frm,to):
         sql = sql + "datarow->>" + str(fieldnames.index(fieldname)) + " AS " + '"' + fieldname + '"' + ", "
     sql = sql[:-2]
     
-    #select_clause = ''
-    # if fieldnames != None:
-    #  have_fieldnames = True
-    #for fieldname in fieldnames:
-    #    select_clause = select_clause + "datarow->>'" + fieldname + "' AS " + '"' + fieldname + '"' + ", "
-    #select_clause = select_clause[:-2]
-    # else:
-    #    have_fieldnames = False
-    #    select_clause = "datarow"
-    
-    #app.logger.debug(select_clause)
-    
-    # sql = "select " + select_clause
-    
     sql = sql + """
     from (
       select jsonb_array_elements(content)
@@ -1769,33 +1755,18 @@ def api_instances(dataset,flag,topic,frm,to):
     
     sql = sql + where
     
-    #app.logger.debug(sql)
-    #app.logger.debug(dataset)
-    
     cur.execute(sql,[dataset])
     
     def generate():
-      yield ','.join(fieldnames) + '\n'
+    
+      for fieldname in fieldnames:
+        yield '"' + fieldname + '",'
+      yield '\n'
+
       for u in cur.fetchall():
         for fieldname in fieldnames:
             yield '"' + u[fieldname] + '",'
         yield '\n'
-    
-   # def generate(h):
-   #     if h:
-   #         yield ','.join(fieldnames) + '\n'
-   #         for u in cur.fetchall():
-   #             for fieldname in fieldnames:
-   #                 yield '"' + u[fieldname] + '",'
-   #             yield '\n'    
-   #     else:
-   #         firstrow = cur.fetchone()['datarow']
-   #         yield ','.join(firstrow.keys()) + '\n'
-   #         yield '"' + '","'.join(map(str,firstrow.values())) + '"' + '\n'
-   #         for u in cur.fetchall():
-   #             yield '"' + '","'.join(map(str,u['datarow'].values())) + '"' + '\n'
-            
-   # return Response(generate(have_fieldnames), mimetype='text/csv')
     
     return Response(generate(), mimetype='text/csv')
     
@@ -1811,12 +1782,9 @@ def api_measures(dataset,flag,topic):
     else:
         abort(404)
     
-    #app.logger.debug(flag);
-    
     # CHECK CACHE
-    cached_path = app.config['UPLOADS_DEFAULT_DEST'] + '/../datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
-    #app.logger.debug(cached_path);
-    
+    #cached_path = app.config['UPLOADS_DEFAULT_DEST'] + '/../datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
+    #cached_path = '/var/www/cap/datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
     #if (os.path.isfile(cached_path)):
     #    return send_file(cached_path)
     
@@ -2155,6 +2123,8 @@ def instances_get_where(db,dataset,sub,topic,frm,to,fieldnames):
     # CONSTRUCT WHERE CLAUSE
             
     topic_col = 'subtopic' if sub else 'majortopic'
+    if 'majorfunction' in fieldnames: # HACK FOR BUDGET
+        topic_col = 'subfunction' if sub else 'majorfunction'
     sql = " WHERE datarow->>" + str(fieldnames.index(topic_col)) + " = '" + topic + "'"
     if len(filter_predicates) > 0:
         for pred in filter_predicates:
