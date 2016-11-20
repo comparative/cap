@@ -12,6 +12,18 @@
 
 <!--<img src="http://speckycdn.sdm.netdna-cdn.com/wp-content/uploads/2008/10/underconstruction3.gif"/>-->
 
+<form action method="post" name="analytics">
+<div class="row">	
+<div class="small-6 columns">
+From: <input type="text" id="start_date" name="start_date">
+</div>
+<div class="small-6 columns">
+To: <input type="text" id="end_date" name="end_date">
+</div>
+</div>
+<input class="button small" type="submit" value="Go">
+</form>
+
 <h5>Policy Datasets</h5>
 <table>
 <tr><th>&nbsp;</th><th>Charts</th><th>Downloads</th></tr>
@@ -43,5 +55,33 @@
 </table>
 
 {% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+
+$(function(){
+
+	$('#start_date').fdatepicker({
+		initialDate: '{{start_date}}',
+		format: 'yyyy-mm-dd',
+		disableDblClickSelection: true,
+		leftArrow:'<<',
+		rightArrow:'>>',
+		closeIcon:'X',
+		closeButton: true
+	});
+	
+	$('#end_date').fdatepicker({
+		initialDate: '{{end_date}}',
+		format: 'yyyy-mm-dd',
+		disableDblClickSelection: true,
+		leftArrow:'<<',
+		rightArrow:'>>',
+		closeIcon:'X',
+		closeButton: true
+	});
+	
+});
 
 {% endblock %}

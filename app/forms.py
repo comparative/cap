@@ -1,6 +1,6 @@
-from flask.ext.uploads import IMAGES
-from flask.ext.wtf import Form
-from flask.ext.wtf.file import FileField, FileAllowed
+from flask_uploads import IMAGES
+from flask_wtf import Form
+from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, BooleanField, PasswordField, IntegerField, SelectField, HiddenField
 from wtforms.validators import DataRequired, Length, NumberRange
 from wtforms.widgets import TextArea

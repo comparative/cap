@@ -16,7 +16,7 @@ from psycopg2.extras import RealDictCursor
 from datetime import datetime
 from functools import wraps, update_wrapper
 from flask import Response, render_template, flash, redirect, url_for, request, make_response, send_file, abort, send_from_directory
-from flask.ext.login import login_user, logout_user, current_user, login_required
+from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug import secure_filename
 from json import dump, dumps, loads
 from slugify import slugify
@@ -1027,16 +1027,20 @@ def admin_staff_removefile(slug,id):
 
 ## ANALYTICS
 
-@app.route('/admin/projects/<slug>/analytics')
+@app.route('/admin/projects/<slug>/analytics',methods=['GET', 'POST'])
 @login_required
 def admin_analytics(slug):
+    
     service = get_analytics()
     country = Country.query.filter_by(slug=slug).first()
+    
+    start_date = request.form['start_date'] if 'start_date' in request.form else '2016-11-01'
+    end_date = request.form['end_date'] if 'end_date' in request.form else datetime.now().strftime('%Y-%m-%d')
     
     datasets_policy = Dataset.query.filter_by(country_id=country.id).filter_by(budget=False).order_by(desc(Dataset.saved_date))
     stats_policy = []
     for d in datasets_policy:
-      totals = get_totals(d.id,service, False)
+      totals = get_totals(start_date, end_date, d.id, service, False)
       x = {}
       x['name'] = d.display
       x['charts'] = totals[0]
@@ -1047,7 +1051,7 @@ def admin_analytics(slug):
     datasets_budget = Dataset.query.filter_by(country_id=country.id).filter_by(budget=True).order_by(desc(Dataset.saved_date))
     stats_budget = []
     for d in datasets_budget:
-      totals = get_totals(d.id,service, False)
+      totals = get_totals(start_date, end_date, d.id, service, False)
       x = {}
       x['name'] = d.display
       x['charts'] = totals[0]
@@ -1058,7 +1062,7 @@ def admin_analytics(slug):
     datasets_download = Staticdataset.query.filter_by(country_id=country.id).order_by(desc(Staticdataset.saved_date))
     stats_download=[]
     for d in datasets_download:
-      totals = get_totals(d.id, service, True)
+      totals = get_totals(start_date, end_date, d.id, service, True)
       x = {}
       x['name'] = d.display
       x['charts'] = totals[0]
@@ -1067,6 +1071,8 @@ def admin_analytics(slug):
     
     return render_template('admin/analytics.html',
                            country=country,
+                           start_date=start_date,
+                           end_date=end_date,
                            stats_policy=stats_policy,
                            stats_budget=stats_budget,
                            stats_download=stats_download)
@@ -1085,6 +1091,8 @@ def admin_dataset_list(slug,tab=1,page=1):
     return render_template('admin/dataset_list.html',
                            country=country,
                            tab=tab,
+                           start_date=start_date,
+                           end_date=end_date,
                            datasets_policy=datasets_policy,
                            datasets_budget=datasets_budget,
                            datasets_download=datasets_download)
@@ -2225,16 +2233,16 @@ def get_analytics():
 
   return service
 
-def get_totals(dataset_id,service,static):
+def get_totals(start_date,end_date,dataset_id,service,static):
   
   filterByDatasetId = 'ga:eventAction==' + str(dataset_id)
 
   api_query = service.data().ga().get(
     ids='ga:132813226',
-    start_date='2016-11-01',
-    end_date=datetime.now().strftime('%Y-%m-%d'),
+    start_date=start_date,
+    end_date=end_date,
     metrics='ga:totalEvents',
-    dimensions='ga:eventAction,ga:eventCategory,ga:date',
+    dimensions='ga:eventAction,ga:eventCategory,ga:date,ga:eventLabel',
     sort='-ga:date',
     filters=filterByDatasetId)
     
@@ -2246,11 +2254,11 @@ def get_totals(dataset_id,service,static):
   if 'rows' in results.keys():
     for r in results['rows']:
       if r[1] == 'Add Series to Chart':
-        addtochart = (r[3],)
+        addtochart = (r[-1],)
       if r[1] == 'Dataset Download':
-        download = (r[3],)
+        download = (r[-1],)
       if static and (r[1] == 'Static Dataset Download'):
-        download = (r[3],)
+        download = (r[-1],)
   
   totals = addtochart + download
   

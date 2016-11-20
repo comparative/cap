@@ -1,8 +1,8 @@
 import logging
 from flask import Flask
-from flask.ext.login import LoginManager
-from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.uploads import UploadSet, configure_uploads, IMAGES, ALL
+from flask_login import LoginManager
+from flask_sqlalchemy import SQLAlchemy
+from flask_uploads import UploadSet, configure_uploads, IMAGES, ALL
 from celery import Celery
 from HTMLParser import HTMLParser
 from sqlalchemy import create_engine
