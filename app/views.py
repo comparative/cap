@@ -1037,7 +1037,7 @@ def admin_analytics(slug):
     start_date = request.form['start_date'] if 'start_date' in request.form else '2016-11-01'
     end_date = request.form['end_date'] if 'end_date' in request.form else datetime.now().strftime('%Y-%m-%d')
     
-    datasets_policy = Dataset.query.filter_by(country_id=country.id).filter_by(budget=False).order_by(desc(Dataset.saved_date))
+    datasets_policy = Dataset.query.filter_by(country_id=country.id).filter_by(budget=False).order_by(Dataset.display)
     stats_policy = []
     for d in datasets_policy:
       totals = get_totals(start_date, end_date, d.id, service, False)
@@ -1048,7 +1048,7 @@ def admin_analytics(slug):
       stats_policy.append(x)
     
     
-    datasets_budget = Dataset.query.filter_by(country_id=country.id).filter_by(budget=True).order_by(desc(Dataset.saved_date))
+    datasets_budget = Dataset.query.filter_by(country_id=country.id).filter_by(budget=True).order_by(Dataset.display)
     stats_budget = []
     for d in datasets_budget:
       totals = get_totals(start_date, end_date, d.id, service, False)
@@ -1059,8 +1059,8 @@ def admin_analytics(slug):
       stats_budget.append(x)
     
     
-    datasets_download = Staticdataset.query.filter_by(country_id=country.id).order_by(desc(Staticdataset.saved_date))
-    stats_download=[]
+    datasets_download = Staticdataset.query.filter_by(country_id=country.id).order_by(Staticdataset.display)
+    stats_download = []
     for d in datasets_download:
       totals = get_totals(start_date, end_date, d.id, service, True)
       x = {}
@@ -1822,7 +1822,7 @@ def api_measures(dataset,flag,topic):
     
     #app.logger.debug(filter_predicates);
     
-    topic_col = 'subtopic' if sub else 'majortopic'
+    topic_col = 'subtopic' if (sub and 'subtopic' in fieldnames) else 'majortopic'
     
     if r["aggregation_level"] != 2:
         
@@ -2137,7 +2137,7 @@ def instances_get_where(db,dataset,sub,topic,frm,to,fieldnames):
             
     topic_col = 'subtopic' if sub else 'majortopic'
     if 'majorfunction' in fieldnames: # HACK FOR BUDGET
-        topic_col = 'subfunction' if sub else 'majorfunction'
+        topic_col = 'subfunction' if (sub and 'subfunction' in fieldnames) else 'majorfunction'
     sql = " WHERE datarow->>" + str(fieldnames.index(topic_col)) + " = '" + topic + "'"
     if len(filter_predicates) > 0:
         for pred in filter_predicates:
@@ -2239,7 +2239,7 @@ def get_analytics():
   return service
 
 def get_totals(start_date,end_date,dataset_id,service,static):
-  
+    
   filterByDatasetId = 'ga:eventAction==' + str(dataset_id)
 
   api_query = service.data().ga().get(
@@ -2247,8 +2247,7 @@ def get_totals(start_date,end_date,dataset_id,service,static):
     start_date=start_date,
     end_date=end_date,
     metrics='ga:totalEvents',
-    dimensions='ga:eventAction,ga:eventCategory,ga:date,ga:eventLabel',
-    sort='-ga:date',
+    dimensions='ga:eventAction,ga:eventCategory',
     filters=filterByDatasetId)
     
   results = api_query.execute()
