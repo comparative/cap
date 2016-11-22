@@ -1069,13 +1069,26 @@ def admin_analytics(slug):
       x['downloads'] = totals[1]
       stats_download.append(x)
     
+    stats_majortopic = []
+    cur = db.session.connection().connection.cursor()
+    sql = "SELECT * FROM major_topics"
+    cur.execute(sql)
+    results = cur.fetchall()
+    for r in results:
+      s = get_pie_slice(start_date, end_date,r[1],service)
+      if s:
+        stats_majortopic.append({'topic':r[1],'count':s})
+     
+    app.logger.debug(stats_majortopic) 
+      
     return render_template('admin/analytics.html',
                            country=country,
                            start_date=start_date,
                            end_date=end_date,
                            stats_policy=stats_policy,
                            stats_budget=stats_budget,
-                           stats_download=stats_download)
+                           stats_download=stats_download,
+                           stats_majortopic=stats_majortopic)
 
 ## DATASETS
 
@@ -2267,6 +2280,26 @@ def get_totals(start_date,end_date,dataset_id,service,static):
   totals = addtochart + download
   
   return totals
+
+def get_pie_slice(start_date,end_date,topic,service):
+    
+  api_query = service.data().ga().get(
+    ids='ga:132813226',
+    start_date=start_date,
+    end_date=end_date,
+    metrics='ga:totalEvents',
+    dimensions='ga:eventCategory',
+    filters='ga:eventLabel=@' + topic)
+    
+  results = api_query.execute()
+  
+  if 'rows' in results.keys():
+    for r in results['rows']:
+      if r[0] == 'Add Series to Chart':
+        return r[-1]
+  
+  return False
+
 
 def row_has_vals(row,vals,fieldnames):
     for val in vals:
