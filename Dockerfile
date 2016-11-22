@@ -10,6 +10,8 @@ RUN pip install configparser psycopg2 awesome-slugify cherrypy flask flask-login
 
 # EXPOSE 80
 
+RUN mkdir /var/www/cap/datacache
+
 ADD start.sh /root/start.sh
 RUN chmod +x /root/start.sh
 

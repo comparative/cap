@@ -1091,8 +1091,6 @@ def admin_dataset_list(slug,tab=1,page=1):
     return render_template('admin/dataset_list.html',
                            country=country,
                            tab=tab,
-                           start_date=start_date,
-                           end_date=end_date,
                            datasets_policy=datasets_policy,
                            datasets_budget=datasets_budget,
                            datasets_download=datasets_download)
@@ -1737,11 +1735,12 @@ def api_instances(dataset,flag,topic,frm,to):
     # GET FIELDNAMES (JSONB does not maintain order)
         
     sql = """
-    select fieldnames from dataset WHERE dataset.id = %s
+    select fieldnames,short_display from dataset WHERE dataset.id = %s
     """
     cur.execute(sql,[dataset])
     r = cur.fetchone()
     fieldnames = r['fieldnames']
+    short_display = r['short_display']
     
     sql = 'select '
     for fieldname in fieldnames:
@@ -1776,7 +1775,7 @@ def api_instances(dataset,flag,topic,frm,to):
             yield '"' + u[fieldname] + '",'
         yield '\n'
     
-    return Response(generate(), mimetype='text/csv')
+    return Response(generate(), mimetype='text/csv', headers={"Content-disposition":'attachment; filename=' + short_display + '-' + str(frm) + '-' + str(to) + '-' + str(topic) + '.csv'})
     
     
 @app.route('/api/measures/dataset/<dataset>/<flag>/<topic>')
@@ -1791,10 +1790,12 @@ def api_measures(dataset,flag,topic):
         abort(404)
     
     # CHECK CACHE
-    #cached_path = app.config['UPLOADS_DEFAULT_DEST'] + '/../datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
-    #cached_path = '/var/www/cap/datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
-    #if (os.path.isfile(cached_path)):
-    #    return send_file(cached_path)
+    app_path = app.config['UPLOADS_DEFAULT_DEST'][:-len('uploads')]
+    cached_path = app_path + 'datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
+    
+    if (os.path.isfile(cached_path)):
+        app.logger.debug('served: ' + cached_path)
+        return send_file(cached_path)
     
     # NO CACHE, GO TO THE DB!!
     
@@ -2043,9 +2044,13 @@ def api_measures(dataset,flag,topic):
         data['percent_total'] = percent_total
     
     # WRITE CACHE
-    #with open(cached_path, 'w') as outfile:
-    #    dump(data, outfile)
-         
+    try:
+      f = open(cached_path, 'w') 
+      with f as outfile:
+        dump(data, outfile)
+    except Exception as e:
+      app.logger.debug(e)
+
     return dumps(data)
 
 # ONE OF EM  
