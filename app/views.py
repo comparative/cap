@@ -1071,16 +1071,15 @@ def admin_analytics(slug):
     
     stats_majortopic = []
     cur = db.session.connection().connection.cursor()
-    sql = "SELECT * FROM major_topics"
+    sql = "SELECT shortname FROM major_topics"
     cur.execute(sql)
     results = cur.fetchall()
+    results.insert(0, (u'All Topics',) )
     for r in results:
-      s = get_pie_slice(start_date, end_date,r[1],country.short_name,service)
+      s = get_pie_slice(start_date, end_date,r[0],country.short_name,service)
       if s:
-        stats_majortopic.append({'name':r[1].encode("utf-8"),'y':int(s)})
-     
-    app.logger.debug(stats_majortopic) 
-      
+        stats_majortopic.append({'name':r[0].encode("utf-8"),'y':int(s)})
+          
     return render_template('admin/analytics.html',
                            country=country,
                            start_date=start_date,
