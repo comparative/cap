@@ -3,7 +3,6 @@
 
 {% block head %}
 
-<script src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
 <script src="/static/js/highcharts.js"></script>
 
 {% endblock %}
@@ -20,7 +19,7 @@
 
 <!--<img src="http://speckycdn.sdm.netdna-cdn.com/wp-content/uploads/2008/10/underconstruction3.gif"/>-->
 
-<form action method="post" name="analytics">
+<form action method="post" name="analytics" id="analytics">
 <div class="row">	
 
 <div class="small-6 columns">
@@ -108,6 +107,17 @@ $(function(){
 		closeIcon:'X',
 		closeButton: true
 	});
+	
+	
+  $( "#analytics" ).submit(function( event ) {
+  
+    if  ( new Date( $('#start_date').val() ) > new Date( $('#end_date').val() ) ) {
+      alert("'To' is before 'From'");
+      event.preventDefault();
+    }
+    
+  });
+	
 	
   var pie = new Highcharts.Chart({
       chart: {
