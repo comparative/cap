@@ -1075,9 +1075,9 @@ def admin_analytics(slug):
     cur.execute(sql)
     results = cur.fetchall()
     for r in results:
-      s = get_pie_slice(start_date, end_date,r[1],service)
+      s = get_pie_slice(start_date, end_date,r[1],country.short_name,service)
       if s:
-        stats_majortopic.append({'topic':r[1],'count':s})
+        stats_majortopic.append({'name':r[1].encode("utf-8"),'y':int(s)})
      
     app.logger.debug(stats_majortopic) 
       
@@ -2281,7 +2281,7 @@ def get_totals(start_date,end_date,dataset_id,service,static):
   
   return totals
 
-def get_pie_slice(start_date,end_date,topic,service):
+def get_pie_slice(start_date,end_date,topic,country,service):
     
   api_query = service.data().ga().get(
     ids='ga:132813226',
@@ -2289,7 +2289,7 @@ def get_pie_slice(start_date,end_date,topic,service):
     end_date=end_date,
     metrics='ga:totalEvents',
     dimensions='ga:eventCategory',
-    filters='ga:eventLabel=@' + topic)
+    filters='ga:eventLabel=@' + topic + ';ga:eventLabel=@' + country)
     
   results = api_query.execute()
   
