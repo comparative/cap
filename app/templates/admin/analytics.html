@@ -38,11 +38,17 @@ To: <input type="text" id="end_date" name="end_date">
 
 <div class="small-6 columns">
 
+
+<table>
+<tr><th>&nbsp;</th><th>Charts</th><th>Downloads</th></tr>
+<tr><td><a class="pie" id="pie_0">Totals</a></td><td class="center-text">{{ total_charts }}</td><td class="center-text">{{ total_downloads }}</td></tr>
+</table>
+
 <h5>Policy Datasets</h5>
 <table>
 <tr><th>&nbsp;</th><th>Charts</th><th>Downloads</th></tr>
 {% for item in stats_policy %}
-	  <tr><td>{{ item.name }}</td><td class="center-text">{{ item.charts }}</td><td class="center-text">{{ item.downloads }}</td></tr>
+	  <tr><td><a class="pie" id="pie_{{ item.id }}">{{ item.name }}</a></td><td class="center-text">{{ item.charts }}</td><td class="center-text">{{ item.downloads }}</td></tr>
 {% endfor %}
 </table>
 
@@ -84,7 +90,7 @@ To: <input type="text" id="end_date" name="end_date">
 
 {% block scripts %}
 
-var pieSlices =  {{ stats_majortopic | safe }};
+var pieSlices =  {{ pie_slices | safe }};
 
 $(function(){
   
@@ -118,7 +124,29 @@ $(function(){
     
   });
 	
+	$( ".pie" ).click(function( event ) {
+      
+      console.log( $(this).text() );
+      console.log( $(this).attr('id').split("_")[1] );
+      
+      dataset_id = parseInt($(this).attr('id').split("_")[1]);
+      
+      drawChart($(this).text(), pieSlices[dataset_id]);
+      
+      event.preventDefault();
+      
+  });
 	
+  Highcharts.setOptions({
+   colors: ["#434348", "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#117744", "#44AA77", "#88CCAA", "#777711", "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", "#771122", "#AA4455", "#DD7788", "#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA"]
+  });
+	
+	drawChart('Totals', pieSlices[0]);
+	
+});
+
+drawChart = function(dataset_name, pie_slices) {
+
   var pie = new Highcharts.Chart({
       chart: {
           renderTo: 'pie',
@@ -126,13 +154,13 @@ $(function(){
           plotBorderWidth: null,
           plotShadow: false,
           type: 'pie',
-          height: 700
+          height: 800
       },
       credits: {
           enabled: false
       },
       title: {
-          text: ''
+          text: 'Charts by major topic: ' + dataset_name
       },
       plotOptions: {
           pie: {
@@ -143,17 +171,21 @@ $(function(){
               showInLegend: true
           }
       },
+      tooltip: {
+        formatter: function() {
+          return '<b>'+ this.key + '</b><br/><p>'+ this.y + ' ' + this.series.name + '</p>';
+        }
+      },
       legend: {
           layout: 'vertical',
       },
       series: [{
-          name: 'Charts',
+          name: 'charts',
           colorByPoint: true,
-          data: pieSlices
+          data: pie_slices
       }]
   });
 
-	
-});
+}
 
 {% endblock %}

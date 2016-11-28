@@ -159,7 +159,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         {"num":2,"display":"Download Clean PNG"},
         {"num":3,"display":"Download JPEG"},
         {"num":4,"display":"Download SVG"},
-        /*{"num":5,"display":"Download PDF"},*/
+       /*{"num":5,"display":"Download PDF"},*/
         {"num":6,"display":"Copy Image URL"},
         {"num":7,"display":"Copy Tool URL"},
         {"num":8,"display":"Copy Embed URL"},

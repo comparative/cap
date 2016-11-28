@@ -1037,23 +1037,39 @@ def admin_analytics(slug):
     start_date = request.form['start_date'] if 'start_date' in request.form else '2016-11-01'
     end_date = request.form['end_date'] if 'end_date' in request.form else datetime.now().strftime('%Y-%m-%d')
     
+    total_charts = 0
+    total_downloads = 0
+    
+    # try
+    
+    pie_slices = {}
+    
     datasets_policy = Dataset.query.filter_by(country_id=country.id).filter_by(budget=False).order_by(Dataset.display)
     stats_policy = []
     for d in datasets_policy:
-      totals = get_totals(start_date, end_date, d.id, service, False)
+      stats = get_stats(start_date, end_date, d.id, service)
+      pie_slices[d.id] = stats['totals_by_topic']
+      totals = stats['totals']
+      total_charts = total_charts + int(totals[0])
+      total_downloads = total_downloads + int(totals[1])
       x = {}
+      x['id'] = d.id
       x['name'] = d.display
       x['charts'] = totals[0]
       x['downloads'] = totals[1]
       stats_policy.append(x)
     
-    
     datasets_budget = Dataset.query.filter_by(country_id=country.id).filter_by(budget=True).order_by(Dataset.display)
     stats_budget = []
     for d in datasets_budget:
-      totals = get_totals(start_date, end_date, d.id, service, False)
+      stats = get_stats(start_date, end_date, d.id, service)
+      pie_slices[d.id] = stats['totals_by_topic']
+      totals = stats['totals']
+      total_charts = total_charts + int(totals[0])
+      total_downloads = total_downloads + int(totals[1])
       x = {}
-      x['name'] = d.display
+      x['id'] = d.id
+      x['name'] = d.display.encode("utf-8")
       x['charts'] = totals[0]
       x['downloads'] = totals[1]
       stats_budget.append(x)
@@ -1062,10 +1078,11 @@ def admin_analytics(slug):
     datasets_download = Staticdataset.query.filter_by(country_id=country.id).order_by(Staticdataset.display)
     stats_download = []
     for d in datasets_download:
-      totals = get_totals(start_date, end_date, d.id, service, True)
+      totals = get_static_totals(start_date, end_date, d.id, service)
+      total_downloads = total_downloads + int(totals[1])
       x = {}
       x['name'] = d.display
-      x['charts'] = totals[0]
+      #x['charts'] = totals[0]
       x['downloads'] = totals[1]
       stats_download.append(x)
     
@@ -1074,12 +1091,15 @@ def admin_analytics(slug):
     sql = "SELECT shortname FROM major_topics"
     cur.execute(sql)
     results = cur.fetchall()
-    results.insert(0, (u'All Topics',) )
+    #results.insert(0, (u'All Topics',) )
     for r in results:
-      s = get_pie_slice(start_date, end_date,r[0],country.short_name,service)
+      topic_name = r[0].encode("utf-8")
+      s = get_pie_slice(topic_name,pie_slices)
       if s:
-        stats_majortopic.append({'name':r[0].encode("utf-8"),'y':int(s)})
-          
+        stats_majortopic.append({'name':topic_name,'y':int(s)})
+    
+    pie_slices[0] = stats_majortopic
+    
     return render_template('admin/analytics.html',
                            country=country,
                            start_date=start_date,
@@ -1087,7 +1107,9 @@ def admin_analytics(slug):
                            stats_policy=stats_policy,
                            stats_budget=stats_budget,
                            stats_download=stats_download,
-                           stats_majortopic=stats_majortopic)
+                           pie_slices=pie_slices,
+                           total_charts=total_charts,
+                           total_downloads=total_downloads)
 
 ## DATASETS
 
@@ -2250,8 +2272,63 @@ def get_analytics():
 
   return service
 
-def get_totals(start_date,end_date,dataset_id,service,static):
+def get_stats(start_date,end_date,dataset_id,service):
+  
+  totals = False
+  
+  dataset = Dataset.query.filter_by(id=dataset_id).first()
+  if dataset is not None:
+  
+    filterByDatasetId = 'ga:eventAction==' + str(dataset.id)
+
+    api_query = service.data().ga().get(
+      ids='ga:132813226',
+      start_date=start_date,
+      end_date=end_date,
+      metrics='ga:totalEvents',
+      dimensions='ga:eventAction,ga:eventLabel,ga:eventCategory',
+      filters=filterByDatasetId)
     
+    results = api_query.execute()
+  
+    addtochart = 0
+    download = 0
+    
+    all_charts = []
+    if 'rows' in results.keys():
+      for r in results['rows']:
+        if r[2] == 'Add Series to Chart':
+          all_charts.append(r)
+          addtochart = addtochart + int(r[-1])
+        if r[2] == 'Dataset Download':
+          download = download + int(r[-1])
+  
+    totals = (addtochart, download)
+    
+    stats_majortopic = []
+    cur = db.session.connection().connection.cursor()
+    sql = "SELECT shortname FROM major_topics"
+    cur.execute(sql)
+    results = cur.fetchall()
+    results.insert(0, (u'All Topics',) )
+    totals_by_topic = []
+    for topic in results:
+      topic_name = topic[0].encode("utf-8")
+      count_this_topic = 0
+      for chart in all_charts:
+        if '#' + topic_name in chart[1]:
+          count_this_topic = count_this_topic + int(chart[-1])
+      if count_this_topic > 0:
+        dict = {'name':topic_name , 'y': count_this_topic}
+        totals_by_topic.append(dict)
+  
+    retval = {'totals': totals, 'totals_by_topic': totals_by_topic} 
+    
+  return retval
+
+
+def get_static_totals(start_date,end_date,dataset_id,service):
+  
   filterByDatasetId = 'ga:eventAction==' + str(dataset_id)
 
   api_query = service.data().ga().get(
@@ -2269,35 +2346,23 @@ def get_totals(start_date,end_date,dataset_id,service,static):
   
   if 'rows' in results.keys():
     for r in results['rows']:
-      if r[1] == 'Add Series to Chart':
-        addtochart = (r[-1],)
-      if r[1] == 'Dataset Download':
-        download = (r[-1],)
-      if static and (r[1] == 'Static Dataset Download'):
+      if (r[1] == 'Static Dataset Download'):
         download = (r[-1],)
   
   totals = addtochart + download
   
   return totals
 
-def get_pie_slice(start_date,end_date,topic,country,service):
-    
-  api_query = service.data().ga().get(
-    ids='ga:132813226',
-    start_date=start_date,
-    end_date=end_date,
-    metrics='ga:totalEvents',
-    dimensions='ga:eventCategory',
-    filters='ga:eventLabel=@' + topic + ';ga:eventLabel=@' + country)
-    
-  results = api_query.execute()
+def get_pie_slice(topic,pie_slices):
   
-  if 'rows' in results.keys():
-    for r in results['rows']:
-      if r[0] == 'Add Series to Chart':
-        return r[-1]
+  total = 0
   
-  return False
+  for id in pie_slices:
+    for dict in pie_slices[id]:
+      if dict['name'] == topic:
+        total = total + dict['y']
+        
+  return total
 
 
 def row_has_vals(row,vals,fieldnames):
