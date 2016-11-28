@@ -34,6 +34,7 @@ from oauth2client import tools
 #from operator import itemgetter
 #from itertools import groupby
 
+analytics_colors = ["#434348", "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#117744", "#44AA77", "#88CCAA", "#777711", "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", "#771122", "#AA4455", "#DD7788", "#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA"]
 
 s3 = tinys3.Pool(app.config['S3_ACCESS_KEY'],app.config['S3_SECRET_KEY'],app.config['S3_BUCKET'])
 s3conn = tinys3.Connection(app.config['S3_ACCESS_KEY'],app.config['S3_SECRET_KEY'],app.config['S3_BUCKET'])
@@ -1088,15 +1089,19 @@ def admin_analytics(slug):
     
     stats_majortopic = []
     cur = db.session.connection().connection.cursor()
-    sql = "SELECT shortname FROM major_topics"
+    sql = """
+    SELECT major_topics.shortname,
+    row_number() OVER () as rnum
+    FROM major_topics
+    """
     cur.execute(sql)
     results = cur.fetchall()
-    #results.insert(0, (u'All Topics',) )
+    results.insert(0, (u'All Topics',u'0') )
     for r in results:
       topic_name = r[0].encode("utf-8")
       s = get_pie_slice(topic_name,pie_slices)
       if s:
-        stats_majortopic.append({'name':topic_name,'y':int(s)})
+        stats_majortopic.append({'name':topic_name,'y':int(s),'color':analytics_colors[int(r[1])]})
     
     pie_slices[0] = stats_majortopic
     
@@ -2307,10 +2312,14 @@ def get_stats(start_date,end_date,dataset_id,service):
     
     stats_majortopic = []
     cur = db.session.connection().connection.cursor()
-    sql = "SELECT shortname FROM major_topics"
+    sql = """
+    SELECT major_topics.shortname,
+    row_number() OVER () as rnum
+    FROM major_topics
+    """
     cur.execute(sql)
     results = cur.fetchall()
-    results.insert(0, (u'All Topics',) )
+    results.insert(0, (u'All Topics',u'0') )
     totals_by_topic = []
     for topic in results:
       topic_name = topic[0].encode("utf-8")
@@ -2319,7 +2328,7 @@ def get_stats(start_date,end_date,dataset_id,service):
         if '#' + topic_name in chart[1]:
           count_this_topic = count_this_topic + int(chart[-1])
       if count_this_topic > 0:
-        dict = {'name':topic_name , 'y': count_this_topic}
+        dict = {'name':topic_name , 'y': count_this_topic,'color':analytics_colors[int(topic[1])]}
         totals_by_topic.append(dict)
   
     retval = {'totals': totals, 'totals_by_topic': totals_by_topic} 
