@@ -1838,9 +1838,14 @@ def api_measures(dataset,flag,topic):
     
     # NO CACHE, GO TO THE DB!!
     
-    conn = psycopg2.connect(app.config['CONN_STRING']) #problems here
-    cur = conn.cursor(cursor_factory=RealDictCursor)
     data = {}
+    
+    try:
+      conn = psycopg2.connect(app.config['CONN_STRING']) #problems here
+      cur = conn.cursor(cursor_factory=RealDictCursor)
+    except psycopg2.OperationalError as e:
+      app.logger.debug('Unable to connect!\n{0}').format(e))
+      return dumps({})
     
     # RETRIEVE METADATA
     sql = """
@@ -1890,8 +1895,13 @@ def api_measures(dataset,flag,topic):
             ) yt
             GROUP BY yt.year  ORDER by yt.year
             """
-        
-            cur.execute(sql,[dataset]) #problems here
+            
+            try:
+              cur.execute(sql,[dataset]) #problems here
+            except psycopg2.Error as e:
+              app.logger.debug(e.pgerror)
+              return dumps({})
+            
             rows = cur.fetchall()
     
             totals = []
@@ -1967,7 +1977,12 @@ def api_measures(dataset,flag,topic):
             
             #app.logger.debug(sql)
             
-            cur.execute(sql,[dataset])  #problems here
+            try:
+              cur.execute(sql,[dataset]) #problems here
+            except psycopg2.Error as e:
+              app.logger.debug(e.pgerror)
+              return dumps({})
+
             rows = cur.fetchall()
     
             totals = []
@@ -2010,8 +2025,12 @@ def api_measures(dataset,flag,topic):
     
                 #app.logger.debug(sql)
                 
-    
-                cur.execute(sql,[dataset,topic])  #problems here
+                try:
+                  cur.execute(sql,[dataset,topic]) #problems here
+                except psycopg2.Error as e:
+                  app.logger.debug(e.pgerror)
+                  return dumps({})
+                  
                 rows = cur.fetchall()
     
                 count = []
