@@ -1288,7 +1288,7 @@ def long_datasave(datafile_name):
     reader = csv.reader(csvfile)
     fieldnames = reader.next()
     
-    #app.logger.debug(fieldnames)
+    app.logger.debug(fieldnames)
     
     filters = []
     for fieldname in fieldnames:
@@ -1367,6 +1367,7 @@ def admin_dataset_upload(type):
                      
 @app.route('/admin/projects/<slug>/dataset/<id>', methods=['GET', 'POST'])
 @login_required
+@nocache
 def admin_dataset_item(slug,id):
 
     country = Country.query.filter_by(slug=slug).first()
@@ -1616,7 +1617,7 @@ def api_charts(user):
 def api_countries():
     conn = psycopg2.connect(app.config['CONN_STRING'])
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""SELECT DISTINCT ON (c.name) c.* FROM country c INNER JOIN dataset d ON c.id = d.country_id ORDER BY c.name""")
+    cur.execute("""SELECT DISTINCT ON (c.name) c.* FROM country c INNER JOIN dataset d ON c.id = d.country_id WHERE d.ready=True ORDER BY c.name""")
     #cur.execute("""SELECT * FROM country ORDER BY name""")
     return dumps(cur.fetchall())
 
@@ -1753,7 +1754,11 @@ def api_drilldown(dataset,flag,topic,year):
     
     #app.logger.debug(sql)
     
-    cur.execute(sql,[dataset])
+    try:
+      cur.execute(sql,[dataset])
+    except psycopg2.Error as e:
+      app.logger.debug(e.pgerror)
+      return dumps({})
     
     return dumps(cur.fetchall())
 
@@ -1800,8 +1805,12 @@ def api_instances(dataset,flag,topic,frm,to):
     where = instances_get_where(db,dataset,sub,topic,str(frm),str(to),fieldnames)
     
     sql = sql + where
-    
-    cur.execute(sql,[dataset])
+
+    try:
+      cur.execute(sql,[dataset])
+    except psycopg2.Error as e:
+      app.logger.debug(e.pgerror)
+      abort(500)
     
     def generate():
     
@@ -1815,9 +1824,8 @@ def api_instances(dataset,flag,topic,frm,to):
         yield '\n'
     
     return Response(generate(), mimetype='text/csv', headers={"Content-disposition":'attachment; filename=' + short_display + '-' + str(frm) + '-' + str(to) + '-' + str(topic) + '.csv'})
-    
-    
-@app.route('/api/measures/dataset/<dataset>/<flag>/<topic>')
+
+   
 @app.route('/api/measures/dataset/<dataset>/<flag>/<topic>')
 def api_measures(dataset,flag,topic):
     
@@ -1833,7 +1841,7 @@ def api_measures(dataset,flag,topic):
     cached_path = app_path + 'datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
     
     if (os.path.isfile(cached_path)):
-        app.logger.debug('served: ' + cached_path)
+        #app.logger.debug('served: ' + cached_path)
         return send_file(cached_path)
     
     # NO CACHE, GO TO THE DB!!
@@ -1844,7 +1852,7 @@ def api_measures(dataset,flag,topic):
       conn = psycopg2.connect(app.config['CONN_STRING']) #problems here
       cur = conn.cursor(cursor_factory=RealDictCursor)
     except psycopg2.OperationalError as e:
-      app.logger.debug('Unable to connect!\n{0}').format(e))
+      app.logger.debug('Unable to connect!\n{0}'.format(e))
       return dumps({})
     
     # RETRIEVE METADATA
@@ -1940,7 +1948,12 @@ def api_measures(dataset,flag,topic):
                 
                 #app.logger.debug(sql)
                 
-                cur.execute(sql,[dataset,topic])
+                try:
+                  cur.execute(sql,[dataset,topic])
+                except psycopg2.Error as e:
+                  app.logger.debug(e.pgerror)
+                  return dumps({})
+                
                 rows = cur.fetchall()
     
                 count = []
@@ -2087,8 +2100,13 @@ def api_measures(dataset,flag,topic):
         AND datarow->>""" + year_index + """ != '0'
         ) AS yc ORDER by year
             """
-
-        cur.execute(sql,[dataset,topic])
+        
+        try:
+          cur.execute(sql,[dataset,topic])
+        except psycopg2.Error as e:
+          app.logger.debug(e.pgerror)
+          return dumps({})
+        
         rows = cur.fetchall()
         
         years = []
