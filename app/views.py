@@ -1031,7 +1031,7 @@ def admin_analytics(slug):
     service = get_analytics()
     country = Country.query.filter_by(slug=slug).first()
     
-    start_date = request.form['start_date'] if 'start_date' in request.form else '2016-11-01'
+    start_date = request.form['start_date'] if 'start_date' in request.form else '2016-12-01'
     end_date = request.form['end_date'] if 'end_date' in request.form else datetime.now().strftime('%Y-%m-%d')
     
     total_charts = 0

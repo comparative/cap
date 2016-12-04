@@ -25,12 +25,13 @@
                 
                 <div class="news-item">
                 
-	
+	                  {% if item.url %}
                     <div class="medium-4 columns">
                     <img class="news-image" src="{{ item.url }}"/>
                     </div>
+                    {% endif %}
 
-                    <div class="medium-8 columns">
+                    {% if item.url %}<div class="medium-8 columns">{% else %}<div class="medium-12 columns">{% endif %}
                     <h5>{{ item.title }}</h5>
                     <em class="date">{{ item.saved_date.strftime('%d %b %Y') }}</em><br/>
                     {{ smart_truncate(item.content,275)| safe }}
