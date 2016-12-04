@@ -31,8 +31,6 @@ from oauth2client.service_account import ServiceAccountCredentials
 from oauth2client import client
 from oauth2client import file
 from oauth2client import tools
-#from operator import itemgetter
-#from itertools import groupby
 
 analytics_colors = ["#434348", "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#117744", "#44AA77", "#88CCAA", "#777711", "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", "#771122", "#AA4455", "#DD7788", "#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA"]
 
@@ -228,7 +226,6 @@ def news(page = 1):
     news = News.query.order_by(desc(News.saved_date)).paginate(page, 5, False)
     for item in news.items:
         if item.filename:
-            #url = newsimages.url(item.filename)
             url = app.config['S3_URL'] + 'newsimages/' + item.filename
             item.url = url
     return render_template('news.html',news=news,countries=countries)
@@ -237,7 +234,6 @@ def news(page = 1):
 def news_item(slug):    
     item = News.query.filter_by(slug=slug).first()
     if item.filename:
-            #url = newsimages.url(item.filename)
             url = app.config['S3_URL'] + 'newsimages/' + item.filename
             item.url = url
     news = News.query.filter(News.slug!=slug).order_by(desc(News.saved_date)).limit(3).all()
@@ -1554,7 +1550,7 @@ def admin_dataset_delete(slug,id):
         cur = db.session.connection().connection.cursor()
         cur.execute(sql,[country_id,country_id,country_id,country_id,country_id])
         db.session.commit()
-        clear_cache(id)
+        #clear_cache(id)
         flash('Dataset "%s" deleted' %
               (title))
         return redirect(url_for('admin_dataset_list',slug=slug))
@@ -1571,9 +1567,10 @@ def admin_dataset_removecontent(slug,id):
         dataset.datasetfilename = None
         dataset.filters = None
         dataset.fieldnames = None
+        dataset.measures = None
         dataset.ready = False
         db.session.commit()
-        clear_cache(id)
+        #clear_cache(id)
         return redirect(url_for('admin_dataset_item',slug=slug,id=id))
     flash('Dataset not found!')
     return redirect(url_for('admin')) 
@@ -1836,20 +1833,16 @@ def api_measures(dataset,flag,topic):
     else:
         abort(404)
     
-    # CHECK CACHE
-    app_path = app.config['UPLOADS_DEFAULT_DEST'][:-len('uploads')]
-    cached_path = app_path + 'datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
-    
-    if (os.path.isfile(cached_path)):
-        #app.logger.debug('served: ' + cached_path)
-        return send_file(cached_path)
-    
-    # NO CACHE, GO TO THE DB!!
+    #app_path = app.config['UPLOADS_DEFAULT_DEST'][:-len('uploads')]
+    #cached_path = app_path + 'datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
+    #if (os.path.isfile(cached_path)):
+    #    app.logger.debug('served: ' + cached_path)
+    #    return send_file(cached_path)
     
     data = {}
     
     try:
-      conn = psycopg2.connect(app.config['CONN_STRING']) #problems here
+      conn = psycopg2.connect(app.config['CONN_STRING'])
       cur = conn.cursor(cursor_factory=RealDictCursor)
     except psycopg2.OperationalError as e:
       app.logger.debug('Unable to connect!\n{0}'.format(e))
@@ -1857,10 +1850,18 @@ def api_measures(dataset,flag,topic):
     
     # RETRIEVE METADATA
     sql = """
-    select fieldnames, filters, aggregation_level, budget from dataset WHERE dataset.id = %s
+    select fieldnames, filters, aggregation_level, budget, measures from dataset WHERE dataset.id = %s
     """
     cur.execute(sql,[dataset])
     r = cur.fetchone()
+    
+    # CHECK CACHE
+    measures = r["measures"] if r["measures"] != None else {}
+    if measures.get(topic) != None:
+      app.logger.debug('served: ' + dataset + '-' + topic)
+      return dumps(measures[topic])
+    
+    # NO CACHE - CALCULATE MEASURES
     
     fieldnames = r["fieldnames"]
     year_index = str(fieldnames.index('year'))
@@ -1871,8 +1872,6 @@ def api_measures(dataset,flag,topic):
         filterval = request.args.get(filter)
         if (filterval != None):
             filter_predicates.append("datarow->>" + str(fieldnames.index(filter)) + "='" + filterval + "'")
-    
-    #app.logger.debug(filter_predicates);
     
     topic_col = 'subtopic' if (sub and 'subtopic' in fieldnames) else 'majortopic'
     
@@ -1905,7 +1904,7 @@ def api_measures(dataset,flag,topic):
             """
             
             try:
-              cur.execute(sql,[dataset]) #problems here
+              cur.execute(sql,[dataset])
             except psycopg2.Error as e:
               app.logger.debug(e.pgerror)
               return dumps({})
@@ -1991,7 +1990,7 @@ def api_measures(dataset,flag,topic):
             #app.logger.debug(sql)
             
             try:
-              cur.execute(sql,[dataset]) #problems here
+              cur.execute(sql,[dataset])
             except psycopg2.Error as e:
               app.logger.debug(e.pgerror)
               return dumps({})
@@ -2039,7 +2038,7 @@ def api_measures(dataset,flag,topic):
                 #app.logger.debug(sql)
                 
                 try:
-                  cur.execute(sql,[dataset,topic]) #problems here
+                  cur.execute(sql,[dataset,topic])
                 except psycopg2.Error as e:
                   app.logger.debug(e.pgerror)
                   return dumps({})
@@ -2119,13 +2118,24 @@ def api_measures(dataset,flag,topic):
             percent_total.append(float("{0:.3f}".format(100 * percent)))    
         data['percent_total'] = percent_total
     
+    
     # WRITE CACHE
+    
+    measures[topic] = data  
+    sql = "UPDATE dataset SET measures='" + dumps(measures) + "' WHERE id=%s"
     try:
-      f = open(cached_path, 'w') 
-      with f as outfile:
-        dump(data, outfile)
-    except Exception as e:
-      app.logger.debug(e)
+      cur = db.session.connection().connection.cursor()
+      cur.execute(sql,[dataset])
+      db.session.commit()
+    except psycopg2.Error as e:
+      app.logger.debug(e.pgerror)
+    
+    #try:
+    #  f = open(cached_path, 'w') 
+    #  with f as outfile:
+    #    dump(data, outfile)
+    #except Exception as e:
+    #  app.logger.debug(e)
 
     return dumps(data)
 
@@ -2276,13 +2286,12 @@ def update_stats(db,dataset_id,country_id,fieldnames):
     cur.execute(sql,[country_id,country_id,country_id,country_id,country_id])
     db.session.commit() 
 
-def clear_cache(dataset_id):
+#def clear_cache(dataset_id):
 
-  app_path = app.config['UPLOADS_DEFAULT_DEST'][:-len('uploads')]
-  cache_wildcard = app_path + 'datacache/' + dataset_id + '-*'    
-  for filename in glob.glob(cache_wildcard):
-      #app.logger.debug(filename)
-      os.remove(filename)
+#  app_path = app.config['UPLOADS_DEFAULT_DEST'][:-len('uploads')]
+#  cache_wildcard = app_path + 'datacache/' + dataset_id + '-*'    
+#  for filename in glob.glob(cache_wildcard):
+#      os.remove(filename)
 
 def resolve_conflicts(folder,file):
     

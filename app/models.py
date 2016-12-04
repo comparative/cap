@@ -65,6 +65,7 @@ class Dataset(db.Model):
     topics = db.Column(JSON)
     topicsfilename = db.Column(db.String(200))
     fieldnames = db.Column(JSON)
+    measures = deferred(db.Column(JSONB))
 
 class Staticdataset(db.Model):
 
