@@ -1315,13 +1315,40 @@ def long_datasave(datafile_name):
     dataset = Dataset.query.filter_by(datasetfilename=datafile_name).first()
     if dataset:
         
+        conn = psycopg2.connect(app.config['CONN_STRING'])
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+          
         dataset.fieldnames = fieldnames
         dataset.filters = filters
+        
+        if dataset.topics:
+          topics = loads(dataset.topics)
+        else:
+          topics = loads(api_topics())
+        
+        # pre-calculate measures for all topics/subtopics and cache to db
+        measures = {}
+        for topic in topics:
+            t = topic['topic'].split('_')[0]
+            measures[t] = get_measures(dataset.__dict__,False,t,cur)
+            for subtopic in topic.get('subtopics'):
+                st = subtopic.split('_')[0]
+                measures[st] = get_measures(dataset.__dict__,True,st,cur)
+        
+        # for now, DO NOT pre-calc w/all filter combos        
+        #all_filter_combos = ["".join(seq) for seq in itertools.product("01", repeat=len(filters))]
+        #app.logger.debug(all_filter_combos)
+        
+        dataset.measures = measures
         dataset.content = thedata
         dataset.ready = True
         db.session.commit()
         
         update_stats(db,dataset.id,dataset.country_id,fieldnames)
+    
+    else:
+        
+        app.logger.debug('why no dataset?')
 
 @app.route('/admin/dataset/upload/<type>', methods=['POST'])
 @login_required
@@ -1821,8 +1848,7 @@ def api_instances(dataset,flag,topic,frm,to):
         yield '\n'
     
     return Response(generate(), mimetype='text/csv', headers={"Content-disposition":'attachment; filename=' + short_display + '-' + str(frm) + '-' + str(to) + '-' + str(topic) + '.csv'})
-
-   
+ 
 @app.route('/api/measures/dataset/<dataset>/<flag>/<topic>')
 def api_measures(dataset,flag,topic):
     
@@ -1839,7 +1865,7 @@ def api_measures(dataset,flag,topic):
     #    app.logger.debug('served: ' + cached_path)
     #    return send_file(cached_path)
     
-    data = {}
+    
     
     try:
       conn = psycopg2.connect(app.config['CONN_STRING'])
@@ -1850,16 +1876,47 @@ def api_measures(dataset,flag,topic):
     
     # RETRIEVE METADATA
     sql = """
-    select fieldnames, filters, aggregation_level, budget, measures from dataset WHERE dataset.id = %s
+    select id, fieldnames, filters, aggregation_level, budget, measures from dataset WHERE dataset.id = %s
     """
     cur.execute(sql,[dataset])
     r = cur.fetchone()
     
     # CHECK CACHE
     measures = r["measures"] if r["measures"] != None else {}
-    if measures.get(topic) != None:
-      app.logger.debug('served: ' + dataset + '-' + topic)
-      return dumps(measures[topic])
+    cache_key = topic + request.query_string
+    if measures.get(cache_key) != None:
+      app.logger.debug('served: ' + dataset + '-' + cache_key)
+      return dumps(measures[cache_key])
+    
+    data = get_measures(r,sub,topic,cur)
+    
+    # WRITE CACHE
+    
+    measures[cache_key] = data  
+    sql = "UPDATE dataset SET measures='" + dumps(measures) + "' WHERE id=%s"
+    try:
+      cur = db.session.connection().connection.cursor()
+      cur.execute(sql,[dataset])
+      db.session.commit()
+    except psycopg2.Error as e:
+      app.logger.debug(e.pgerror)
+    
+    #try:
+    #  f = open(cached_path, 'w') 
+    #  with f as outfile:
+    #    dump(data, outfile)
+    #except Exception as e:
+    #  app.logger.debug(e)
+
+    return dumps(data)
+
+def get_measures(r,sub,topic,cur):
+    
+    dataset_id = int(r['id'])
+    
+    #cur = db.session.connection().connection.cursor()
+    
+    data = {}
     
     # NO CACHE - CALCULATE MEASURES
     
@@ -1904,7 +1961,7 @@ def api_measures(dataset,flag,topic):
             """
             
             try:
-              cur.execute(sql,[dataset])
+              cur.execute(sql,[dataset_id])
             except psycopg2.Error as e:
               app.logger.debug(e.pgerror)
               return dumps({})
@@ -1948,7 +2005,7 @@ def api_measures(dataset,flag,topic):
                 #app.logger.debug(sql)
                 
                 try:
-                  cur.execute(sql,[dataset,topic])
+                  cur.execute(sql,[dataset_id,topic])
                 except psycopg2.Error as e:
                   app.logger.debug(e.pgerror)
                   return dumps({})
@@ -1987,10 +2044,8 @@ def api_measures(dataset,flag,topic):
             GROUP BY year) AS yt ORDER by year
             """
             
-            #app.logger.debug(sql)
-            
             try:
-              cur.execute(sql,[dataset])
+              cur.execute(sql,[dataset_id])
             except psycopg2.Error as e:
               app.logger.debug(e.pgerror)
               return dumps({})
@@ -2038,7 +2093,7 @@ def api_measures(dataset,flag,topic):
                 #app.logger.debug(sql)
                 
                 try:
-                  cur.execute(sql,[dataset,topic])
+                  cur.execute(sql,[dataset_id,topic])
                 except psycopg2.Error as e:
                   app.logger.debug(e.pgerror)
                   return dumps({})
@@ -2101,7 +2156,7 @@ def api_measures(dataset,flag,topic):
             """
         
         try:
-          cur.execute(sql,[dataset,topic])
+          cur.execute(sql,[dataset_id,topic])
         except psycopg2.Error as e:
           app.logger.debug(e.pgerror)
           return dumps({})
@@ -2117,27 +2172,8 @@ def api_measures(dataset,flag,topic):
         for i, percent in enumerate(d['percent'] for d in rows): 
             percent_total.append(float("{0:.3f}".format(100 * percent)))    
         data['percent_total'] = percent_total
-    
-    
-    # WRITE CACHE
-    
-    measures[topic] = data  
-    sql = "UPDATE dataset SET measures='" + dumps(measures) + "' WHERE id=%s"
-    try:
-      cur = db.session.connection().connection.cursor()
-      cur.execute(sql,[dataset])
-      db.session.commit()
-    except psycopg2.Error as e:
-      app.logger.debug(e.pgerror)
-    
-    #try:
-    #  f = open(cached_path, 'w') 
-    #  with f as outfile:
-    #    dump(data, outfile)
-    #except Exception as e:
-    #  app.logger.debug(e)
-
-    return dumps(data)
+        
+    return data
 
 # ONE OF EM  
 @app.route('/<slug>')
