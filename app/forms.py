@@ -66,23 +66,24 @@ class DatasetForm(Form):
     country = QuerySelectField(query_factory=countries_factory,allow_blank=True)
     category = QuerySelectField(query_factory=categories_factory,allow_blank=True) 
     budgetcategory = QuerySelectField(query_factory=budgetcategories_factory,allow_blank=True) 
-    aggregation_level = SelectField(u'Aggregation Level', choices=[('0', 'raw'), ('1', 'count'), ('2', 'percent')])
+    #aggregation_level = SelectField(u'Aggregation Level', choices=[('0', 'raw'), ('1', 'count'), ('2', 'percent')])
     
     def validate(self):
         rv = Form.validate(self)
-        if hasattr(self, 'fieldnames') and self.aggregation_level > 0:
-            if self.aggregation_level.data=='1' and 'count' not in self.fieldnames:
-                self.aggregation_level.errors.append('To choose this option, your data needs a "count" column.')
-            if self.aggregation_level.data=='2' and 'percent' not in self.fieldnames:
-                self.aggregation_level.errors.append('To choose this option, your data needs a "percent" column.')                
-        if len(self.aggregation_level.errors) > 0:
-            self.content.data = None
+        #if hasattr(self, 'fieldnames') and self.aggregation_level > 0:
+        #    if self.aggregation_level.data=='1' and 'count' not in self.fieldnames:
+        #        self.aggregation_level.errors.append('To choose this option, your data needs a "count" column.')
+        #    if self.aggregation_level.data=='2' and 'percent' not in self.fieldnames:
+        #        self.aggregation_level.errors.append('To choose this option, your data needs a "percent" column.')                
+        #if len(self.aggregation_level.errors) > 0:
+        #    self.content.data = None
         if self.topicsfieldnames:
             required_fieldnames = ['majorfunction','subfunction','shortname','longname']
             for required_fieldname in required_fieldnames:
                 if required_fieldname not in self.topicsfieldnames:
                     self.topics.errors.append('The required column "' + required_fieldname + '" was not found in the data you uploaded.')
-        if len(self.aggregation_level.errors) > 0 or len(self.topics.errors) > 0 or rv==False:
+        #if len(self.aggregation_level.errors) > 0 or len(self.topics.errors) > 0 or rv==False:
+        if len(self.topics.errors) > 0 or rv==False:
             return False
         return True
 

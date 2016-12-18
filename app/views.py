@@ -79,16 +79,17 @@ def static_from_root():
 
 #@app.route('/reprocess')
 #def reprocess():
-#  
+  
 #    try:      
-#      datasets = Dataset.query.filter(Dataset.ready == False).filter(Dataset.id != 78).filter(Dataset.id != 143).all()
+      #datasets = Dataset.query.filter(Dataset.ready == False).filter(Dataset.id != 78).filter(Dataset.id != 143).all()
+#      datasets = Dataset.query.filter(Dataset.id == 217).all()
 #      for item in datasets:
-#        #app.logger.debug(item.datasetfilename)      
+#        #app.logger.debug(item.datasetfilename)
 #        task = long_datasave.delay(item.datasetfilename)
-#        
+        
 #    except Exception as e:
 #      app.logger.debug(e[0])
-#    
+    
 #    return render_template('about.html')
       
 
@@ -1284,13 +1285,18 @@ def long_datasave(datafile_name):
     reader = csv.reader(csvfile)
     fieldnames = reader.next()
     
-    app.logger.debug(fieldnames)
-    
     filters = []
     for fieldname in fieldnames:
         if fieldname.split('_')[0] == 'filter':
             filters.append(fieldname)
-            
+    
+    if 'count' in fieldnames or 'amount' in fieldnames:
+        aggregation_level = 1
+    elif 'percent' in fieldnames:
+        aggregation_level = 2
+    else:
+        aggregation_level = 0
+      
     thedata = []
     for row in reader:
         if 'count' in fieldnames:                                                   # aggregation level = count
@@ -1318,29 +1324,34 @@ def long_datasave(datafile_name):
         conn = psycopg2.connect(app.config['CONN_STRING'])
         cur = conn.cursor(cursor_factory=RealDictCursor)
           
+        dataset.aggregation_level = aggregation_level
         dataset.fieldnames = fieldnames
         dataset.filters = filters
+        dataset.content = thedata
+        db.session.commit()
         
         if dataset.topics:
           topics = loads(dataset.topics)
         else:
           topics = loads(api_topics())
         
-        # pre-calculate measures for all topics/subtopics and cache to db
+        # pre-calculate measures for all topics/subtopics -- w/o filters -- and cache to db
+
+        dd = { k: dataset.__dict__[k] for k in ['budget','fieldnames','filters','aggregation_level','id'] }
+
         measures = {}
-        for topic in topics:
+        for topic in topics: 
             t = topic['topic'].split('_')[0]
-            measures[t] = get_measures(dataset.__dict__,False,t,cur)
+            measures[t] = get_measures(dd,False,t,cur,[])
             for subtopic in topic.get('subtopics'):
                 st = subtopic.split('_')[0]
-                measures[st] = get_measures(dataset.__dict__,True,st,cur)
+                measures[st] = get_measures(dd,True,st,cur,[])
         
         # for now, DO NOT pre-calc w/all filter combos        
         #all_filter_combos = ["".join(seq) for seq in itertools.product("01", repeat=len(filters))]
         #app.logger.debug(all_filter_combos)
         
         dataset.measures = measures
-        dataset.content = thedata
         dataset.ready = True
         db.session.commit()
         
@@ -1379,6 +1390,10 @@ def admin_dataset_upload(type):
         for required_fieldname in required_fieldnames:
             if required_fieldname not in reader.fieldnames:
                 errors += 'Missing column: "' + required_fieldname + '" '
+        if type=='policy':
+            if 'count' not in reader.fieldnames and 'percent' not in reader.fieldnames:
+                errors += 'Missing: either "count" or "percent" column.'
+
     if len(errors) > 0: #validation failed
         return Response(dumps({'error':errors}), status=412, mimetype='application/json')
         
@@ -1483,7 +1498,7 @@ def admin_dataset_item(slug,id):
         else:
             dataset.category = form.category.data
             
-        dataset.aggregation_level = 1 if dataset.budget else form.aggregation_level.data
+        #dataset.aggregation_level = 1 if dataset.budget else form.aggregation_level.data
         
         
         if 'content' in request.form and request.form['content'] != '':
@@ -1532,8 +1547,8 @@ def admin_dataset_item(slug,id):
             form.category.data = dataset.category
             form.budgetcategory.data = dataset.budgetcategory
             form.topics.data = dataset.topics
-            if dataset.budget==False:
-                form.aggregation_level.data = str(dataset.aggregation_level)
+            #if dataset.budget==False:
+            #    form.aggregation_level.data = str(dataset.aggregation_level)
             
     template = 'admin/budget_dataset_item.html' if dataset.budget else 'admin/dataset_item.html'
     
@@ -1888,7 +1903,16 @@ def api_measures(dataset,flag,topic):
       app.logger.debug('served: ' + dataset + '-' + cache_key)
       return dumps(measures[cache_key])
     
-    data = get_measures(r,sub,topic,cur)
+    filters = r["filters"] if r["filters"] != None else []
+    filter_predicates = []
+    for filter in filters:
+        filterval = request.args.get(filter)
+        if (filterval != None):
+            filter_predicates.append("datarow->>" + str(r['fieldnames'].index(filter)) + "='" + filterval + "'")
+    
+    data = get_measures(r,sub,topic,cur,filter_predicates)
+    
+    app.logger.debug(data)
     
     # WRITE CACHE
     
@@ -1910,26 +1934,12 @@ def api_measures(dataset,flag,topic):
 
     return dumps(data)
 
-def get_measures(r,sub,topic,cur):
+def get_measures(r,sub,topic,cur,filter_predicates):
     
     dataset_id = int(r['id'])
-    
-    #cur = db.session.connection().connection.cursor()
-    
     data = {}
-    
-    # NO CACHE - CALCULATE MEASURES
-    
     fieldnames = r["fieldnames"]
     year_index = str(fieldnames.index('year'))
-    
-    filters = r["filters"] if r["filters"] != None else []
-    filter_predicates = []
-    for filter in filters:
-        filterval = request.args.get(filter)
-        if (filterval != None):
-            filter_predicates.append("datarow->>" + str(fieldnames.index(filter)) + "='" + filterval + "'")
-    
     topic_col = 'subtopic' if (sub and 'subtopic' in fieldnames) else 'majortopic'
     
     if r["aggregation_level"] != 2:
