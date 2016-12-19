@@ -299,10 +299,14 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                         
                         if (country == dataset.country) {
                             
-                            // ADD TO SEARCH RESULTS
-                            dataset_name = dataset.country + ': ' + dataset.name + ' #' + selText;
-                            var searchResult = new Series(dataset.id,topic,dataset_name,dataset.filters,sub,dataset.unit,dataset.aggregation_level,false);
-                            $scope.results.push(searchResult);
+                            if (!sub || dataset.subs_avail == true) {
+                            
+                                // ADD TO SEARCH RESULTS
+                                dataset_name = dataset.country + ': ' + dataset.name + ' #' + selText;
+                                var searchResult = new Series(dataset.id,topic,dataset_name,dataset.filters,sub,dataset.unit,dataset.aggregation_level,false);
+                                $scope.results.push(searchResult);
+                            
+                            }
                                            
                         }
                        }

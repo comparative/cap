@@ -1731,7 +1731,8 @@ def api_datasets(flag = None):
     c.short_name AS country,
     d.filters AS filters,
     d.unit AS unit,
-    d.aggregation_level AS aggregation_level
+    d.aggregation_level AS aggregation_level,
+    d.fieldnames::jsonb ? 'subtopic' AS subs_avail 
     FROM dataset d
     INNER JOIN country c ON d.country_id = c.id
     WHERE d.ready=TRUE
