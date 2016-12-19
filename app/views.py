@@ -1390,9 +1390,9 @@ def admin_dataset_upload(type):
         for required_fieldname in required_fieldnames:
             if required_fieldname not in reader.fieldnames:
                 errors += 'Missing column: "' + required_fieldname + '" '
-        if type=='policy':
-            if 'count' not in reader.fieldnames and 'percent' not in reader.fieldnames:
-                errors += 'Missing: either "count" or "percent" column.'
+        #if type=='policy':
+        #    if 'count' not in reader.fieldnames and 'percent' not in reader.fieldnames:
+        #        errors += 'Missing: either "count" or "percent" column.'
 
     if len(errors) > 0: #validation failed
         return Response(dumps({'error':errors}), status=412, mimetype='application/json')

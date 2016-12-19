@@ -487,9 +487,17 @@
         </div>
         
         <div style="float:right;">
+            
+            <span ng-if="!pending">
+            
             <i ng-click="closeSeriesModal(series)" style="font-size:40px; color:black;" class="fi-x clickable"></i>
             &nbsp;&nbsp;&nbsp;&nbsp;
             <i ng-click="editSeries(series)" style="font-size:40px; color:black;" class="fi-check clickable"></i>
+            
+            </span>
+            
+            <span ng-if="pending">Applying changes...</span>
+            
         </div>
     
     </div>

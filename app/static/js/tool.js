@@ -630,7 +630,13 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             $scope.chart.series[index].type = "line";
             $scope.chart.series[index].yaxis = 0;
             $scope.chart.series[index].measure_on_multiple_axes = false; 	
-    
+            
+            // UNCHECK FILTER CHECKBOXES
+            angular.forEach($scope.chart.series[index].filters, function (filter, index) {
+                filter.exclude = false;
+                filter.include = false;
+            });
+          
             // REMOVE FROM CHART
             $scope.chart.series.splice(index,1);
     
