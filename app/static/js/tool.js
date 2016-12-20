@@ -526,7 +526,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
     $scope.addToChart = function(result) {
     	
-    	ga('send', 'event', 'Add Series to Chart', result.dataset, result.name);
+      try {ga('send', 'event', 'Add Series to Chart', result.dataset, result.name);} catch (e) {console.log('No analytics.');}
     	
     	if ($scope.pending == false) {
     	    

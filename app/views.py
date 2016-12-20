@@ -115,8 +115,12 @@ def tool(slug=None):
     # were we passed a project id?
     projectid = request.args.get('project')
     
+    # send analytics data only from prod
+    urlparts = urlparse(request.url)
+    suppress_analytics = False if urlparts.netloc == 'www.comparativeagendas.net' else True
+    
     # send response
-    resp=make_response(render_template('tool.html',baseUrl=app.config['TOOL_BASE_URL'],exportUrl=app.config['HIGHCHARTS_EXPORT_URL'],user=user,slug=slug,options=options,recent=recent,projectid=projectid,v=randint(0,999999)))    
+    resp=make_response(render_template('tool.html',baseUrl=app.config['TOOL_BASE_URL'],exportUrl=app.config['HIGHCHARTS_EXPORT_URL'],user=user,slug=slug,options=options,recent=recent,projectid=projectid,v=randint(0,999999),suppress_analytics=suppress_analytics))    
     resp.set_cookie('captool_user',value=user)
     return resp
 
@@ -169,7 +173,7 @@ def charts(slug,switch=None):
     if exists and switch != "embed":
         values = {}
         myoptions = loads(exists.options)
-        #myoptions.update({'legend': {'enabled': 'true'}})        
+        #myoptions.update({'legend': {'enabled': 'true'}})
         #app.logger.debug(myoptions)
         values['options'] = dumps(myoptions)
         values['type'] = 'image/png'
@@ -1032,7 +1036,7 @@ def admin_analytics(slug):
     service = get_analytics()
     country = Country.query.filter_by(slug=slug).first()
     
-    start_date = request.form['start_date'] if 'start_date' in request.form else '2016-12-01'
+    start_date = request.form['start_date'] if 'start_date' in request.form else '2017-01-01'
     end_date = request.form['end_date'] if 'end_date' in request.form else datetime.now().strftime('%Y-%m-%d')
     
     total_charts = 0
@@ -1346,6 +1350,9 @@ def long_datasave(datafile_name):
             for subtopic in topic.get('subtopics'):
                 st = subtopic.split('_')[0]
                 measures[st] = get_measures(dd,True,st,cur,[])
+                
+        # pre-calc 'all topics' (id=0)
+        measures[0] = get_measures(dd,False,'0',cur,[])
         
         # for now, DO NOT pre-calc w/all filter combos        
         #all_filter_combos = ["".join(seq) for seq in itertools.product("01", repeat=len(filters))]
@@ -1913,7 +1920,7 @@ def api_measures(dataset,flag,topic):
     
     data = get_measures(r,sub,topic,cur,filter_predicates)
     
-    app.logger.debug(data)
+    #app.logger.debug(data)
     
     # WRITE CACHE
     
