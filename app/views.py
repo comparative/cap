@@ -13,7 +13,6 @@ import gc
 import httplib2
 from sqlalchemy import desc
 from psycopg2.extras import RealDictCursor
-from datetime import datetime
 from functools import wraps, update_wrapper
 from flask import Response, render_template, flash, redirect, url_for, request, make_response, send_file, abort, send_from_directory
 from flask_login import login_user, logout_user, current_user, login_required
@@ -24,6 +23,7 @@ from app import app, db, lm, newsimages, countryimages, staffimages, researchfil
 from .models import User, News, Country, Research, Staff, Page, File, Slide, Chart, Dataset, Category, Staticdataset
 from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm, SlideForm, DatasetForm, StaticDatasetForm
 from datetime import datetime
+from datetime import timedelta
 from random import randint
 from urlparse import urlparse, urlunparse
 from apiclient.discovery import build
@@ -1037,7 +1037,18 @@ def admin_analytics(slug):
     country = Country.query.filter_by(slug=slug).first()
     
     start_date = request.form['start_date'] if 'start_date' in request.form else '2017-01-01'
-    end_date = request.form['end_date'] if 'end_date' in request.form else datetime.now().strftime('%Y-%m-%d')
+    
+    start_datetime = datetime.strptime(start_date,'%Y-%m-%d')
+    next_datetime = start_datetime + timedelta(days=1)
+    
+    # default end date is NOW (if start date is in the future, then day after start date)
+    
+    if datetime.now() > next_datetime:
+      default_end = datetime.now().strftime('%Y-%m-%d')
+    else:
+      default_end = next_datetime.strftime('%Y-%m-%d')
+    
+    end_date = request.form['end_date'] if 'end_date' in request.form else default_end
     
     total_charts = 0
     total_downloads = 0
