@@ -117,7 +117,7 @@
         {% if research.imagename %}<div class="medium-8 columns">{% else %}<div class="medium-12 columns">{% endif %}
                 
 				<h3>{{ research.title }}</h3>
-				{{ smart_truncate(research.body,5000)|safe }}
+				{{ research.body|safe }}
 				{% if research.filename %}
 				    
 				    <a href="{{config['S3_URL']}}researchfiles/{{ research.filename }}">{{ research.filename }}</a>
