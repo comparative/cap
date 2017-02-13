@@ -1919,7 +1919,7 @@ def api_measures(dataset,flag,topic):
     measures = r["measures"] if r["measures"] != None else {}
     cache_key = topic + request.query_string
     if measures.get(cache_key) != None:
-      app.logger.debug('served: ' + dataset + '-' + cache_key)
+      #app.logger.debug('served: ' + dataset + '-' + cache_key)
       return dumps(measures[cache_key])
     
     filters = r["filters"] if r["filters"] != None else []
