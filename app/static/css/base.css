@@ -36,6 +36,7 @@ h5,h6 {
 
 h3 {
     margin-top:20px;
+    margin-bottom:0px;
 }
 
 footer {
@@ -303,7 +304,7 @@ div#bluestripe {
    max-width: initial;
    min-width:790px;
    padding-top:15px;
-   padding-bottom:5px;
+   padding-bottom:8px;
 }
 
 #slogan {

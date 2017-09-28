@@ -14,8 +14,8 @@ app.debug = True
 db = SQLAlchemy(app)
 
 engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-if not database_exists(engine.url):
-    create_database(engine.url)
+#if not database_exists(engine.url):
+#    create_database(engine.url)
 
 lm = LoginManager()
 lm.login_view = "login"
