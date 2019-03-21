@@ -10,22 +10,19 @@
 #if __name__ == "__main__":
 #    run_simple(
 #        '0.0.0.0',
-#        5000,
+#        80,
 #        application,
 #        use_reloader=True,
 #       use_debugger=True
 #    )
 
-from cherrypy import wsgiserver
+from cheroot import wsgi
 from app import app
-    
-d = wsgiserver.WSGIPathInfoDispatcher({'/': app})
-server = wsgiserver.CherryPyWSGIServer(('0.0.0.0', 5000), d)
 
-if __name__ == '__main__':
-    
+server = wsgi.Server(('0.0.0.0', 80), app)
+
+if __name__ == '__main__': 
     try:
         server.start()
     except KeyboardInterrupt:
         server.stop()
-

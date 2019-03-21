@@ -1,4 +1,4 @@
-from app import db
+from .main import db
 from sqlalchemy.dialects.postgresql import JSON,JSONB
 from sqlalchemy.orm import deferred
 import datetime

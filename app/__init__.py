@@ -1,19 +1,26 @@
+import os
 import logging
 from flask import Flask
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_uploads import UploadSet, configure_uploads, IMAGES, ALL
 from celery import Celery
-from HTMLParser import HTMLParser
+from html.parser import HTMLParser
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
 
 app = Flask(__name__)
-app.config.from_object('config')
+#app.config.from_object('config')
+
+app.config['UPLOADS_DEFAULT_DEST'] = os.environ.get('UPLOADS_DEFAULT_DEST')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 app.debug = True
 db = SQLAlchemy(app)
 
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+engine = create_engine(os.environ.get('SQLALCHEMY_DATABASE_URI'))
 #if not database_exists(engine.url):
 #    create_database(engine.url)
 
@@ -34,8 +41,8 @@ topicsfiles = UploadSet('topicsfiles', ALL)
 configure_uploads(app, (newsimages,countryimages,staffimages,researchfiles,researchimages,adhocfiles,slideimages,codebookfiles,datasetfiles,topicsfiles))
 
 def make_celery(app):
-    celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'])
-    celery.conf.update(app.config)
+    celery = Celery(app.import_name, broker=os.environ.get('CELERY_BROKER_URL'))
+    #celery.conf.update(app.config)
     TaskBase = celery.Task
     class ContextTask(TaskBase):
         abstract = True
@@ -60,6 +67,7 @@ def smart_truncate(content, length=100, suffix=' ...'):
         
 class MLStripper(HTMLParser):
     def __init__(self):
+        super().__init__()
         self.reset()
         self.fed = []
     def handle_data(self, d):

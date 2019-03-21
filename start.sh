@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
-python /var/www/cap/wsgi.py &
+python /cap/wsgi.py &
 
 export C_FORCE_ROOT="true"
-cd /var/www/cap
+cd /cap
 celery -A app.celery worker -l info
