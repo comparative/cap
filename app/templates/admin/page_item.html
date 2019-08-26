@@ -5,7 +5,7 @@
 
 
 <h4><a href="{{ url_for('admin_page_list') }}">Pages</a></h4>
-<form action="" method="post" name="user" enctype="multipart/form-data">
+<form action="" method="post" name="user" enctype="multipart/form-data" novalidate>
 {{ form.hidden_tag() }}
 
 <div class="row">
@@ -29,7 +29,7 @@
 	  <label for="title" class="right inline">URL</label>
 	</div>
 	<div class="small-11 columns">
-	  <a href="{{ url_for('page',slug=slug) }}" target="_blank">http://www.comparativeagendas.net{{ url_for('page',slug=slug) }}</a>
+	  <a href="{{ url_for('page',slug=slug) }}" target="_blank">https://www.comparativeagendas.net{{ url_for('page',slug=slug) }}</a>
 	</div>
 </div>
 

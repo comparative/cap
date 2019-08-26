@@ -1,10 +1,10 @@
+import sys
 import shutil
 import requests
 import os
 import glob
 import uuid
 import psycopg2
-import urllib.request, urllib.parse, urllib.error
 import urllib.request, urllib.error, urllib.parse
 import csv
 import time
@@ -19,7 +19,6 @@ from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug import secure_filename
 from json import dump, dumps, loads
 from slugify import slugify
-#from .main import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles, slideimages, codebookfiles, datasetfiles, topicsfiles
 from app import app, db, lm, newsimages, countryimages, staffimages, researchfiles, researchimages, adhocfiles, slideimages, codebookfiles, datasetfiles, topicsfiles, celery
 from .models import User, News, Country, Research, Staff, Page, File, Slide, Chart, Dataset, Category, Staticdataset
 from .forms import NewsForm, LoginForm, CountryForm, UserForm, ResearchForm, StaffForm, PageForm, FileForm, SlideForm, DatasetForm, StaticDatasetForm
@@ -35,16 +34,25 @@ from oauth2client import tools
 
 analytics_colors = ["#434348", "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#117744", "#44AA77", "#88CCAA", "#777711", "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", "#771122", "#AA4455", "#DD7788", "#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA"]
 
-s3 = tinys3.Pool(os.environ.get('S3_ACCESS_KEY'),os.environ.get('S3_SECRET_KEY'),os.environ.get('S3_BUCKET'))
-s3conn = tinys3.Connection(os.environ.get('S3_ACCESS_KEY'),os.environ.get('S3_SECRET_KEY'),os.environ.get('S3_BUCKET'))
+s3 = tinys3.Pool(os.environ.get('S3_ACCESS_KEY'),os.environ.get('S3_SECRET_KEY'),default_bucket=os.environ.get('S3_BUCKET'))
+s3conn = tinys3.Connection(os.environ.get('S3_ACCESS_KEY'),os.environ.get('S3_SECRET_KEY'),default_bucket=os.environ.get('S3_BUCKET'))
 
 @app.before_request
 def redirect_nonwww():
+
     urlparts = urlparse(request.url)
-    if urlparts.netloc == 'comparativeagendas.net':
-        urlparts_list = list(urlparts)
+    urlparts_list = list(urlparts)
+    
+    if os.environ.get('SSL')=='True' and urlparts_list[0] == 'http':
+        urlparts_list[0] = 'https'
+    
+    if urlparts_list[1] == 'comparativeagendas.net':
         urlparts_list[1] = 'www.comparativeagendas.net'
-        return redirect(urlunparse(urlparts_list), code=301)
+    
+    url = urlunparse(urlparts_list)
+        
+    if url != request.url:
+        return redirect(url, code=301)  
 
 @lm.user_loader
 def load_user(id):
@@ -89,7 +97,7 @@ def static_from_root():
 #        task = long_datasave.delay(item.datasetfilename)
         
 #    except Exception as e:
-#      app.logger.debug(e[0])
+#      app.logger.debug(e)
     
 #    return render_template('about.html')
       
@@ -99,8 +107,6 @@ def static_from_root():
 @app.route('/tool')
 @app.route('/tool/<slug>')
 def tool(slug=None):
-    
-    print('blah')
     
     # identify user
     if 'captool_user' in request.cookies:
@@ -130,7 +136,7 @@ def tool(slug=None):
 @app.route('/charts/save/<user>/<slug>', methods=['POST'])
 @nocache
 def save_chart(user,slug):
-    data = request.get_data()
+    data = request.get_data().decode("utf-8")
     exists = Chart.query.filter_by(slug=slug).first()
     if exists:
         exists.unpinned = False
@@ -146,7 +152,7 @@ def save_chart(user,slug):
 @app.route('/charts/saveunpinned/<user>/<slug>', methods=['POST'])
 @nocache
 def save_chart_unpinned(user,slug):
-    data = request.get_data()
+    data = request.get_data().decode("utf-8")
     exists = Chart.query.filter_by(slug=slug).first()
     if not exists:
         chart = Chart()
@@ -182,7 +188,7 @@ def charts(slug,switch=None):
         values['type'] = 'image/png'
         values['width'] = '600'
         values['constr'] = 'Chart'
-        data = urllib.parse.urlencode(values)
+        data = urllib.parse.urlencode(values).encode("utf8")
         req = urllib.request.Request(os.environ.get('HIGHCHARTS_EXPORT_URL'), data)
         response = urllib.request.urlopen(req)
         resp = make_response(response.read())
@@ -1085,7 +1091,7 @@ def admin_analytics(slug):
       total_downloads = total_downloads + int(totals[1])
       x = {}
       x['id'] = d.id
-      x['name'] = d.display.encode("utf-8")
+      x['name'] = d.display
       x['charts'] = totals[0]
       x['downloads'] = totals[1]
       stats_budget.append(x)
@@ -1113,10 +1119,10 @@ def admin_analytics(slug):
     results = cur.fetchall()
     results.insert(0, ('All Topics','0') )
     for r in results:
-        topic_name = r[0].encode("utf-8")
-        s = get_pie_slice(topic_name,pie_slices)
-        if s:
-            stats_majortopic.append({'name':topic_name,'y':int(s),'color':analytics_colors[int(r[1])]})
+      topic_name = r[0]
+      s = get_pie_slice(topic_name,pie_slices)
+      if s:
+        stats_majortopic.append({'name':topic_name,'y':int(s),'color':analytics_colors[int(r[1])]})
     
     pie_slices[0] = stats_majortopic
     
@@ -1201,7 +1207,7 @@ def admin_staticdataset_item(slug,id):
             try:
                 db.session.add(dataset) 
             except Exception as e:
-                app.logger.debug(e[0])
+                app.logger.debug(e)
                 flash('Something went wrong, dataset not saved!')
                 return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
     
@@ -1211,7 +1217,7 @@ def admin_staticdataset_item(slug,id):
             db.session.commit()
             flash('Dataset "%s" saved' % (form.display.data))
         except Exception as e:
-            app.logger.debug(e[0])
+            app.logger.debug(e)
             flash('Something went wrong, dataset not saved!')
             return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
             
@@ -1288,7 +1294,7 @@ def admin_staticdataset_removecodebook(slug,id):
 
 # routes for REAL datasets, i.e. the ones in the trends tool
 
-#@celery.task
+@celery.task
 def long_datasave(datafile_name):
     
     url = os.environ.get('S3_URL') + 'datasetfiles/' + datafile_name
@@ -1299,7 +1305,7 @@ def long_datasave(datafile_name):
     del response
     gc.collect()
     
-    csvfile = open('temp_' + datafile_name, 'rU')
+    csvfile = open('temp_' + datafile_name, encoding="utf8", errors='ignore')
     reader = csv.reader(csvfile)
     fieldnames = next(reader)
     
@@ -1395,7 +1401,12 @@ def long_datasave(datafile_name):
         db.session.commit()
         
         update_stats(db,dataset.id,dataset.country_id,fieldnames)
-    
+        
+        del dataset
+        del conn
+        del cur
+        gc.collect()
+        
     else:
         
         app.logger.debug('why no dataset?')
@@ -1409,13 +1420,16 @@ def admin_dataset_upload(type):
     disk_filepath = datasetfiles.path(disk_filename)
     
     errors = ''
+    
+    '''
     try:
         didit = convert_to_utf8(disk_filepath)
     except Exception as e:
-        app.logger.debug(e[0])
+        app.logger.debug(e)
         didit = False
     if (didit == False):
         errors += 'Data not converted to UTF-8. '
+    '''
     
     csvfile = open(disk_filepath, 'rU')
     reader = csv.DictReader(csvfile)
@@ -1438,7 +1452,10 @@ def admin_dataset_upload(type):
         
     #validation succeeded
     s3_filename = resolve_conflicts('datasetfiles/',secure_filename(file_storage_obj.filename))
-    s3conn.upload('datasetfiles/' + s3_filename,open(datasetfiles.path(disk_filename),'rb'))
+    
+    s3.upload('datasetfiles/' + s3_filename,open(datasetfiles.path(disk_filename),'rb'))
+    #del s3conn
+    #gc.collect()
     
     return Response(dumps({'filename':s3_filename}), status=200, mimetype='application/json')
                      
@@ -1467,14 +1484,16 @@ def admin_dataset_item(slug,id):
         disk_filename = topicsfiles.save(file_storage_obj)
         disk_filepath = topicsfiles.path(disk_filename)
         
+        '''
         try:
             didit = convert_to_utf8(disk_filepath)
         except Exception as e:
-            app.logger.debug(e[0])
+            app.logger.debug(e)
             didit = False
         if (didit == False):
             flash('Topics not converted to UTF-8!')
             return redirect(url_for('admin_dataset_list',slug=slug))
+        '''
         
         s3_filename = resolve_conflicts('topicsfiles/',secure_filename(file_storage_obj.filename))
         s3.upload('topicsfiles/' + s3_filename,open(topicsfiles.path(disk_filename),'rb'))
@@ -1555,7 +1574,7 @@ def admin_dataset_item(slug,id):
             try:
                 db.session.add(dataset) 
             except Exception as e:
-                app.logger.debug(e[0])
+                app.logger.debug(e)
                 flash('Something went wrong, dataset not saved!')
                 return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
                 
@@ -1565,7 +1584,7 @@ def admin_dataset_item(slug,id):
             db.session.commit()
             flash('Dataset "%s" saved' % (form.display.data))
         except Exception as e:
-            app.logger.debug(e[0])
+            app.logger.debug(e)
             flash('Something went wrong, dataset not saved!')
             return redirect(url_for('admin_dataset_list',slug=slug,tab=tab))
             
@@ -1781,6 +1800,30 @@ def api_datasets(flag = None):
     cur.execute(sql)
     return dumps(cur.fetchall())
 
+@app.route('/api/datasets/metadata')
+def api_datasets_metadata(flag = None):
+    conn = psycopg2.connect(os.environ.get('CONN_STRING'))
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    sql = """
+    SELECT  d.short_display AS name,
+    c.short_name AS country,
+    d.datasetfilename AS datasetfilename,
+    category.name AS category,
+    d.unit AS unit,
+    d.stats_year_from AS stats_year_from,
+    d.stats_year_to AS stats_year_to,
+    d.stats_observations AS stats_observations,
+    d.fieldnames
+    FROM dataset d
+    INNER JOIN country c ON d.country_id = c.id
+    INNER JOIN category ON d.category_id = category.id
+    WHERE d.ready=TRUE
+    AND d.budget=FALSE
+    ORDER BY d.short_display
+    """
+    cur.execute(sql)
+    return dumps(cur.fetchall())
+
 @app.route('/api/drilldown/<dataset>/<flag>/<topic>/<year>')
 def api_drilldown(dataset,flag,topic,year):
     
@@ -1914,7 +1957,7 @@ def api_measures(dataset,flag,topic):
     else:
         abort(404)
     
-    #app_path = app.config['UPLOADS_DEFAULT_DEST'][:-len('uploads')]
+    #app_path = os.environ.get('UPLOADS_DEFAULT_DEST'][:-len('uploads')]
     #cached_path = app_path + 'datacache/' + dataset + '-' + topic + request.query_string + '-measures.json'
     #if (os.path.isfile(cached_path)):
     #    app.logger.debug('served: ' + cached_path)
@@ -1938,7 +1981,7 @@ def api_measures(dataset,flag,topic):
     
     # CHECK CACHE
     measures = r["measures"] if r["measures"] != None else {}
-    cache_key = topic + request.query_string
+    cache_key = topic + request.query_string.decode("utf-8")
     if measures.get(cache_key) != None:
       #app.logger.debug('served: ' + dataset + '-' + cache_key)
       return dumps(measures[cache_key])
@@ -2408,21 +2451,21 @@ def update_stats(db,dataset_id,country_id,fieldnames):
 
 #def clear_cache(dataset_id):
 
-#  app_path = app.config['UPLOADS_DEFAULT_DEST'][:-len('uploads')]
+#  app_path = os.environ.get('UPLOADS_DEFAULT_DEST'][:-len('uploads')]
 #  cache_wildcard = app_path + 'datacache/' + dataset_id + '-*'    
 #  for filename in glob.glob(cache_wildcard):
 #      os.remove(filename)
 
 def resolve_conflicts(folder,file):
     
-    #conn = tinys3.Connection(app.config['S3_ACCESS_KEY'],app.config['S3_SECRET_KEY'])
+    #conn = tinys3.Connection(os.environ.get('S3_ACCESS_KEY'],os.environ.get('S3_SECRET_KEY'])
     
     def recursion(index, folder, file):
         if index > 0:
-            filename = file.split('.')[0]
+            filename = file.rsplit('.', 1)[0]
             if index > 1:
                 filename = filename.rsplit('_', 1)[0]
-            ext = file.split('.')[1]
+            ext = file.rsplit('.', 1)[1]
             file = filename + '_' + str(index) + '.' + ext
         matches = s3conn.list(folder + file)
         if sum(1 for _ in matches) > 0:
@@ -2436,10 +2479,10 @@ def get_analytics():
   credentials = ServiceAccountCredentials.from_p12_keyfile(
     os.environ.get('GA_SERVICE_ACCOUNT_EMAIL'), os.environ.get('GA_KEY_FILE_LOCATION'), scopes=os.environ.get('GA_SCOPE'))
 
-  http = credentials.authorize(httplib2.Http())
+  #http = credentials.authorize(httplib2.Http())
 
   # Build the service object.
-  service = build('analytics', 'v3', http=http)
+  service = build('analytics', 'v3', credentials=credentials)
 
   return service
 
@@ -2488,13 +2531,13 @@ def get_stats(start_date,end_date,dataset_id,service):
     results.insert(0, ('All Topics','0') )
     totals_by_topic = []
     for topic in results:
-      topic_name = topic[0].encode("utf-8")
+      topic_name = topic[0]
       count_this_topic = 0
       for chart in all_charts:
         if '#' + topic_name in chart[1]:
           count_this_topic = count_this_topic + int(chart[-1])
       if count_this_topic > 0:
-        dict = {'name':topic_name , 'y': count_this_topic,'color':analytics_colors[int(topic[1])]}
+        dict = {'name':topic_name, 'y': count_this_topic,'color':analytics_colors[int(topic[1])]}
         totals_by_topic.append(dict)
   
     retval = {'totals': totals, 'totals_by_topic': totals_by_topic} 
@@ -2556,7 +2599,7 @@ def convert_to_utf8(filename):
     try:
         f = open(filename, 'r').read()
     except Exception as e:
-        app.logger.debug(e[0])
+        app.logger.debug(e)
         return False
         #sys.exit(1)
  
@@ -2573,7 +2616,7 @@ def convert_to_utf8(filename):
             data = f.decode(enc)
             break
         except Exception as e:
-            app.logger.debug(e[0])
+            app.logger.debug(e)
             # if the first encoding fail, then with the continue
             # keyword will start again with the second encoding
             # from the tuple an so on.... until it succeeds.
@@ -2598,6 +2641,6 @@ def convert_to_utf8(filename):
         f.close()
         return True
     except Exception as e:
-        app.logger.debug(e[0])
+        app.logger.debug(e)
         f.close()
         return e

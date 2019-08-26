@@ -7,7 +7,7 @@ from wtforms.widgets import TextArea
 from wtforms.ext.sqlalchemy.orm import model_form
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from .models import Country, Category, Budgetcategory
-from .main import app
+from app import app
 
 def countries_factory():
     return Country.query.all()

@@ -9,9 +9,9 @@
 
 {% block content %}
 
-<div ng-app="toolApp">
+<div id="toolApp">
 
-<div id="toolcontroller" ng-controller="ToolController">
+<div id="toolcontroller">
 
 <div id="bluestripe">
      
@@ -20,8 +20,8 @@
      	 <div class="row fullWidth">
      	    
      	    <div class="medium-11 columns text-right">
-     	        <a id="save-chart" ng-click="saveChart()" class="button tiny clickable">Pin chart</a>
-     	        <a id="clear-chart" ng-click="clearChart()" class="button tiny clickable">Reset tool</a>
+     	        <a id="save-chart" v-on:click="saveChart()" class="button tiny clickable">Pin chart</a>
+     	        <a id="clear-chart" v-on:click="clearChart()" class="button tiny clickable">Reset tool</a>
      	    </div>
      	    
      	    <div class="tool-help medium-1 columns text-left">
@@ -34,8 +34,7 @@
 
 </div>
 
-
-<div id="app-container">
+<div id="app-container" v-cloak>
 
 <div class="row fullWidth">    
 
@@ -65,19 +64,19 @@
           
             </div>
             
-            <div ng-cloak class="row">
+            <div v-cloak class="row">
             		
             		<div title="Click to remove!" id="chosen" style="margin-left:62px;">
             
-						<span ng-repeat="series in chart.series">
-			
-						<span ng-click="removeFromChart($index)" class="series" ng-style="{@series.color@}">
-						<i class="fi-x"></i>
-						<span>{@series.name@}</span>
-						
-						</span>
-					
-						</span>
+                  <span v-for="(series, index) in chart.series">
+      
+                    <span v-on:click="removeFromChart(index)" class="series" v-bind:style.literal="series.color.replace(/[/'{}]/g, '')">
+                    <i class="fi-x"></i>
+                    <span>{@series.name@}</span>
+            
+                    </span>
+          
+                  </span>
             		
             		</div>
 
@@ -99,20 +98,22 @@
                 <div style="margin-left:2%;" class="medium-3 columns left">
                 
                     
-                     <label><h5>Chart type</h5></label>
+                    <label><h5>Chart type</h5></label>
                      
-                 <select class="type" ng-change="allSeriesSameType()" ng-model="chart.chartType" ng-options="type.type as type.display for type in chart_types | filter:filterChartTypeOptions()"></select>
+                    <select class="type" v-on:change="allSeriesSameType()" v-model="chart.chartType">
+                    <option v-for="type in chart_types_filtered()" v-bind:value="type.type">
+                    {@ type.display @}
+                    </option>
+                    </select>
  
-          
-                    
                     <label><h5>Chart export</h5></label>
 					
-					<select ng-change="chartExport(chart.exportOption)" ng-model="chart.exportOption" ng-options="option.num as option.display for option in export_options" class="from years" style="display: inline-block;"></select>
-					
-                    
-                    
-                
-                 
+                    <select v-on:change="chartExport(chart.exportOption)" v-model="chart.exportOption" class="from years" style="display: inline-block;">
+                      <option v-for="option in export_options" v-bind:value="option.num">
+                      {@ option.display @}
+                      </option>
+                    </select>
+
                 </div>
                 
 
@@ -123,19 +124,27 @@
 				   
 				   
                     
-                    <input type="radio" ng-model="chart.timeSeries" ng-change="drawChart()" value="years">
+                    <input type="radio" v-model="chart.timeSeries" v-on:change="drawChart()" value="years">
                     Year
                     &nbsp;&nbsp;
-                    <input type="radio" ng-disabled="chart.scatter" ng-model="chart.timeSeries" ng-change="drawChart()" value="congresses">
+                    <input type="radio" v-bind:disabled="chart.scatter" v-model="chart.timeSeries" v-on:change="drawChart()" value="congresses">
                     US Congress
                     <br/>
 				   
 				   
-                   <select ng-change="changeYears()" ng-model="chart.yearFrom" ng-options="item.value as item.display for item in chart.timePeriodsAvailable | filter: lessThan(chart.yearTo)" class="from years" name="years_from" style="display: inline-block;"></select>
-                   <select ng-change="changeYears()" ng-model="chart.yearTo" ng-options="item.value as item.display for item in chart.timePeriodsAvailable | filter: greaterThan(chart.yearFrom)" class="to years" name="years_to" style="display: inline-block;"></select>
+                   <select v-on:change="changeYears()" v-model="chart.yearFrom" class="from years" name="years_from" style="display: inline-block;">
+                   <option v-for="item in years_from()" v-bind:value="item.value">
+                      {@ item.display @}
+                   </option>
+                   </select>
+                   <select v-on:change="changeYears()" v-model="chart.yearTo" class="to years" name="years_to" style="display: inline-block;">
+                   <option v-for="item in years_to()" v-bind:value="item.value">
+                      {@ item.display @}
+                   </option>
+                   </select>
                     
 					
-					<!--<select ng-change="chartExport()" >
+					<!--<select v-on:change="chartExport()" >
 					<option selected="selected">&nbsp;</option>
 					<option value="download">Download Image</option>
 					<option value="copy">Copy URL</option>
@@ -150,24 +159,26 @@
                 
                 <div style="margin-left:54px" class="content" id="data-view">
                 
+                <div v-show="chart.series && chart.series.length > 0">
+                
                 <p>Click on data points to see underlying data.</p>
                 
-                <table id="drilldown" class="drilldown">
+                <table id="drilldown" ref="drilldown" class="drilldown">
                    <tbody>
                       <tr>
                          <th></th>
-                         <th ng-repeat="series in chart.series">
+                         <th v-for="series in chart.series">
                             <h3>{@series.name@}</h3>
                             <!--<h3 class="text-center">({@series.measure@})</h3>-->
                          </th>
          
                       </tr>
-                      <tr ng-repeat="period in chart.periodsSelected">
+                      <tr v-for="(period, period_index) in chart.periodsSelected">
                          <td>{@ period.display @}</td>
-                         <td ng-style="{@series.color@}" ng-repeat="series in chart.series">
+                         <td v-bind:style.literal="series.color.replace(/[/'{}]/g, '')" v-for="series in chart.series">
                          <div class="text-center">
-                         <a class="clickable" ng-click="openDrilldown(series,period.value)">{@ series.chartdata[$parent.$index] @}</a>
-                         <!--<span ng-if="!hasDrilldown(series)">{@ series.chartdata[$parent.$index] @}</span>-->
+                         <a class="clickable" v-on:click="openDrilldown(series,period.value)">{@ series.chartdata[period_index] @}</a>
+                         <!--<span v-if="!hasDrilldown(series)">{@ series.chartdata[$parent.$index] @}</span>-->
                          </div>
                          </td>
                       </tr>
@@ -175,23 +186,24 @@
                 </table>
                 
                 <a id="copy-table" data-clipboard-target="#drilldown">Copy table to clipboard</a>
+                 
                 <p/>
                 
                 <table class="drilldown">
                    <tbody>
                       <tr>
-                         <th style="color:transparent;">0000<span ng-show="chart.timeSeries == 'congresses'">000</span></th>
-                         <th ng-repeat="series in chart.series">
+                         <th style="color:transparent;">0000<span v-show="chart.timeSeries == 'congresses'">000</span></th>
+                         <th v-for="series in chart.series">
                             <h3>{@series.name@}</h3>
                          </th>
                       </tr>
                       <tr>
                          <td></td>
-                         <td ng-style="{@series.color@}" ng-repeat="series in chart.series">
-                         <div ng-if="series.topic!=0" class="text-center">
-                         <a class="clickable" ng-href="{@ getInstancesUrl(series.filters,series.dataset,series.sub,series.topic) @}">Download all data</a>
+                         <td v-bind:style.literal="series.color.replace(/[/'{}]/g, '')" v-for="series in chart.series">
+                         <div v-if="series.topic!=0" class="text-center">
+                         <a class="clickable" v-bind:href="getInstancesUrl(series.filters,series.dataset,series.sub,series.topic)">Download all data</a>
                          </div>
-                         <div ng-if="series.topic==0" class="text-center">
+                         <div v-if="series.topic==0" class="text-center">
                          <a class="clickable" onclick="alert('To download data for all topics, please visit the Datasets and Codebooks page.');">Download all data</a>
                          </div>
                          </td>
@@ -204,7 +216,9 @@
                 <!--<a id="download-data">Download all data</a>-->
                 
                 </div>
-                
+            
+            </div>
+            
             </div>
             
         </div>
@@ -225,41 +239,41 @@
   <dd><a class="clickable" href="#panel3">Budgets</a></dd>
   <dd><a class="clickable" href="#panel2">Chart History</a></dd>
 </dl>
-<div ng-cloak class="tabs-content contained">
+<div v-cloak class="tabs-content contained">
 
   <!-- BEGIN policies panel -->
   <div class="content active" id="panel1">
         
-    <h5 class="picker-label clickable">Select projects<span ng-show="countryCount() > 0" class="selection_count">{@countryCount()@}</span></h5>
+    <h5 class="picker-label clickable">Select projects<span v-show="countryCount() > 0" class="selection_count">{@countryCount()@}</span></h5>
     <div id="projects" class="picker" style="display:block">
-    <div ng-repeat="country in countries">
-    <input id="{@country.slug@}" ng-attr-country="{@country.short_name@}" type="checkbox" ng-click="doFacets()">
-    <label>{@country.name | limitTo : 27@}</label>
+    <div v-for="country in countries">
+    <input :id="country.slug" v-bind:country="country.short_name" type="checkbox" v-on:click="doFacets()">
+    <label>{@country.name | truncate(27)@}</label>
     </div>
     </div>
    
-	<h5 class="picker-label clickable">Select dataset types<span ng-show="categoryCount() > 0" class="selection_count">{@categoryCount()@}</span></h5>
+	<h5 class="picker-label clickable">Select dataset types<span v-show="categoryCount() > 0" class="selection_count">{@categoryCount()@}</span></h5>
     <div id="categories" class="picker">
-    <div ng-repeat="category in filtered_categories = (categories | filter:filterCategories() )">
-    <input ng-attr-catid="{@category.category_id@}" type="checkbox" ng-click="doFacets()">
-    <label>{@category.name | limitTo : 32@}</label>
+    <div v-for="category in categories_filtered()">
+    <input v-bind:catid="category.category_id" type="checkbox" v-on:click="doFacets()">
+    <label>{@category.name | truncate(32)@}</label>
     </div>
     </div>
    
-    <h5 class="picker-label clickable">Select policy topics<span ng-show="topicCount() > 0" class="selection_count">{@topicCount()@}</span></h5>
+    <h5 class="picker-label clickable">Select policy topics<span v-show="topicCount() > 0" class="selection_count">{@topicCount()@}</span></h5>
     <div id="topics" class="picker">
 
         <ol class="menutree">
             
-            <li><label class="menu_label" for="t0"><input type="checkbox" class="choose_topic" topic="0" ng-click="doFacets()"><span class="major_topic">All Topics</span></label></li>
+            <li><label class="menu_label" for="t0"><input type="checkbox" class="choose_topic" topic="0" v-on:click="doFacets()"><span class="major_topic">All Topics</span></label></li>
             
-            <li ng-repeat="topic in topics">
-            <label class="menu_label" for="t{@topic.id@}"><input type="checkbox" class="choose_topic" topic="{@topic.id@}" ng-click="doFacets()"><span class="major_topic clickable">{@topic.name | limitTo:33 @}</span><span style="float:right;"><i ng-hide="isOpen" class="fi-arrow-down"></i><i ng-show="isOpen" class="fi-arrow-up"></i></span></label>
-            <input ng-click="isOpen = ! isOpen" type="checkbox" id="t{@topic.id@}"/>
+            <li v-for="topic in topics">
+            <label class="menu_label" :for="'t' + topic.id"><input type="checkbox" class="choose_topic" :topic="topic.id" v-on:click="doFacets()"><span class="major_topic clickable">{@topic.name | truncate(33)@}</span><span style="float:right;"><i v-show="!topic.isOpen" class="fi-arrow-down"></i><i v-show="topic.isOpen" class="fi-arrow-up"></i></span></label>
+            <input v-on:click="clickTopic(topic)" type="checkbox" :id="'t' + topic.id"/>
                 <ol>
-                    <li ng-repeat="subtopic in topic.subtopics">
-                    <label class="menu_label" for="s{@subtopic.id@}"><input type="checkbox" class="choose_topic" subtopic="{@subtopic.id@}" ng-click="doFacets()"><span>{@subtopic.name | limitTo:33 @}</span></label>
-                    <input type="checkbox" id="s{@subtopic.id@}"/>
+                    <li v-for="subtopic in topic.subtopics">
+                    <label class="menu_label" :for="'s' + subtopic.id"><input type="checkbox" class="choose_topic" :subtopic="subtopic.id" v-on:click="doFacets()"><span>{@subtopic.name | truncate(33)@}</span></label>
+                    <input type="checkbox" :id="'s' + subtopic.id"/>
                     </li>
                 </ol>
             </li>
@@ -268,12 +282,12 @@
     
     </div>
    
-    <h5 ng-show="countryCount() > 0 && categoryCount() > 0 && topicCount() > 0" class="picker-label">Add series to chart</h5>
-    <p class="no_results" ng-show="noResults()">No available series matching your selections.</p>
-    <p class="no_results" ng-hide="noResults() || countryCount() == 0 || categoryCount() == 0 || topicCount() == 0">Click on a series below to add it to the chart.</p>
+    <h5 v-show="countryCount() > 0 && categoryCount() > 0 && topicCount() > 0" class="picker-label">Add series to chart</h5>
+    <p class="no_results" v-show="noResults()">No available series matching your selections.</p>
+    <p class="no_results" v-show="!noResults() && countryCount() != 0 && categoryCount() != 0 && topicCount() != 0">Click on a series below to add it to the chart.</p>
     
-    <div title="Click to add!" ng-repeat="result in results" class="dataset">
-    <p ng-hide="isSelected(result.name)" ng-click="addToChart(result)" class="panel series">
+    <div title="Click to add!" v-for="result in results" class="dataset">
+    <p v-show="!isSelected(result.name)" v-on:click="addToChart(result)" class="panel series">
     <!--<span style="clear:both;">{@result.name@}</span>-->
     <span class="addseries clearfix">
     <span style="float:left; width:90%;">{@result.name@}</span>
@@ -290,70 +304,70 @@
   <!-- BEGIN budget panel -->
   <div class="content" id="panel3">
     
-    <h5 class="clickable" ng-click="budgetPickerLabel($event)">Select projects<span ng-show="budgetProjectCount() > 0" class="selection_count">{@budgetProjectCount()@}</span></h5>
+    <h5 class="clickable" v-on:click="budgetPickerLabel($event)">Select projects<span v-show="budgetProjectCount() > 0" class="selection_count">{@budgetProjectCount()@}</span></h5>
     <div id="budget_projects" class="picker" style="display:block">
     
-    <div ng-repeat="country in budgetProjects">
-    <input ng-checked="budgetProjectFoundInChart(country) || country.checked" ng-model="country.checked" ng-click="clickBudgetProject(country,budgetProjectFoundInChart(country))" type="checkbox">
-    <label>{@country.name | limitTo : 27@}</label>
+    <div v-for="country in budgetProjects">
+    <input v-bind:checked="budgetProjectFoundInChart(country) || country.checked" v-model="country.checked" v-on:click="clickBudgetProject(country,budgetProjectFoundInChart(country))" type="checkbox">
+    <label>{@country.name | truncate(32)@}</label>
     </div>
     
     </div>
 
     
-    <div ng-repeat="country in budgetProjects">
-    <div ng-show="budgetProjectFoundInChart(country) || country.checked">
+    <div v-for="country in budgetProjects">
+    <div v-show="budgetProjectFoundInChart(country) || country.checked">
     
-    <div ng-repeat="dataset in country.datasets">
+    <div v-for="dataset in country.datasets">
 
     
-    <h5 ng-click="budgetPickerLabel($event)" class="clickable">Select topics: {@country.name@} {@dataset.name@}<span ng-show="budgetTopicCount() > 0" class="selection_count">{@budgetTopicCount()@}</span></h5>    
+    <h5 v-on:click="budgetPickerLabel($event)" class="clickable">Select topics: {@country.name@} {@dataset.name@}<span v-show="budgetTopicCount() > 0" class="selection_count">{@budgetTopicCount()@}</span></h5>    
     
     <div id="{@dataset.id@}_budget_topics" class="picker">
 
         <ol class="menutree">
             
-            <li ng-if="dataset.topics.length>0">
+            <li v-if="dataset.topics && dataset.topics.length>0">
             <label class="menu_label" for="t0">
-                <input type="checkbox" class="choose_budget_topic" subtopic="0" ng-disabled="pending" ng-checked="budgetTopicFoundInChart(dataset.id,'0') > -1" ng-click="doBudgetResults(dataset,{id:'0'},'All Topics',false)"">
+                <input type="checkbox" class="choose_budget_topic" subtopic="0" v-bind:disabled="pending" v-bind:checked="budgetTopicFoundInChart(dataset.id,'0') > -1" v-on:click="doBudgetResults(dataset,{id:'0'},'All Topics',false)">
                 <span class="major_topic">All Topics</span>
             </label>
             </li>
             
-            <li ng-if="dataset.topics.length>0" ng-repeat="topic in dataset.topics">
-            <label class="menu_label" for="{@dataset.id@}t{@topic.id@}">
-                <input type="checkbox" class="choose_budget_topic" subtopic="{@topic.id@}" ng-disabled="pending" ng-checked="budgetTopicFoundInChart(dataset.id,topic.id) > -1" ng-click="doBudgetResults(dataset,topic,topic.name,false)">
-                <span class="major_topic" ng-class="{clickable: topic.subtopics.length>0}">{@topic.name | limitTo:33 @}</span>
-                <span style="float:right;" ng-show="topic.subtopics.length>0">
-                <i ng-hide="topic.isOpen" class="fi-arrow-down"></i>
-                <i ng-show="topic.isOpen" class="fi-arrow-up"></i>
+            <li v-if="dataset.topics && dataset.topics.length>0" v-for="topic in dataset.topics">
+            <label class="menu_label" :for="dataset.id + 't' + topic.id">
+                <input type="checkbox" class="choose_budget_topic" :subtopic="topic.id" v-bind:disabled="pending" v-bind:checked="budgetTopicFoundInChart(dataset.id,topic.id) > -1" v-on:click="doBudgetResults(dataset,topic,topic.name,false)">
+                <span class="major_topic" v-bind:class="{clickable: topic.subtopics && topic.subtopics.length>0}">{@topic.name | truncate(33)@}</span>
+                <span style="float:right;" v-show="topic.subtopics && topic.subtopics.length>0">
+                <i v-show="!topic.isOpen" class="fi-arrow-down"></i>
+                <i v-show="topic.isOpen" class="fi-arrow-up"></i>
                 </span>
             </label>
-            <input ng-click="topic.isOpen = ! topic.isOpen" type="checkbox" id="{@dataset.id@}t{@topic.id@}"/>
+            <input v-on:click="clickTopic(topic)" type="checkbox" :id="dataset.id + 't' + topic.id"/>
                 <ol>
-                    <li ng-repeat="subtopic in topic.subtopics">
-                    <label class="menu_label" for="{@dataset.id@}s{@subtopic.id@}">
-                    <input type="checkbox" class="choose_budget_topic" subtopic="{@subtopic.id@}" ng-disabled="pending" ng-checked="budgetTopicFoundInChart(dataset.id,subtopic.id) > -1" ng-click="doBudgetResults(dataset,subtopic,topic.name + ': ' + subtopic.name,true)"><span>{@subtopic.name | limitTo:33 @}</span></label>
-                    <input type="checkbox" id="{@dataset.id@}s{@subtopic.id@}"/>
+                    <li v-for="subtopic in topic.subtopics">
+                    <label class="menu_label" :for="dataset.id + 's' + subtopic.id">
+                    <input type="checkbox" class="choose_budget_topic" :subtopic="subtopic.id" v-bind:disabled="pending" v-bind:checked="budgetTopicFoundInChart(dataset.id,subtopic.id) > -1" v-on:click="doBudgetResults(dataset,subtopic,topic.name + ': ' + subtopic.name,true)"><span>{@subtopic.name | truncate(33)@}</span></label>
+                    <input type="checkbox" id="dataset.id + 's' + subtopic.id"/>
                     </li>
                 </ol>
             </li>               
             
             
-            <li ng-if="!dataset.topics.length" ng-repeat="topic in topics">
-            <label class="menu_label" for="{@dataset.id@}t{@topic.id@}">
-                <input type="checkbox" class="choose_budget_topic" subtopic="{@topic.id@}" ng-checked="budgetTopicFoundInChart(dataset.id,topic.id) > -1" ng-click="doBudgetResults(dataset,topic,topic.name,false)">
-                <span class="major_topic" ng-class="{clickable: topic.subtopics.length>0}">{@topic.name | limitTo:33 @}</span>
-                <span style="float:right;" ng-show="topic.subtopics.length>0">
-                <i ng-hide="topic.isOpen" class="fi-arrow-down"></i>
-                <i ng-show="topic.isOpen" class="fi-arrow-up"></i>
+            <li v-if="!dataset.topics || !dataset.topics.length" v-for="topic in topics">
+            <label class="menu_label" for="dataset.id + 't' + topic.id">
+                <input type="checkbox" class="choose_budget_topic" :subtopic="topic.id" v-bind:checked="budgetTopicFoundInChart(dataset.id,topic.id) > -1" v-on:click="doBudgetResults(dataset,topic,topic.name,false)">
+                <span class="major_topic" v-bind:class="{clickable: topic.subtopics && topic.subtopics.length>0}">{@topic.name | truncate(33)@}</span>
+                <span style="float:right;" v-show="topic.subtopics && topic.subtopics.length>0">
+                <i v-show="!topic.isOpen" class="fi-arrow-down"></i>
+                <i v-show="topic.isOpen" class="fi-arrow-up"></i>
                 </span>
             </label>
-            <input ng-click="topic.isOpen = ! topic.isOpen" type="checkbox" id="{@dataset.id@}t{@topic.id@}"/>
+            <input v-on:click="clickTopic(topic)" type="checkbox" id="dataset.id + 't' + topic.id"/>
                 <ol>
-                    <li ng-repeat="subtopic in topic.subtopics">
-                    <label class="menu_label" for="{@dataset.id@}s{@subtopic.id@}"><input type="checkbox" class="choose_budget_topic" subtopic="{@subtopic.id@}" ng-click="doBudgetResults(dataset,subtopic,topic.name + ': ' + subtopic.name,true)"><span>{@subtopic.name | limitTo:33 @}</span></label>
-                    <input type="checkbox" id="{@dataset.id@}s{@subtopic.id@}"/>
+                    <li v-for="subtopic in topic.subtopics">
+                    <label class="menu_label" :for="dataset.id + 's' + subtopic.id"><input type="checkbox" class="choose_budget_topic" :subtopic="subtopic.id" v-on:click="doBudgetResults(dataset,subtopic,topic.name + ': ' + subtopic.name,true)"><span>{@subtopic.name | truncate(33)@}</span></label>
+                    <input type="checkbox" :id="dataset.id + 's' + subtopic.id"/>
                     </li>
                 </ol>
             </li> 
@@ -368,23 +382,7 @@
     </div>
 
     </div>
-    </div>
-   
-   
-    <h5 ng-show="budgetProjectCount() > 0 && budgetTopicCount() > 0" class="">Add series to chart</h5>
-    <p class="no_results" ng-show="noBudgetResults()">No available series matching your selections.</p>
-    <p class="no_results" ng-hide="noBudgetResults() || budgetProjectCount() == 0 || budgetTopicCount() == 0">Click on a series below to add it to the chart.</p>
-    
-    <div title="Click to add!" ng-repeat="result in budgetResults" class="dataset">
-    <p ng-hide="isSelected(result.name)" ng-click="addToChart(result)" class="panel series">
-    <!--<span style="clear:both;">{@result.name@}</span>-->
-    <span class="addseries clearfix">
-    <span style="float:left; width:90%;">{@result.name@}</span>
-    <span style="float:right"><i class="fi-check"></i></span>
-    </span>
-    </p>
-    </div>
-    
+    </div>    
 
   </div>
   <!-- END budget panel -->
@@ -396,16 +394,16 @@
     <h5>Pinned</h5>
     <div style="overflow: auto; height: 360px; border: 2px solid #dadada;">
     <div class="thumb-container-container">
-    <div class="thumb-container" ng-repeat="thumb in saved | orderBy: 'id':true">
-        
+   <!-- <div class="thumb-container" v-for="thumb in saved | orderBy: 'id':true"> -->
+        <div class="thumb-container" v-for="(thumb, index) in saved">
         
         <div class="thumb">
-        <img class="thumb" ng-src="{@thumb.imgsrc@}">
+        <img class="thumb" v-bind:src="thumb.imgsrc">
         </div>
         
         <div class="thumb-menu clearfix">
-        <span class="left clickable" ng-click="deletePinned($index)">Unpin</span>
-        <span class="right clickable" ng-click="recallPinned($index)">Reload</span>
+        <span class="left clickable" v-on:click="deletePinned(index)">Unpin</span>
+        <span class="right clickable" v-on:click="recallPinned(index)">Reload</span>
         </div>
         
     </div>
@@ -415,16 +413,16 @@
     <h5>Recent</h5>
     <div style="overflow: auto; height: 180px; border: 2px solid #dadada;">
     <div class="thumb-container-container">
-    <div class="thumb-container" ng-repeat="thumb in recent | orderBy:'key':true">
-        
+    <!--<div class="thumb-container" v-for="thumb in recent | orderBy:'key':true">-->
+        <div class="thumb-container" v-for="(thumb, index) in recent">
         
         <div class="thumb">
-        <img class="thumb" ng-src="{@thumb.imgsrc@}">
+        <img class="thumb" v-bind:src="thumb.imgsrc">
         </div>
         
         
         <div class="thumb-menu clearfix">
-        <span class="right clickable" ng-click="recallRecent($index)">Reload</span>
+        <span class="right clickable" v-on:click="recallRecent(index)">Reload</span>
         </div>
         
     </div>
@@ -447,24 +445,36 @@
 <!--<div id="embed_code" class="reveal-modal small" data-reveal>
 </div>  -->
            
-<div ng-repeat="series in chart.series" id="seriesoptions-{@series.dataset@}-{@series.topic@}" class="reveal-modal small" data-reveal>
+<div v-for="series in chart.series" :id="'seriesoptions-' + series.dataset + '-' + series.topic" class="reveal-modal small" data-reveal>
         
         <div class="active_controls">
             
             <h6>{@series.name@}</h6>
             
             <label> Measure: </label>
-            <select ng-disabled="chart.stacked" ng-model="series.measure" ng-options="measure as measure.split('_').join(' ').capitalizeFirstLetter() for measure in series.measures"></select>
+            <select v-bind:disabled="chart.stacked" v-model="series.measure">
+            <option v-for="measure in series.measures" v-bind:value="measure">
+              {@ measure.split('_').join(' ').capitalizeFirstLetter() @}
+            </option>
+            </select>
             <label>Type:</label>
-            <select ng-disabled="chart.stacked" ng-model="series.type" ng-options="type.type as type.display for type in chart_types | filter:filterSeriesTypeOptions()"></select>
+            <select v-bind:disabled="chart.stacked" v-model="series.type">
+            <option v-for="type in series_types" v-bind:value="type.type">
+              {@ type.display @}
+            </option>
+            </select>
             <label>Y-axis: </label>
-            <select ng-disabled="chart.stacked" ng-change="checkAxes(series)" ng-model="series.yaxis" ng-options="axis.num as axis.display for axis in yaxischoices | filter:choiceIsVisible(series)"></select>
+            <select v-bind:disabled="chart.stacked" v-on:change="checkAxes(series)" v-model="series.yaxis">
+            <option v-for="axis in yaxischoices_filtered(series)" v-bind:value="axis.num">
+              {@ axis.display @}
+            </option>
+            </select>
             
         </div>
         
         <div style="float:left">
         
-            <div ng-show="series.filters.length > 0" class="parent_list">
+            <div v-show="series.filters && series.filters.length > 0" class="parent_list">
             
             <table class="filters sublist">
                <tbody>
@@ -473,9 +483,9 @@
                      <th>Exclude&nbsp;</th>
                      <th>Filter</th>
                   </tr>
-                  <tr ng-repeat="filter in series.filters">
-                     <td class="sub_checkbox"><input title="Include" ng-change="clickInclude(filter)" ng-model="filter.include" type="checkbox"></td>
-                     <td class="sub_checkbox"><input title="Exclude" ng-change="clickExclude(filter)" ng-model="filter.exclude" type="checkbox"></td>
+                  <tr v-for="filter in series.filters">
+                     <td class="sub_checkbox"><input title="Include" v-on:change="clickInclude(filter)" v-model="filter.include" type="checkbox"></td>
+                     <td class="sub_checkbox"><input title="Exclude" v-on:change="clickExclude(filter)" v-model="filter.exclude" type="checkbox"></td>
                      <td><label>{@filter.display@}</label></td>
                   </tr>
                </tbody>
@@ -488,15 +498,15 @@
         
         <div style="float:right;">
             
-            <span ng-if="!pending">
+            <span v-if="!pending">
             
-            <i ng-click="closeSeriesModal(series)" style="font-size:40px; color:black;" class="fi-x clickable"></i>
+            <i v-on:click="closeSeriesModal(series)" style="font-size:40px; color:black;" class="fi-x clickable"></i>
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <i ng-click="editSeries(series)" style="font-size:40px; color:black;" class="fi-check clickable"></i>
+            <i v-on:click="editSeries(series)" style="font-size:40px; color:black;" class="fi-check clickable"></i>
             
             </span>
             
-            <span ng-if="pending">Applying changes...</span>
+            <span v-if="pending">Applying changes...</span>
             
         </div>
     
@@ -510,15 +520,14 @@
         
         <table class="instances_table">
         
-        
             <tbody>
                <tr>
-                  <th ng-show="instances[0].source">Source</th>
-                  <th ng-show="instances[0].description">Description</th>
+                  <th v-show="instances[0].source">Source</th>
+                  <th v-show="instances[0].description">Description</th>
                </tr>
-               <tr ng-repeat="instance in instances">
-                  <td ng-show="instance.source">{@ instance.source @}</td>
-                  <td ng-show="instance.description">{@ instance.description @}</td>
+               <tr v-for="instance in instances">
+                  <td v-show="instance.source">{@ instance.source @}</td>
+                  <td v-show="instance.description">{@ instance.description @}</td>
                </tr>
             </tbody>
         
@@ -553,20 +562,21 @@ Hi
 {% block scripts %}
           
 <script src="/static/js/highcharts.js"></script>
-<script src="http://code.highcharts.com/2.2.4/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/2.2.4/modules/exporting.js"></script>
 <script src="/static/js/highcharts-regression.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
+<!--<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="static/js/clipboard.min.js"></script>
-<script src="/static/js/tool.js?v={{v}}"></script>
-
+<script src="static/js/utils.js"></script>
 
 <script>
-     
+   
 var rgba_colors = [
 "{'background':'rgba(124, 181, 236, 0.5)'}", 
 "{'background':'rgba(144, 237, 125, 0.5)'}", 
 "{'background':'rgba(247, 163, 92, 0.5)'}", 
-"{'background':'rgba(128, 133, 233, 0.5)'}", 
+"{'background':'rgba(128, 133, 233, 0.5)'}",
 "{'background':'rgba(241, 92, 128, 0.5)'}", 
 "{'background':'rgba(228, 211, 84, 0.5)'}", 
 "{'background':'rgba(141, 70, 83, 0.5)'}",
@@ -575,21 +585,8 @@ var rgba_colors = [
 
 var hex_colors = ['#7cb5ec', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#8d4653', '#91e8e1'];
 
-//var baseUrl = 'http://beta.comparativeagendas.com';
-//var baseUrl = 'http://192.168.99.100';
-var baseUrl = '{{ baseUrl }}'
-var exportUrl = '{{ exportUrl }}'
-
-var copyLink = document.getElementById('copy-table');
-var clipboard = new Clipboard(copyLink);
-clipboard.on('success', function(e) {
-    console.info('Action:', e.action);
-    console.info('Text:', e.text);
-    console.info('Trigger:', e.trigger);
-    alert('Copied to clipboard.');
-    
-    e.clearSelection();
-});
+var baseUrl = '{{ baseUrl }}';
+var exportUrl = '{{ exportUrl }}';
 
 var scatterOptions = {
             chart: {
@@ -751,7 +748,7 @@ var defaultOptions = {
             connectNulls: true,
             point: {
                 events: {
-                    click: clickPoint
+                  click: null
                 }
            },
 
@@ -808,12 +805,12 @@ var defaultOptions = {
     $('#chart').hide();
     $('#intro').show();
     
-    var options = $.extend(true, {}, defaultOptions); 
+    var options = $.extend(true, {}, defaultOptions);
 
 {% endif %}
-      
-     // alert('gawd');
-      
+    
 </script>
-        
+
+<script src="/static/js/tool.js?v={{v}}"></script>
+
 {% endblock %}

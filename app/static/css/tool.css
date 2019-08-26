@@ -70,14 +70,13 @@ p.no_results {
 
 span.selection_count {
   background-color: #4d4d4d;
-  padding: 0px 5px;
+  padding: 0rem .312rem;
   color: white;
   position: relative;
   font-size: 10pt;
   margin-left: 5px;
   vertical-align: text-top;
-  -moz-border-radius: 6px;
-  -webkit-border-radius: 50%;
+  border-radius: 50%;
 }
 
 input[type="checkbox"]+label {
@@ -298,6 +297,6 @@ margin-left:0 !important;
 margin-right:0 !important;
 }
 
-[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+[v-cloak] {
   display: none !important;
 }

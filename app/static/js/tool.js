@@ -114,26 +114,17 @@ function Recent(key) {
     
 }
 
-//////////////////////////////////////// ANGULAR APP
+//////////////////////////////////////// VUE APP
 
-var toolApp = angular.module('toolApp', []);
+var toolApp = new Vue({
 
-toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($scope,$http,$timeout)
-{
+el: '#toolcontroller',
+
+data: {
     
-    // INIT VARS
+    pending:false,
     
-    /*
-    $scope.measures = [
-        {"measure":"count","display":"Count"},
-        {"measure":"percent_total","display":"Percent Total"},
-        {"measure":"percent_change","display":"Percent Change"},
-    ];
-    */
-    
-    $scope.pending = false;
-    
-    $scope.chart_types = [
+    chart_types : [
         {"type":"line","display":"Line"},
         {"type":"spline","display":"Smooth Line"},
         {"type":"column","display":"Column"},
@@ -145,15 +136,23 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         {"type":"stacked_column_percent_total","display":"Stacked Column Percent Total"},
         {"type":"scatter_plot","display":"Scatter Plot"},
         {"type":"scatter_plot_regression","display":"Scatter Plot With Regression"},
-        ];
-    
-    $scope.yaxischoices = [
+        ],
+        
+    series_types : [
+        {"type":"line","display":"Line"},
+        {"type":"spline","display":"Smooth Line"},
+        {"type":"column","display":"Column"},
+        {"type":"area","display":"Area"},
+        {"type":"areaspline","display":"Smooth Area"},
+        ],
+
+    yaxischoices : [
         {"num":0,"display":"primary"},
         {"num":1,"display":"secondary"},
         {"num":2,"display":"tertiary"}
-    ];
+    ],
         
-    $scope.export_options = [
+    export_options : [
         {"num":0,"display":""},
         {"num":1,"display":"Download PNG"},
         {"num":2,"display":"Download Clean PNG"},
@@ -163,77 +162,94 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         {"num":6,"display":"Copy Image URL"},
         {"num":7,"display":"Copy Tool URL"},
         {"num":8,"display":"Copy Embed URL"},
-    ];
+    ],
     
+    instances : [{"source":'',"description":''}],
     
-    $scope.instances = [];
+    recent : [],
     
-    $scope.recent = [];
+    preserve_date_range : false,
     
-    $scope.preserve_date_range = false;
+    budgetCategories : [
+        {"category_id": 1, "id": 1, "name": "Appropriations"}, 
+        {"category_id": 2, "id": 2, "name": "Expeditures"}, 
+        {"category_id": 3, "id": 3, "name": "Miscellaneous"}, 
+    ],
     
-    /* 
-    if (!$scope.chart.timeSeries) {
-        $scope.chart.timeSeries = "years";
-    }
-    */
+    budgetResults : [],
+    
+    budgetProjects: [],
+    
+    results: [],
+    
+    saved: [],
+    
+    countries: [],
+    
+    categories: [],
+    
+    //categories_filtered: [],
+    
+    topics: [],
+    
+    datasets: [],
+    
+    chart: {},
+    
+    pending: false,
+    
+},
 
+created() {
+    
     // LOAD SAVED CHARTS FROM DB BY USER COOKIE VAL
-
-    $http.get(baseUrl + '/api/charts/' + $("#user").val() ).success(function(data){
     
-        saved = [];
-        angular.forEach(data, function (chart, index) {
-            item = new Saved(chart.slug, baseUrl + '/charts/' + chart.slug, chart.options);
-            saved.unshift(item);
-        });
-        $scope.saved = saved;
-        
-    }); 
+    const self = this;
     
-    
-    // OPEN THE SEARCH BOX I CLICKED, CLOSE OTHERS
-    /*
-    if( event.target.tagName === "LABEL" ) {
-         alert('clicked');
-    }
-    */
-    
-    $scope.budgetPickerLabel = function(e) {
-              
-       angular.element('div.picker:visible').slideToggle('fast','linear');        
-       angular.element(e.target).next('div').slideToggle('fast','linear');
-               
-    };
-    
-    
-    
-    // POLICY FACETED SEARCH (left sidebar)
-          
-    $http.get(baseUrl + '/api/projects').success(function(data){
-        
-            $scope.countries = data;
-                        
-            $timeout(function() {
-                project = getQueryVariable('project');
-                if (project) {
-                    checkbox = angular.element('#' + project);
-                    if (checkbox) checkbox.trigger('click');
-                }
-            }, 500);
+    axios.get(baseUrl + '/api/charts/' + $("#user").val() ).then(function(response){
+      
+      var data = response.data;
             
+      saved = [];
+      data.forEach(function (chart, index) {
+          item = new Saved(chart.slug, baseUrl + '/charts/' + chart.slug, chart.options);
+          saved.unshift(item);
+      });
+      self.saved = saved;
+  
     });
-    
-    $http.get(baseUrl + '/api/categories').success(function(data){
 
-        // remove budget!!  because we have a tab for it!! it's kind of a category but kind of not!!
-        var removeIndex = data.map(function(item) { return item.name; }).indexOf("Budget");
-        removeIndex > -1 && data.splice(removeIndex, 1);
-        $scope.categories = data;
-        
+    axios.get(baseUrl + '/api/projects').then(function(response){
+          
+          self.countries = response.data;          
+               
+          window.setTimeout(function() {
+              project = getQueryVariable('project');
+              if (project) {
+                  checkbox = jQuery('#' + project);
+                  if (checkbox) checkbox.trigger('click');
+              }
+          }, 500);
+          
+      
     });
-    
-    $http.get(baseUrl + '/api/topics').success(function(data){
+
+    axios.get(baseUrl + '/api/categories').then(function(response){
+      
+      var data = response.data;
+      
+      // remove budget!!  because we have a tab for it!! it's kind of a category but kind of not!!
+      var removeIndex = data.map(function(item) { return item.name; }).indexOf("Budget");
+      removeIndex > -1 && data.splice(removeIndex, 1);
+      self.categories = data;
+  
+    });
+
+    axios.get(baseUrl + '/api/topics').then(function(response){
+        
+        var data = response.data;
+        
+        
         
         var retval = [];
         for (var i = 0; i < data.length; i++) {
@@ -249,36 +265,70 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 subrow.name = subparsed[1];
                 row.subtopics.push(subrow);
             }
+            row.isOpen = false;
             retval.push(row);
         }
         
-        $scope.topics = retval;
-        
+        self.topics = retval;
+  
     });
-    
-    $http.get(baseUrl + '/api/datasets').success(function(data){
-    
-        $scope.datasets = data;
-    
-    });
-              
-    $scope.doFacets = function() { 
 
+    axios.get(baseUrl + '/api/datasets').then(function(response){
+
+        self.datasets = response.data;
+    
+    });  
+    
+    axios.get(baseUrl + '/api/budgetprojects').then(function(response){
         
-        $scope.results = [];
+        var data = response.data;
+        
+        // add stub for UI open state
+        
+        for (i = 0; i < data.length; ++i) {
+            for (j = 0; j < data[i].datasets.length; ++j) {
+                if (data[i].datasets[j].topics) {
+                    for (k = 0; k < data[i].datasets[j].topics.length; ++k) { 
+                      data[i].datasets[j].topics[k].isOpen = false;
+                    }
+                }
+            }
+        }
+
+        self.budgetProjects = data;
+                        
+    });  
+
+},
+
+methods: {
+    
+    drill() {
+      
+      return this.$refs.drilldown;
+      
+    },
+    
+    // POLICY FACETED SEARCH (left sidebar)
+        
+    doFacets() { 
+                
+        this.results = [];
         
         var cats = [];
-        angular.element('#categories input:checked').each(function () {
+        jQuery('#categories input:checked').each(function () {
             var cat = $(this).attr('catid');
             cats.push(cat);
         });
         
-        angular.forEach($scope.datasets, function (dataset, index) {
+        const self = this;
+        
+        this.datasets.forEach(function (dataset, index) {
             if (cats.indexOf(dataset.category.toString()) > -1) {
-                angular.element('#projects input:checked').each(function () {
+                jQuery('#projects input:checked').each(function () {
                     var country = $(this).attr('country');
 
-                    angular.element('.choose_topic:checked').each(function () {
+                    jQuery('.choose_topic:checked').each(function () {
                        
                        var $this = $(this);
                        if ($this.length) {
@@ -304,7 +354,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                                 // ADD TO SEARCH RESULTS
                                 dataset_name = dataset.country + ': ' + dataset.name + ' #' + selText;
                                 var searchResult = new Series(dataset.id,topic,dataset_name,dataset.filters,sub,dataset.unit,dataset.aggregation_level,false);
-                                $scope.results.push(searchResult);
+                                self.results.push(searchResult);
                             
                             }
                                            
@@ -315,132 +365,64 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             }
         });
         
-    }
-    
-    $scope.noResults = function() {
+        if (jQuery('#projects input:checked').length == 0) {
+            jQuery('#categories input:checkbox').removeAttr('checked');
+        }
         
-        var unhidden_results = [];
-        angular.forEach($scope.results, function (result, index) {
-            var add = true;
-            angular.forEach($scope.chart.series, function (selected, index2) { 
-                if (result.name == selected.name) {
-                    add = false;
-                }
-            });
-            if (add) { 
-                unhidden_results.push(result);
-            }
+    },
+    
+    // only see categories that are available for chosen projects
+    categories_filtered() {
+                
+        retval = [];
+        
+        const self = this;
+        
+        this.categories.forEach(function (category) {
+        
+          jQuery('#projects input:checked').each(function () {
+              var country = $(this).attr('country');
+              self.datasets.forEach(function (dataset, index) {
+                  if ( 
+                  (category.category_id == dataset.category) &&
+                  (dataset.country == country) &&
+                  (retval.indexOf(category) === -1)
+                  ) {
+                      retval.push(category);
+                  }
+              });
+          });
+
         });
         
-        return (
-        unhidden_results.length == 0 && 
-        $scope.countryCount() > 0 && 
-        $scope.categoryCount() > 0 && 
-        $scope.topicCount() > 0
-        ) ? true : false;
-        
-    }
+        return retval;
     
-    $scope.countryCount = function() {
-        
-        return angular.element('#projects input[type="checkbox"]:checked').length;
-        
-    }
-    
-    $scope.categoryCount = function() {
-        
-        return angular.element('#categories input[type="checkbox"]:checked').length;
-        
-    }
-    
-    $scope.topicCount = function() {
-        
-        return angular.element('#topics input.choose_topic:checked').length;
-        
-    }
-    
+    },
     
     
     // BUDGET FACETED SEARCH (left sidebar)
     
-    
-    $http.get(baseUrl + '/api/budgetprojects').success(function(data){
+    doBudgetResults(dataset,topic,name,sub) { 
         
-        /*
-        for (i = 0; i < data.length; ++i) {
-            for (j = 0; j < data[i].datasets.length; ++j) {
-                if (data[i].datasets[j].topics) { 
-                    data[i].datasets[j].topics = data[i].datasets[j].topics;
-                }
-            }
-        }
-        */
-        
-        $scope.budgetProjects = data;
-                        
-    });
-    
-    
-    $scope.budgetCategories = [
-        {"category_id": 1, "id": 1, "name": "Appropriations"}, 
-        {"category_id": 2, "id": 2, "name": "Expeditures"}, 
-        {"category_id": 3, "id": 3, "name": "Miscellaneous"}, 
-    ];
-    
-    /*
-    $http.get(baseUrl + '/api/datasets/budget').success(function(data){
-        
-        retval = data;
-        for (index = 0; index < data.length; ++index) {
-            data[index];
-            retval[index].topics = JSON.parse(data[index].topics);
-        }
-        
-        $scope.budgetDatasets = retval;
-        
-       // console.log('hi');
-       // console.log(retval);
-        
-    
-    });
-    */
-    
-    $scope.budgetProjectCount = function() {
-        
-        //return angular.element('#projects input[type="checkbox"]:checked').length;
-        return 0;
-        
-    }
-    
-    $scope.budgetTopicCount = function() {
-        
-        //return angular.element('#topics input.choose_topic:checked').length;
-        return 0;
-    }
-
-    $scope.budgetResults = [];
-
-    $scope.doBudgetResults = function(dataset,topic,name,sub) { 
-        
-      //  if ($scope.pending == false) {
+      //  if (this.pending == false) {
            
             var found_it = false;
             /*
             var idx;
-            for (idx = 0; idx < $scope.budgetResults.length; idx++) {
-                if ($scope.budgetResults[idx].topic === topic.id && $scope.budgetResults[idx].dataset === dataset.id) {
-                    $scope.budgetResults.splice(idx, 1);
+            for (idx = 0; idx < this.budgetResults.length; idx++) {
+                if (this.budgetResults[idx].topic === topic.id && this.budgetResults[idx].dataset === dataset.id) {
+                    this.budgetResults.splice(idx, 1);
                     found_it = true;
                     break;
                 }
             }
             */
         
-            if ($scope.chart.series) {
+            if (this.chart.series) {
                 var idx;
-                for (idx = 0; idx < $scope.chart.series.length; idx++) {
-                    if ($scope.chart.series[idx].topic === topic.id && $scope.chart.series[idx].dataset === dataset.id) {
-                        $scope.removeFromChart(idx);
+                for (idx = 0; idx < this.chart.series.length; idx++) {
+                    if (this.chart.series[idx].topic === topic.id && this.chart.series[idx].dataset === dataset.id) {
+                        this.removeFromChart(idx);
                         found_it = true;
                         break;
                     }
@@ -453,29 +435,30 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
               dataset_name = dataset.country + ': ' + dataset.name + ' #' + name;
               var obj = new Series(dataset.id,topic.id,dataset_name,dataset.filters,sub,dataset.unit,1,true);
               //obj.budget = true;
-              $scope.addToChart(obj);
-              //$scope.budgetResults.push(obj);
+              this.addToChart(obj);
+              //this.budgetResults.push(obj);
             }
         
       //  }
         
         
-    }
+    },
     
-    
-    $scope.clickBudgetProject = function(country, countryHasBudgetSeriesInChart) {
+    clickBudgetProject(country, countryHasBudgetSeriesInChart) {
         
         if (countryHasBudgetSeriesInChart) {
             
-            iterator = [];
-            angular.copy($scope.chart.series,iterator);
+            //iterator = [];
+            //angular.copy(this.chart.series,iterator);
+            
+            iterator = JSON.parse(JSON.stringify(this.chart.series));
             
             for (var i = 0, len = iterator.length; i < len; i++) {
                                 
                 if ( (iterator[i].name.split(':')[0] == country.name) &&  (iterator[i].budget==true) ) {
                 
-                    position = $scope.budgetTopicFoundInChart(iterator[i].dataset,iterator[i].topic);
-                    $scope.removeFromChart(position);
+                    position = this.budgetTopicFoundInChart(iterator[i].dataset,iterator[i].topic);
+                    this.removeFromChart(position);
                     
                     
                 }
@@ -483,85 +466,76 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             
         }
         
-    }
+    },
     
-    $scope.budgetProjectFoundInChart = function(country)
-    {   
-        for(var i = 0, len = $scope.chart.series.length; i < len; i++) {
+    budgetProjectFoundInChart(country) {   
+        for(var i = 0, len = this.chart.series.length; i < len; i++) {
             
             for(var j = 0, len2 = country.datasets.length; j < len2; j++) {
             
-                if ($scope.chart.series[i].dataset == country.datasets[j].id) return true;
+                if (this.chart.series[i].dataset == country.datasets[j].id) return true;
             
             }
             
         }
         return false;
-    }
+    },
     
-    $scope.budgetTopicFoundInChart = function(dataset, topic)
-    {   
-        for(var i = 0, len = $scope.chart.series.length; i < len; i++) {
+    budgetTopicFoundInChart(dataset, topic) {   
+        for(var i = 0, len = this.chart.series.length; i < len; i++) {
             
-            if ( ($scope.chart.series[i].dataset == dataset) &&  ($scope.chart.series[i].topic == topic) ) return i;
-        }
+            if ( (this.chart.series[i].dataset == dataset) &&  (this.chart.series[i].topic == topic) ) return i;
+        } 
         return -1;
-    }
+    },
     
-    
-    $scope.lessThan = function( what ) {
-        return function( item ) {
-            return parseInt(item.value) < parseInt(what);
-        };
-    };
-    
-    $scope.greaterThan = function( what ) {
-        return function( item ) {
-            return parseInt(item.value) > parseInt(what);
-        };
-    };
-    
-    
+    budgetPickerLabel(e) {
+              
+       jQuery('div.picker:visible').slideToggle('fast','linear');        
+       jQuery(e.target).next('div').slideToggle('fast','linear');
+               
+    },
+        
     // ADD TO CHART
         
-    $scope.addToChart = function(result) {
+    addToChart(result) {
     	
       try {ga('send', 'event', 'Add Series to Chart', result.dataset, result.name);} catch (e) {console.log('No analytics.');}
     	
-    	if ($scope.pending == false) {
+    	if (this.pending == false) {
     	    
-    	    $scope.pending = true;
+    	    this.pending = true;
     	    
             // WHEN WE ADD *ANYTHING* TO A SCATTER, IT RUINS IT!!  GO BACK TO LINE
         
-            if ($scope.chart.scatter) {
+            if (this.chart.scatter) {
             
-                angular.forEach($scope.chart.series, function (series, index) {
-                        $scope.chart.series[index].type = "line";
-                        $scope.chart.series[index].measure = result.agg == 2 ? "percent_total" : "count";
+                this.chart.series.forEach(function (series, index) {
+                        this.chart.series[index].type = "line";
+                        this.chart.series[index].measure = result.agg == 2 ? "percent_total" : "count";
                 });
             
                // alert('Scatter plot chart type requires exactly two series.');
-               $scope.chart.scatter = false;
-               $scope.chart.chartType = "line";
+               this.chart.scatter = false;
+               this.chart.chartType = "line";
                 
             }
         
             // WHEN WE ADD A DATASET WITH AGGREGATION LEVEL = "percent" ... to a stacked count ... change it to stacked percent
                 
-            if ( ($scope.chart.chartType== "stacked_area_count" || $scope.chart.chartType=="stacked_column_count") && (result.agg == 2 || result.budget == true)) {
+            if ( (this.chart.chartType== "stacked_area_count" || this.chart.chartType=="stacked_column_count") && (result.agg == 2 || result.budget == true)) {
             
-                angular.forEach($scope.chart.series, function (series, index) {
-                        $scope.chart.series[index].measure = "percent_total";
+                this.chart.series.forEach(function (series, index) {
+                        this.chart.series[index].measure = "percent_total";
                 });
             
-                $scope.chart.chartType = $scope.chart.chartType=="stacked_area_count" ? "stacked_area_percent_total" : "stacked_column_percent_total";  
+                this.chart.chartType = this.chart.chartType=="stacked_area_count" ? "stacked_area_percent_total" : "stacked_column_percent_total";  
             }
         
         
-            result.color = $scope.getRgbaColor();
+            result.color = this.getRgbaColor();
     
-            switch($scope.chart.chartType) {
+            switch(this.chart.chartType) {
 
                 case "stacked_area_count":
                     result.type = "area";
@@ -580,112 +554,112 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     result.measure = "percent_total";
                     break;
                 default:
-                    result.type = $scope.chart.chartType;
+                    result.type = this.chart.chartType;
         
             }
     
-            $scope.chart.series.push(result);
+            this.chart.series.push(result);
         
             if (result.sub) {
                 var url = baseUrl + '/api/measures/dataset/' + result.dataset + '/subtopic/' + result.topic;
             } else {
                 var url = baseUrl + '/api/measures/dataset/' + result.dataset + '/topic/' + result.topic;
             }
-        
+            
+            const self = this;
             $.getJSON(url, function (retval) {
         
                 // async... find the right series and assign the data
-            
-                angular.forEach($scope.chart.series, function (series, index) { 
+                
+                self.chart.series.forEach(function (series, index) { 
                     if (result.name == series.name) {
-                        $scope.chart.series[index].alldata = retval;
+                        self.chart.series[index].alldata = retval;
                     }
                 });
         
                 // redraw the chart
             
-                $scope.drawChart(); 
+                self.drawChart(); 
                 
-                //$scope.pending = false;
+                //this.pending = false;
         
             });
         
         }
     
-    }
+    },
     
     // REMOVE FROM CHART
     
-    $scope.removeFromChart = function(index) {
+    removeFromChart(index) {
         
-        if ($scope.pending == false) {
+        if (this.pending == false) {
         
-            $scope.pending = true;
+            this.pending = true;
         
-            if ($scope.chart.scatter) {
+            if (this.chart.scatter) {
             
-                $scope.chart.scatter = false;
-                $scope.chart.chartType = "line";
+                this.chart.scatter = false;
+                this.chart.chartType = "line";
         
             }
         
             // RESET TO DEFAULTS FOR NEXT ADD
-            $scope.chart.series[index].measure = $scope.chart.series[index].agg == 2 ? "percent_total" : "count";
-            $scope.chart.series[index].type = "line";
-            $scope.chart.series[index].yaxis = 0;
-            $scope.chart.series[index].measure_on_multiple_axes = false; 	
+            this.chart.series[index].measure = this.chart.series[index].agg == 2 ? "percent_total" : "count";
+            this.chart.series[index].type = "line";
+            this.chart.series[index].yaxis = 0;
+            this.chart.series[index].measure_on_multiple_axes = false; 	
             
             // UNCHECK FILTER CHECKBOXES
-            angular.forEach($scope.chart.series[index].filters, function (filter, index) {
+            this.chart.series[index].filters.forEach(function (filter, index) {
                 filter.exclude = false;
                 filter.include = false;
             });
           
             // REMOVE FROM CHART
-            $scope.chart.series.splice(index,1);
+            this.chart.series.splice(index,1);
     
             // RESET CHART TYPE IF RESTRICTED
-            if ( $scope.chart.stacked && $scope.chart.series.length == 1) {
-                $scope.chart.stacked = false;
-                $scope.chart.chartType = $scope.chart.series[0].type;   
+            if ( this.chart.stacked && this.chart.series.length == 1) {
+                this.chart.stacked = false;
+                this.chart.chartType = this.chart.series[0].type;   
             }
-            if ($scope.chart.series.length == 0) {   
-                $scope.chart.chartType = "line";
+            if (this.chart.series.length == 0) {   
+                this.chart.chartType = "line";
             }
     
-            doSeriesRemain = $scope.chart.series.length > 0;            
-            $scope.drawChart(doSeriesRemain); 
+            doSeriesRemain = this.chart.series.length > 0;            
+            this.drawChart(doSeriesRemain); 
         
         }
         
-    }
+    },
     
     // CHART TO OPTIONS
         
-    $scope.chartToOptions = function() {
+    chartToOptions() {
         
-        if ($scope.chart.series.length > 0) {
+        const self = this;
+        
+        if (self.chart.series.length > 0) {
             
-            angular.element('#intro').hide();
-            angular.element('#chart').show();
+            jQuery('#intro').hide();
+            jQuery('#chart').show();
             
             // get years available for these series
 
             chartMax = 0;
             chartMin = 9999;
             
-            angular.forEach($scope.chart.series, function (series, index) {            
+            self.chart.series.forEach(function (series, index) {            
                 
-               // console.log(series);
+                timePeriods = self.chart.timeSeries == "congresses" ? self.years_to_congresses(series.alldata.years) : series.alldata.years;
                 
-                           
-                timePeriods = $scope.chart.timeSeries == "congresses" ? $scope.years_to_congresses(series.alldata.years) : series.alldata.years;
-                
-                thisMax = Math.max.apply(null, timePeriods);
-                thisMin = Math.min.apply(null, timePeriods);
+                selfMax = Math.max.apply(null, timePeriods);
+                selfMin = Math.min.apply(null, timePeriods);
 
-                chartMax = thisMax > chartMax ? thisMax : chartMax
-                chartMin = thisMin < chartMin ? thisMin : chartMin
+                chartMax = selfMax > chartMax ? selfMax : chartMax
+                chartMin = selfMin < chartMin ? selfMin : chartMin
 
             });
 
@@ -695,7 +669,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 
                 var obj = {};
                 obj['value'] = i;
-                if ($scope.chart.timeSeries == "congresses") {
+                if (self.chart.timeSeries == "congresses") {
                     var firstYear = ( i * 2 ) + 1787;
                     var secondYearAbbr = firstYear < 1999 ? firstYear - 1899 : firstYear - 1999;
                     if (secondYearAbbr < 10) secondYearAbbr = '0' + secondYearAbbr;
@@ -707,43 +681,43 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 timePeriodsAvailable.push(obj);
             }
             
-            $scope.chart.timePeriodsAvailable = timePeriodsAvailable;
+            self.chart.timePeriodsAvailable = timePeriodsAvailable;
 
 
             // set years selected to default if blank
-            //if ($scope.chart.yearFrom == 0 || $scope.chart.yearFrom < chartMin ) $scope.chart.yearFrom = chartMin;
-            //if ($scope.chart.yearTo == 0 || $scope.chart.yearTo > chartMax) $scope.chart.yearTo = chartMax;
+            //if (self.chart.yearFrom == 0 || self.chart.yearFrom < chartMin ) self.chart.yearFrom = chartMin;
+            //if (self.chart.yearTo == 0 || self.chart.yearTo > chartMax) self.chart.yearTo = chartMax;
             
             // set years selected if we haven't just changed year
-            if (!$scope.preserve_date_range) {
-                $scope.chart.yearFrom = chartMin;
-                $scope.chart.yearTo = chartMax;
+            if (!self.preserve_date_range) {
+                self.chart.yearFrom = chartMin;
+                self.chart.yearTo = chartMax;
             }
-            $scope.preserve_date_range = false;
+            self.preserve_date_range = false;
             
             // get years selected
             yearsSelected = [];
-            for (var yr = $scope.chart.yearFrom; yr <= $scope.chart.yearTo; yr++) {
+            for (var yr = self.chart.yearFrom; yr <= self.chart.yearTo; yr++) {
                 yearsSelected.push(yr);
             }
-            $scope.chart.yearsSelected = yearsSelected;
+            self.chart.yearsSelected = yearsSelected;
             
                 
             periodsSelected = [];
-            angular.forEach(timePeriodsAvailable, function (timePeriod, index) {
-                if (timePeriod.value >= $scope.chart.yearFrom && timePeriod.value <= $scope.chart.yearTo) {
+            timePeriodsAvailable.forEach(function (timePeriod, index) {
+                if (timePeriod.value >= self.chart.yearFrom && timePeriod.value <= self.chart.yearTo) {
                     periodsSelected.push(timePeriod);
                 }
             });
-            $scope.chart.periodsSelected = periodsSelected;
+            self.chart.periodsSelected = periodsSelected;
 
             
             // CONSOLIDATE ON ONE AXIS IF STACKED
             
             /*
-            if ($scope.chart.stacked) {
+            if (self.chart.stacked) {
                
-                angular.forEach($scope.chart.series, function (series, index) {
+                self.chart.series.forEach(function (series, index) {
             
                     series.yaxis = 0;
             
@@ -753,22 +727,23 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             */
             
             
-            if ($scope.chart.scatter) {
+            if (self.chart.scatter) {
             
-                options = angular.copy(scatterOptions);
-
+                //options = angular.copy(scatterOptions);
+                options = JSON.parse(JSON.stringify(scatterOptions));
+                
                 var tooples = [];
-                for (var yr = $scope.chart.yearFrom; yr <= $scope.chart.yearTo; yr++) {
+                for (var yr = self.chart.yearFrom; yr <= self.chart.yearTo; yr++) {
                     
-                    idx1 = $scope.chart.series[0].alldata['years'].indexOf(yr);
-                    idx2 = $scope.chart.series[1].alldata['years'].indexOf(yr);
+                    idx1 = self.chart.series[0].alldata['years'].indexOf(yr);
+                    idx2 = self.chart.series[1].alldata['years'].indexOf(yr);
                     
                     if ( (idx1 != -1) && (idx2 != -1) ) {
                     
                         var toople = {
                             name: yr,
-                            x: $scope.chart.series[0].alldata['count'][idx1],
-                            y: $scope.chart.series[1].alldata['count'][idx2]
+                            x: self.chart.series[0].alldata['count'][idx1],
+                            y: self.chart.series[1].alldata['count'][idx2]
                         }
                 
                         tooples.push(toople);
@@ -777,35 +752,36 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 
                 }
 
-                options.xAxis.title.text = $scope.chart.series[0].name;
-                options.yAxis.title.text = $scope.chart.series[1].name;
+                options.xAxis.title.text = self.chart.series[0].name;
+                options.yAxis.title.text = self.chart.series[1].name;
                 options.series[0].data = tooples;
             
-                if ($scope.chart.chartType == 'scatter_plot_regression') {
+                if (self.chart.chartType == 'scatter_plot_regression') {
                     options.series[0].regression = true;
                 }
             
             } else {
         
-                options = angular.copy(defaultOptions);                
-             
+                //options = angular.copy(defaultOptions);                
+                options = JSON.parse(JSON.stringify(defaultOptions));
+                
                 // GET Y AXES
         
-                $scope.chart.yaxes = [];
+                self.chart.yaxes = [];
         
-                // if there is not a y-axis for this measure, add one!!
+                // if there is not a y-axis for self measure, add one!!
                 
-                angular.forEach($scope.chart.series, function (series, index) {
+                self.chart.series.forEach(function (series, index) {
 
                     bExists = false;
-                    angular.forEach($scope.chart.yaxes, function (ax, i) {
+                    self.chart.yaxes.forEach(function (ax, i) {
                         if (series.measure == ax.measure) {
                             bExists = true;
                         }
                     });
             
                     if (!bExists) {
-                        $scope.chart.yaxes.push({"measure":series.measure});
+                        self.chart.yaxes.push({"measure":series.measure});
                     }
 
                 });
@@ -813,11 +789,11 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 
                 //SERIES TO OPTIONS
         
-                angular.forEach($scope.chart.series, function (series, index) {
+                self.chart.series.forEach(function (series, index) {
                 
                     // sort into yAxis by measure
-                    for (var i = 0; i < $scope.chart.yaxes.length; i++) {
-                       ax = $scope.chart.yaxes[i];
+                    for (var i = 0; i < self.chart.yaxes.length; i++) {
+                       ax = self.chart.yaxes[i];
                        if (series.measure == ax.measure && series.measure_on_multiple_axes == false) {
                             series.yaxis = i;
                             break;
@@ -825,52 +801,52 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     }
             
                     // in case series is manually assigned to additional axis with identical measure
-                    if (!$scope.chart.yaxes[series.yaxis]) {
-                        //$scope.chart.yaxes.push({"measure":series.measure,"label":series.unit});
-                        $scope.chart.yaxes.push({"measure":series.measure});
-                        series.yaxis = $scope.chart.yaxes.length - 1;
+                    if (!self.chart.yaxes[series.yaxis]) {
+                        //self.chart.yaxes.push({"measure":series.measure,"label":series.unit});
+                        self.chart.yaxes.push({"measure":series.measure});
+                        series.yaxis = self.chart.yaxes.length - 1;
                     }
                     
                     
                     var chartdata = [];
-                    var allTimePeriods = $scope.chart.timeSeries == "congresses" ? $scope.years_to_congresses(series.alldata['years']) : series.alldata['years'];
+                    var allTimePeriods = self.chart.timeSeries == "congresses" ? self.years_to_congresses(series.alldata['years']) : series.alldata['years'];
                     
 
-                    if ($scope.chart.timeSeries == "congresses") {
+                    if (self.chart.timeSeries == "congresses") {
                     
                         if (series.measure == "percent_change") {
                     
-                            var dataThisMeasure = $scope.percent_change_by_congress(series.alldata['count'],series.alldata['years'][0] % 2) 
+                            var dataselfMeasure = self.percent_change_by_congress(series.alldata['count'],series.alldata['years'][0] % 2) 
                         
                         } else if (series.measure == "percent_total") {
                             
-                            var dataThisMeasure = $scope.percent_total_by_congress(series.alldata['percent_total'],series.alldata['years'][0] % 2);
+                            var dataselfMeasure = self.percent_total_by_congress(series.alldata['percent_total'],series.alldata['years'][0] % 2);
                             
                         } else {
                         
-                            var dataThisMeasure = $scope.aggregate_by_congress(series.alldata[series.measure],series.alldata['years'][0] % 2);
+                            var dataselfMeasure = self.aggregate_by_congress(series.alldata[series.measure],series.alldata['years'][0] % 2);
                         
                         }
                     
                     } else {
                         
-                        var dataThisMeasure = series.alldata[series.measure];
+                        var dataselfMeasure = series.alldata[series.measure];
                         
                     } 
                     
-                    for (var yr = $scope.chart.yearFrom; yr <= $scope.chart.yearTo; yr++) {
+                    for (var yr = self.chart.yearFrom; yr <= self.chart.yearTo; yr++) {
                         
                         idx = allTimePeriods.indexOf(yr);
                            
                         if (idx == -1) {
                             chartdata.push(null);
                         } else {
-                            chartdata.push(dataThisMeasure[idx]);
+                            chartdata.push(dataselfMeasure[idx]);
                         }
                         
                     }
                     
-                    $scope.chart.series[index].chartdata = chartdata;
+                    self.chart.series[index].chartdata = chartdata;
                     
                     var s = {
                         /*
@@ -901,10 +877,10 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 
                 // CONSTRUCT X AXIS
         
-                options.xAxis[0].categories = $scope.chart.yearsSelected;
+                options.xAxis[0].categories = self.chart.yearsSelected;
                 
-                if ($scope.chart.timeSeries == "congresses") {
-                     angular.forEach(options.xAxis[0].categories, function (session,idx) {
+                if (self.chart.timeSeries == "congresses") {
+                     options.xAxis[0].categories.forEach(function (session,idx) {
                         var firstYear = ( session * 2 ) + 1787;
                         var secondYearAbbr = firstYear < 1999 ? firstYear - 1899 : firstYear - 1999;
                         if (secondYearAbbr < 10) secondYearAbbr = '0' + secondYearAbbr;
@@ -915,11 +891,11 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
      
                 // CONSTRUCT Y AXES
     
-                angular.forEach($scope.chart.yaxes, function (ax,index) {
+                self.chart.yaxes.forEach(function (ax,index) {
 
                     axis = { 
                         title: {
-                            text: $scope.getAxisTitle(index)
+                            text: self.getAxisTitle(index)
                         },
                         plotLines: [{
                             value: 0,
@@ -946,11 +922,11 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
                 // HANDLE STACKING
         
-                if ($scope.chart.stacked && $scope.chart.series[0].type == 'area') {
+                if (self.chart.stacked && self.chart.series[0].type == 'area') {
         
                     options.plotOptions.area["stacking"] = 'normal';
         
-                } else if ($scope.chart.stacked && $scope.chart.series[0].type == 'column') {
+                } else if (self.chart.stacked && self.chart.series[0].type == 'column') {
                 
                     options.plotOptions.column["stacking"] = 'normal';
             
@@ -966,27 +942,32 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
 
         } else {
         
-            options = angular.copy(defaultOptions);
-            angular.element('#intro').show();
-            angular.element('#chart').hide();
+           // options = angular.copy(defaultOptions);
+            options = JSON.parse(JSON.stringify(defaultOptions));
+            
+            jQuery('#intro').show();
+            jQuery('#chart').hide();
             
         }
         
-        options.CAP_chart = $scope.chart;
+        options.CAP_chart = self.chart;
+         
+        if (options.plotOptions.series) options.plotOptions.series.point.events['click'] = clickPoint;
+        options.tooltip.formatter = tooltipFormatter;
         
         return options;
         
-    }
+    },
     
     // APPLY FILTERS
     
-    $scope.applyFilters = function(series) {
+    applyFilters(series) {
         
-        $scope.pending = true;
+      this.pending = true;
         
-		// have filters been checked?
-		var params = [];
-		angular.forEach(series.filters, function (filter, index) { 
+      // have filters been checked?
+      var params = [];
+      series.filters.forEach(function (filter, index) { 
             var param = undefined;
             if (filter.include) {
                 param = filter.name + "=1";
@@ -999,46 +980,46 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             }   
         });
 		
-				
-        //var url = baseUrl + '/api/measures/dataset/' + series.dataset + '/topic/' + series.topic;
+      //var url = baseUrl + '/api/measures/dataset/' + series.dataset + '/topic/' + series.topic;
+      
+      if (series.sub) {
+          var url = baseUrl + '/api/measures/dataset/' + series.dataset + '/subtopic/' + series.topic;
+      } else {
+          var url = baseUrl + '/api/measures/dataset/' + series.dataset + '/topic/' + series.topic;
+      }
+      
+  
+      if (params.length > 0) {
+          url = url + "?" + params.join("&");
+      }
+      
+      const self = this;
+      $.getJSON(url, function (retval) {                
+          series.alldata = retval;
+          self.closeSeriesModal(series);
+          self.drawChart();
+      });
         
-        if (series.sub) {
-            var url = baseUrl + '/api/measures/dataset/' + series.dataset + '/subtopic/' + series.topic;
-        } else {
-            var url = baseUrl + '/api/measures/dataset/' + series.dataset + '/topic/' + series.topic;
-        }
+    },
+    
+    changeYears() {
         
-    
-        if (params.length > 0) {
-            url = url + "?" + params.join("&");
-        }
-    
-        $.getJSON(url, function (retval) {                
-            series.alldata = retval;
-            $scope.closeSeriesModal(series);
-            $scope.drawChart();
-        });
+        this.pending = true;
+        this.preserve_date_range = true;
+        this.drawChart();
         
-    }
-    
-    
-    $scope.changeYears = function() {
-        
-        $scope.pending = true;
-        $scope.preserve_date_range = true;
-        $scope.drawChart();
-        
-    }
-    
+    },
     
     // DRAW CHART
     
-    $scope.drawChart = function(burnThumb) {
+    drawChart(burnThumb) {
+
+        const self = this;
         
         // always burn a thumbnail unless we are told not to...
         burnThumb = typeof burnThumb !== 'undefined' ? burnThumb : true;
         
-        options = $scope.chartToOptions();
+        options = self.chartToOptions();
         
         theChart.destroy();
 		    theChart = new Highcharts.Chart(options);
@@ -1055,7 +1036,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             var d = new Date();
             var stamp = d.getTime();
             item = new Recent(stamp);
-            $scope.recent.push(item);
+            self.recent.unshift(item);
             
             // GET THUMBNAIL (& SLUG, from export server)
             $.ajax({
@@ -1065,52 +1046,48 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 success: function (data) {
                 
                     var slug = data.substr(6,8) // slug is between 'files/' & '.png' in return value
-                    $scope.chart.slug = slug;
+                    self.chart.slug = slug;
                     
                     // find correct thumbnail by key and assign
-                    angular.forEach($scope.recent, function (item,index) {
+                    self.recent.forEach(function (item,index) {
                         if (item.key == stamp) {
-                            $scope.recent[index].slug = slug;
-                            $scope.recent[index].imgsrc = exportUrl + data;
-                            $scope.recent[index].options = obj.options;
+                            self.recent[index].slug = slug;
+                            self.recent[index].imgsrc = exportUrl + data;
+                            self.recent[index].options = obj.options;
                         }
                     });
                     
-                    $scope.pending = false;
-                    $scope.$apply();
+                    self.pending = false;
+                    //self.$apply();
                 
                 }
             });
         
         }
         else {
-            $scope.pending = false;
+            self.pending = false;
         }
-        
-        //console.log($scope.pending);
-        
-        //$scope.$apply();
 	
-    }      
+    },   
     
     // CHART CONTROLS
     
-    $scope.allSeriesSameType = function() {
+    allSeriesSameType() {
         
         var theType;
         var theMeasure;
         var validation_err;
         
-        $scope.preserve_date_range = true;
+        this.preserve_date_range = true;
         
-        switch($scope.chart.chartType) {
+        switch(this.chart.chartType) {
         
             case "stacked_area_count":
                           
                 theType = "area";
                 theMeasure = "count";
-                $scope.chart.scatter = false;
-                $scope.chart.stacked = true;
+                this.chart.scatter = false;
+                this.chart.stacked = true;
             
                 break;
                 
@@ -1118,8 +1095,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 
                 theType = "area";
                 theMeasure = "percent_total";
-                $scope.chart.scatter = false;
-                $scope.chart.stacked = true;
+                this.chart.scatter = false;
+                this.chart.stacked = true;
                 
                 break;
                 
@@ -1127,8 +1104,8 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 
                 theType = "column";
                 theMeasure = "count";
-                $scope.chart.scatter = false;
-                $scope.chart.stacked = true;
+                this.chart.scatter = false;
+                this.chart.stacked = true;
                 
                 break;
                 
@@ -1136,16 +1113,16 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                 
                 theType = "column";
                 theMeasure = "percent_total";
-                $scope.chart.scatter = false;
-                $scope.chart.stacked = true;
+                this.chart.scatter = false;
+                this.chart.stacked = true;
                 
                 break;
                 
             case "scatter_plot":
                 
                 theMeasure = "count";
-                $scope.chart.scatter = true;
-                $scope.chart.stacked = false;
+                this.chart.scatter = true;
+                this.chart.stacked = false;
 
                 
                 break;
@@ -1153,51 +1130,52 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             case "scatter_plot_regression":
                 
                 theMeasure = "count";
-                $scope.chart.scatter = true;
-                $scope.chart.stacked = false;
+                this.chart.scatter = true;
+                this.chart.stacked = false;
                 
                 break;
                 
             
             default:
             
-                theType = $scope.chart.chartType;
-                $scope.chart.stacked = false;
-                $scope.chart.scatter = false;
+                theType = this.chart.chartType;
+                this.chart.stacked = false;
+                this.chart.scatter = false;
                 
         }
         
-        $scope.pending = true;
+        this.pending = true;
         
-        if (!$scope.chart.scatter) {
+        if (!this.chart.scatter) {
     
-            angular.forEach($scope.chart.series, function (series, index) {
+            this.chart.series.forEach(function (series, index) {
                series.type = theType;  
                if (theMeasure) series.measure = theMeasure;
-               if ($scope.chart.stacked) series.yaxis = 0;
+               if (this.chart.stacked) series.yaxis = 0;
                
             });
     
         }
         
-        $scope.drawChart(); 
+        this.drawChart(); 
         
-    }
+    },
     
-    $scope.saveChart = function() {
-        
+    saveChart() {
+                
         strOptions = JSON.stringify(options);
             
         // SAVE CHART
+        const self = this;
         resp = $.ajax({
             type: 'POST',
-            url: '/charts/save/' + $("#user").val() + '/' + $scope.chart.slug,
+            url: '/charts/save/' + $("#user").val() + '/' + self.chart.slug,
             data: strOptions,
             success: function() {
                 my_alert('Chart pinned!\n\nClick "Chart History" to reload.');
-                item = new Saved( $scope.chart.slug, baseUrl + '/charts/' + $scope.chart.slug, strOptions );
-                $scope.saved.unshift(item);
-                $scope.$apply();
+                item = new Saved( self.chart.slug, baseUrl + '/charts/' + self.chart.slug, strOptions );
+                self.saved.unshift(item);
+                //self.$apply();
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) { 
                 my_alert('Could not pin chart.  Already pinned?'); 
@@ -1205,34 +1183,35 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
              
         });
         
-    }
+    },
     
-    $scope.editSeries = function(series) {
+    editSeries(series) {
         
         // APPLY FILTERS (back to the data well!! closes modal and draws chart on finish)
-        $scope.preserve_date_range = true;
-        $scope.applyFilters(series);
+        this.preserve_date_range = true;
+        this.applyFilters(series);
         
-    };
+    },
     
-    $scope.closeSeriesModal = function(series) {
+    closeSeriesModal(series) {
         
-        angular.element('#seriesoptions-'+ series.dataset + '-' + series.topic).foundation('reveal','close');
+        jQuery('#seriesoptions-'+ series.dataset + '-' + series.topic).foundation('reveal','close');
         
-    };
+    },
 
-    $scope.deletePinned = function(index) {
+    deletePinned(index) {
             
         if (confirm('Really unpin?')) {  
         
              // DELETE CHART
+            const self = this;
             resp = $.ajax({
                 type: 'POST',
-                url: '/charts/unpin/' +  $scope.saved[index].slug ,
+                url: '/charts/unpin/' +  self.saved[index].slug ,
                 success: function() {
                     //alert('chart un-pinned!');
-                    $scope.saved.splice(index,1);
-                    $scope.$apply();
+                    self.saved.splice(index,1);
+                   // self.$apply();
                 },
                 error: function(XMLHttpRequest, textStatus, errorThrown) { 
                     my_alert('Could not unpin.'); 
@@ -1242,71 +1221,35 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         }
         
-    }
+    },
     
-    
-    $scope.recallPinned = function(index) {
+    recallPinned(index) {
         
-        $scope.chart.slug = $scope.saved[index].slug;
-        $scope.chart = JSON.parse($scope.saved[index].options).CAP_chart;
-       // $scope.chart = $scope.saved[index].options.CAP_chart;
-        $scope.preserve_date_range = true;
-        $scope.drawChart(false); 
+        this.chart.slug = this.saved[index].slug;
+        this.chart = JSON.parse(this.saved[index].options).CAP_chart;
+       // this.chart = this.saved[index].options.CAP_chart;
+        this.preserve_date_range = true;
+        this.drawChart(false); 
     
-    }
+    },
     
-    
-    $scope.recallRecent = function(index) {
+    recallRecent(index) {
         
-        var reverse_index = $scope.recent.length - index - 1;
-        $scope.chart.slug = $scope.recent[reverse_index].slug;
-        $scope.chart = JSON.parse($scope.recent[reverse_index].options).CAP_chart;
-        $scope.preserve_date_range = true;
-        $scope.drawChart(false);     
+        //var reverse_index = this.recent.length - index - 1;
+        this.chart.slug = this.recent[index].slug;
+       // this.chart = JSON.parse(this.recent[reverse_index].options).CAP_chart;
+       
+        this.chart = JSON.parse(this.recent[index].options).CAP_chart;
+        this.preserve_date_range = true;
+        this.drawChart(false);     
         
-    }
-    
+    },
     
     // Y-AXIS HELPERS
     
-    $scope.choiceIsVisible = function(series) {
+    checkAxes(thisSeries) {
         
-        return function( choice ) {  
-        
-            // DOES THIS CHOICE BELONG TO A DIFFERENT AXIS SCALED FOR A DIFFERENT MEASURE?
-            
-            var avail = true;
-            
-            angular.forEach($scope.chart.series, function (s, index) {
-    
-                if (s != series && s.yaxis == choice.num) {
- 
-                    if (s.measure != series.measure) {
-                        
-                        avail = false;
-                
-                    }
-                }
-                
-            });
-            
-            var xtra = 0;
-            
-            // DO YOU NEED XTRA OPTION?? only if you are not the only series scaled to your measure
-            //console.log('series with this measure:' + $scope.chart.series.filter(function (el) {return el.measure == series.measure;}).length)
-            
-            xtra = 1 ? $scope.chart.series.length != $scope.chart.yaxes.length : 0;
-            
-            return choice.num < $scope.chart.yaxes.length + xtra
-            && avail;
-            
-        };
-        
-    }
-    
-    $scope.checkAxes = function(thisSeries) {
-        
-        angular.forEach($scope.chart.series, function (series, index) {
+        this.chart.series.forEach(function (series, index) {
             
             if (series.measure == thisSeries.measure) {
                 series.measure_on_multiple_axes = true;
@@ -1321,14 +1264,14 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         });
         
          
-    }
+    },
     
-    $scope.getAxisTitle = function(axIndex) {
+    getAxisTitle(axIndex) {
         
         var unitLabels = [];
         var measureLabel = false;
         
-        angular.forEach($scope.chart.series, function (s,key) {
+        this.chart.series.forEach(function (s,key) {
             if ( (s.yaxis == axIndex) && (unitLabels.indexOf(s.unit) == -1) ) {
                 
                 if (s.measure == 'count' || s.measure == 'amount') {
@@ -1342,18 +1285,15 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         return measureLabel ? measureLabel : unitLabels.join(', ');
         
-    }
+    },
     
-    $scope.chartExport = function(option) {
-        
-        //console.log('woo wee');
-        //console.log($scope.chart.slug);
+    chartExport(option) {
         
         //var save = false;
     
-        $scope.chart.exportOption = 0;
+        this.chart.exportOption = 0;
         
-        if (typeof($scope.chart.slug) != "undefined") {
+        if (typeof(this.chart.slug) != "undefined") {
         
             var optionOverride =
             {
@@ -1365,9 +1305,10 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             strOptions = JSON.stringify(options);
 
             // SAVE CHART, UNPINNED
+            const self = this;
             resp = $.ajax({
                 type: 'POST',
-                url: '/charts/saveunpinned/' + $("#user").val() + '/' + $scope.chart.slug,
+                url: '/charts/saveunpinned/' + $("#user").val() + '/' + self.chart.slug,
                 data: strOptions,
                 success: function() {
             
@@ -1377,7 +1318,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                             theChart.exportChart(
                                 {
                                 type: 'image/png',
-                                filename: $scope.chart.slug,
+                                filename: self.chart.slug,
                                 sourceWidth: 960,
                                 },
                                 optionOverride
@@ -1386,7 +1327,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
             
                         case 2: //CLEAN PNG
                             
-                            optionOverride.legend = angular.extend(optionOverride.legend,{enabled: false});
+                            optionOverride.legend = $.extend(optionOverride.legend,{enabled: false});
                             optionOverride.yAxis = [{
                                 gridLineWidth: 0,
                                 minorGridLineWidth: 0,
@@ -1403,7 +1344,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                             theChart.exportChart(
                                 {
                                 type: 'image/png',
-                                filename: $scope.chart.slug,
+                                filename: self.chart.slug,
                                 sourceWidth: 960,
                                 },
                                 optionOverride
@@ -1415,7 +1356,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                             theChart.exportChart(
                                 {
                                 type: 'image/jpeg',
-                                filename: $scope.chart.slug,
+                                filename: self.chart.slug,
                                 sourceWidth: 960,
                                 },
                                 optionOverride
@@ -1426,7 +1367,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                             theChart.exportChart(
                                 {
                                 type: 'image/svg+xml',
-                                filename: $scope.chart.slug,
+                                filename: self.chart.slug,
                                 sourceWidth: 960,
                                 },
                                 optionOverride
@@ -1437,7 +1378,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                             theChart.exportChart(
                                 {
                                 type: 'application/pdf',
-                                filename: $scope.chart.slug,
+                                filename: self.chart.slug,
                                 sourceWidth: 960,
                                 },
                                 optionOverride
@@ -1445,15 +1386,15 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                             break;
             
                         case 6:
-                            window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/charts/" + $scope.chart.slug );
+                            window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/charts/" + self.chart.slug );
                             break;
             
                         case 7:
-                            window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/tool/" + $scope.chart.slug );
+                            window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/tool/" + self.chart.slug );
                             break;
                 
                         case 8:
-                            window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/embed/" + $scope.chart.slug );
+                            window.prompt( "copy to clipboard: Ctrl+C, Enter", baseUrl + "/embed/" + self.chart.slug );
                             break;
                 
                         default:
@@ -1476,35 +1417,30 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         
         
-    }
+    },
     
     
     // CLEAR CHART
         
-    $scope.clearChart = function() {
+    clearChart() {
         
-        $scope.clearSearch();
-        $scope.chart = new Chart();
-        $scope.drawChart(false);
+        this.clearSearch();
+        this.chart = new Chart();
+        this.drawChart(false);
         
-
-        
-         //$scope.$apply();
-        
-    }
+    },
     
-    
-    $scope.clearSearch = function() {
+    clearSearch() {
         
         
-        $scope.results = [];
+        this.results = [];
         
-        angular.element('div.picker input:checkbox').each(function() {
+        jQuery('div.picker input:checkbox').each(function() {
             $(this).removeAttr('checked');
         });
         
         
-        angular.forEach($scope.budgetProjects, function (project, index) { 
+        this.budgetProjects.forEach(function (project, index) { 
         
             project.checked = false;
                 
@@ -1512,88 +1448,80 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         
         /*
-        angular.element('#categories input:checked').each(function () {
+        jQuery('#categories input:checked').each(function () {
             var cat = $(this).attr('catid');
             cats.push(cat);
         });
         */
         
     
-    }
+    },
     
     // HELPERS
       
-    $scope.clickInclude = function(filter) {
+    clickInclude(filter) {
         
         if (filter.include == true) filter.exclude = false;
     
-    }  
+    },
       
-    $scope.clickExclude = function(filter) {
+    clickExclude(filter) {
         
         if (filter.exclude == true) filter.include = false;
     
-    }  
+    },
             
-    $scope.isSelected = function (thisname) {
+    isSelected(thisname) {
     	
-    	var l = $scope.chart.series.length;
-		for (var i = 0; i < l; i++) {
-			if ($scope.chart.series[i].name == thisname) return true;
-		}
+      var l = this.chart.series.length;
+      
+      for (var i = 0; i < l; i++) {
+        if (this.chart.series[i].name == thisname) return true;
+      }
+      
     	return false;
     	
-    }
+    },
           
-    $scope.getRgbaColor = function() {
+    getRgbaColor() {
         
-        //construct array of all colors in scope.selected
+        //construct array of colors in use
         var colors = [];
-        for (var i = 0; i < $scope.chart.series.length; i++) {
-            colors.push($scope.chart.series[i].color);
+        for (var i = 0; i < this.chart.series.length; i++) {
+            colors.push(this.chart.series[i].color);
         }
         
-        //remove existing colors, reset queue to handle dupes
-        var rgba_que = angular.copy(rgba_colors);  
-        for (var i = 0; i < colors.length; i++) {
-            rgba_que.remove(colors[i]);
-            if (rgba_que.length == 0) {
-                rgba_que = angular.copy(rgba_colors); 
-            }
-        }
+        var rgba_queue = rgba_colors.filter(function(c) {
+            return colors.indexOf(c) == -1
+        });
         
+        if (rgba_queue.length == 0) {
+            rgba_queue = JSON.parse(JSON.stringify(rgba_colors));
+        }
+      
         //return next color in line
-        return rgba_que[0];
+        return rgba_queue[0];
                 
-    }
+    },
     
-    $scope.openDrilldown = function(s,y) {
-        
-        //console.log(s);
+    openDrilldown(s,y) {
         
         drilldown(s.filters,s.dataset,s.sub,s.topic,s.agg,y);
         
-    }
-    /*
-    $scope.hasDrilldown = function(s) {
+    },
+    
+    getInstancesUrl(f,d,s,t) {
         
-        console.log(s);
-        return false;
-        
-    }
-    */
-    $scope.getInstancesUrl = function(f,d,s,t) {
-        
-        var uri = getInstancesUri(f,d,s,t,$scope.chart.yearFrom,$scope.chart.yearTo);
+        var uri = getInstancesUri(f,d,s,t,this.chart.yearFrom,this.chart.yearTo);
         var url = baseUrl + "/api/instances/" + uri;
         return url;
         
-    }
+    },
     
     
     // US CONGRESS HELPER METHODS
     
-    $scope.years_to_congresses = function(data) {
+    years_to_congresses(data) {
         
         var new_data = [];
         for (var i = 0; i < data.length; i++) {
@@ -1616,9 +1544,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         return new_data;
     
-    }
+    },
     
-    $scope.aggregate_by_congress = function(data,starts_odd) {
+    aggregate_by_congress(data,starts_odd) {
                     
         var new_data = [];
         
@@ -1645,10 +1573,9 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         return new_data;
     
-    }
-    
-    
-    $scope.percent_total_by_congress = function(data,starts_odd) {
+    },
+        
+    percent_total_by_congress(data,starts_odd) {
                     
         var percent_total = [];
         
@@ -1673,14 +1600,11 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         
         return percent_total;
     
-    }
-    
-    
-    
-    
-    $scope.percent_change_by_congress = function(preAggCount,starts_odd) {
+    },
+
+    percent_change_by_congress(preAggCount,starts_odd) {
         
-        count = $scope.aggregate_by_congress(preAggCount,starts_odd);
+        count = this.aggregate_by_congress(preAggCount,starts_odd);
         
         percent_change = [];
         
@@ -1694,22 +1618,84 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
         }
         
         return percent_change;
-    }
+    },
     
-    $scope.allSeriesHaveCount = function() {
-        for (var i=0;i<$scope.chart.series.length;i++) { 
-            if ($scope.chart.series[i].agg == 2 || $scope.chart.series[i].budget == true) {
-                return false;
+    noResults() {
+        
+        const self = this;
+        var unhidden_results = [];
+        this.results.forEach(function (result, index) {
+            var add = true;
+            self.chart.series.forEach(function (selected, index2) { 
+                if (result.name == selected.name) {
+                    add = false;
+                }
+            });
+            if (add) { 
+                unhidden_results.push(result);
             }
-        }
-       return true;
-    }
+        });
+        
+        return (
+        unhidden_results.length == 0 && 
+        this.countryCount() > 0 && 
+        this.categoryCount() > 0 && 
+        this.topicCount() > 0
+        ) ? true : false;
+        
+    },
     
-    // only see chart types that are available for your selected series
-    $scope.filterChartTypeOptions = function () {  
-        return function (item) {
-            
-            if ($scope.chart) {
+    countryCount() {
+        
+        return jQuery('#projects input[type="checkbox"]:checked').length;
+        
+    },
+    
+    categoryCount() {
+        
+        return jQuery('#categories input[type="checkbox"]:checked').length;
+        
+    },
+    
+    topicCount() {
+        
+        return jQuery('#topics input.choose_topic:checked').length;
+        
+    },
+    
+    budgetProjectCount() {
+        
+        //return jQuery('#projects input[type="checkbox"]:checked').length;
+        return 0;
+        
+    },
+    
+    budgetTopicCount() {
+        
+        //return jQuery('#topics input.choose_topic:checked').length;
+        return 0;
+    },
+    
+    allSeriesHaveCount() {
+
+      for (var i=0;i<this.chart.series.length;i++) { 
+          if (this.chart.series[i].agg == 2 || this.chart.series[i].budget == true) {
+              return false;
+          }
+      }
+
+      return true;
+      
+    },
+    
+    // only see chart types that are available for your selected series    
+    chart_types_filtered() {
+      
+      const self = this;
+      
+      return this.chart_types.filter(function(item) {
+        
+            if (self.chart && self.chart.series) {
                 
                 // SOME SERIES DON'T HAVE COUNT, SOME CHART TYPES RELY ON IT
                 if (
@@ -1718,7 +1704,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     item.type == 'scatter_plot' ||
                     item.type == 'scatter_plot_regression')
                     &&
-                    ($scope.allSeriesHaveCount() == false)
+                    (self.allSeriesHaveCount() == false)
                 ) { return false; }
                 
                 // NEED EXACTLY TWO SERIES FOR SCATTER CHART TYPE, ALSO DOESN'T WORK WITH CONGRESS OPTION
@@ -1726,7 +1712,7 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     (item.type == 'scatter_plot' ||
                     item.type == 'scatter_plot_regression')
                     &&
-                    ( ($scope.chart.series.length != 2) || ($scope.chart.timeSeries=="congresses") )
+                    ( (self.chart.series.length != 2) || (self.chart.timeSeries=="congresses") )
                 ) { return false; }
                 
                 // NEED AT LEAST TWO SERIES FOR STACKED CHART TYPE
@@ -1736,63 +1722,140 @@ toolApp.controller('ToolController', ['$scope', '$http', '$timeout', function ($
                     item.type == 'stacked_area_percent_total' ||
                     item.type == 'stacked_column_percent_total')
                     &&
-                    ($scope.chart.series.length < 2)
+                    (self.chart.series.length < 2)
                 ) { return false; }
             
             }
-            
+                        
             return true;
-        };
-    }
+            
+        });
+  
+    },
     
-    
-    // only see chart types that are available for your selected series
-    $scope.filterSeriesTypeOptions = function () {  
-        return function (item) {
-
-          // SOME OPTIONS DON'T MAKE SENSE FOR AN INDIVIDUAL SERIES
+    years_from() {
+      
+      const self = this;
+      
+      if (self.chart.timePeriodsAvailable) {
+      
+        return self.chart.timePeriodsAvailable.filter(function(item) {
           
-          if (item.type == 'scatter_plot' ||
-              item.type == 'scatter_plot_regression' ||
-              item.type == 'stacked_area_count' ||
-              item.type == 'stacked_column_count' ||
-              item.type == 'stacked_area_percent_total' ||
-              item.type == 'stacked_column_percent_total'
-          ) { return false; }
+            if (item.value < self.chart.yearTo) {
+              return true;
+            }
+            return false;
+      
+        });
+      
+      }
 
+      return self.chart.timePeriodsAvailable;
+      
+    },
+    
+    years_to() {
+      
+      const self = this;
+      
+      if (self.chart.timePeriodsAvailable) {
+        return self.chart.timePeriodsAvailable.filter(function(item) {
+          
+            if (item.value > self.chart.yearFrom) {
+              return true;
+            }
+            return false;
+      
+        });
+      }
+
+      return self.chart.timePeriodsAvailable;
+    
+    },
+    
+    yaxischoices_filtered(series) {
+      
+      const self = this;
+      
+      return this.yaxischoices.filter(function(choice) {
+          
+          if (self.chart && self.chart.series) {
+          
+              // DOES self CHOICE BELONG TO A DIFFERENT AXIS SCALED FOR A DIFFERENT MEASURE?
+
+              var avail = true;
+
+              self.chart.series.forEach(function (s, index) {
+
+                  if (s != series && s.yaxis == choice.num) {
+
+                      if (s.measure != series.measure) {
+          
+                          avail = false;
+  
+                      }
+                  }
+  
+              });
+
+              var xtra = 0;
+
+              // DO YOU NEED XTRA OPTION?? only if you are not the only series scaled to your measure
+              //console.log('series with self measure:' + self.chart.series.filter(function (el) {return el.measure == series.measure;}).length)
+
+              xtra = 1 ? self.chart.series.length != self.chart.yaxes.length : 0;
+
+              return choice.num < self.chart.yaxes.length + xtra
+              && avail;
+          
+          }
+          
           return true;
-          
-        };
-    }
+       
+      });
+      
+    },
     
-    // only see categories that are available for chosen projects 
-    $scope.filterCategories = function () {  
-        return function (item) {
-        
-            var bAvail = false;
-            
-            angular.element('#projects input:checked').each(function () {
-                var country = $(this).attr('country');
-                angular.forEach($scope.datasets, function (dataset, index) {
-                    if ( 
-                    (item.category_id == dataset.category) &&
-                    (dataset.country == country) 
-                    ) {
-                        bAvail = true;
-                    }
-                });
-            });
-            
-            return bAvail;
-            
-        };
-    }
+    clickTopic(topic) {
+
+      topic.isOpen = !topic.isOpen;
+  
+    },
     
+    onClipboardSuccess(e) {
     
+      console.info('Action:', e.action);
+      console.info('Text:', e.text);
+      console.info('Trigger:', e.trigger);
+      alert('Copied to clipboard.');
     
-}]).config(function($interpolateProvider){
-$interpolateProvider.startSymbol('{@').endSymbol('@}');
+      e.clearSelection();
+    
+    },
+    
+    onClipboardError(e) {
+    
+      console.error('Action:', e.action);
+      console.error('Trigger:', e.trigger);
+    
+    },
+
+
+},
+
+filters: {
+  
+  truncate: function (text, stop) {
+    return text.slice(0, stop) + (stop < text.length ? '...' : '')
+  },
+
+},
+
+delimiters: ['{@', '@}'],
+
+
 });
+
 
 /////////////////////////////////////////////////////////////////////// DOCUMENT READY
 
@@ -1801,7 +1864,7 @@ $(document).ready(function() {
     $(document).foundation();
     
     // access angular scope from outside app
-    theScope = angular.element(document.getElementById('toolcontroller')).scope();
+   // theScope = angular.element(document.getElementById('toolcontroller')).scope();
     
     // create angular model from highcharts options
     // theScope.chart.chartFromOptions(options);
@@ -1809,7 +1872,7 @@ $(document).ready(function() {
         options.CAP_chart = new Chart();
     }
     
-    theScope.chart = options.CAP_chart;
+    toolApp.chart = options.CAP_chart;
     
     // send options to highcharts
     theChart = new Highcharts.Chart(options);
@@ -1817,8 +1880,6 @@ $(document).ready(function() {
     $('h5.picker-label').click(function(e) {
         
         e.preventDefault();
-        
-       // console.log($(this).text());
         
         if ( ( $(this).text() == 'Select dataset types0' ) &&  ( $('#projects input:checked').length == 0 ) ) {
             
@@ -1834,160 +1895,28 @@ $(document).ready(function() {
         
     });
     
+    
+    var copyLink = document.getElementById('copy-table');
+    var clipboard = new Clipboard(copyLink);
+    clipboard.on('success', function(e) {
+        //console.info('Action:', e.action);
+        //console.info('Text:', e.text);
+        //console.info('Trigger:', e.trigger);
+        alert('Copied to clipboard.');
+    
+        e.clearSelection();
+    });
+
+    clipboard.on('error', function(e) {
+        //console.error('Action:', e.action);
+        //console.error('Trigger:', e.trigger);
+    });
+    
     //$('a.coming-soon').click(function(e) {
     //    e.preventDefault();
     //    alert('Feature coming soon!');
     //});
-    
                
 });
 
-//////////////////////////////////////////////////////////////////////// UTILS
 
-var clickPoint = function(event) {
-                    
-    if ( $('a[href="#data-view"]').attr('aria-selected') == "true" ) { 
-        
-        var cat = this.category;
-        var result = theScope.chart.periodsSelected.filter(function( obj ) {
-            return obj.display == cat;
-        });
-        
-        //console.log(this.series.userOptions);
-        
-        drilldown(
-        this.series.userOptions.filters,
-        this.series.userOptions.dataset,
-        this.series.userOptions.sub,
-        this.series.userOptions.topic,
-        this.series.userOptions.agg,
-        result[0].value);
-
-    } else {
-
-        $('#seriesoptions-'+ this.series.userOptions.dataset + '-' + this.series.userOptions.topic).foundation('reveal', 'open');
-
-    }
-}
-
-var tooltipFormatter = function() {
-
-   // return '<center><b>' + this.x + '</b><br/>' + this.series.name.split(': ').join(':<br/>').split(' #').join('<br/>#') + '<br/><b>' + this.y + '</b></center>';
-   // return '<center><b>' + this.x + '</b><br/>' + this.series.name.split(': ')[0] + ' #' + this.series.name.split('#')[1] + '<br/><b>' + this.y + ' ' + this.series.userOptions.unit + '</b></center>';
-     
-     if (this.series.userOptions.measure == 'count' || this.series.userOptions.measure == 'amount') {
-        var label = this.series.userOptions.unit;
-     } else {
-        var label = '%';
-     }
-     
-     
-     return '<center><b>' + this.x + '</b><br>' + this.y + ' ' + label + '</center>';
-
-}
-
-var drilldown = function(filters,dataset,flag,topic,agg,year) {
-        
-    if (topic==0) {
-    
-        my_alert('All topics series!! No drilldown available.');
-    
-    } else if (agg==0) {
-    
-        var uri = getInstancesUri(filters,dataset,flag,topic,year);
-        var url = baseUrl + "/api/drilldown/" + uri;
-    
-        $.get(url, function( data ) {
-      
-            var instances = JSON.parse(data);      
-            
-            if (instances.length) {
-            
-                theScope.instances = instances;
-                theScope.$apply();
-                $('#datapoints').foundation('reveal', 'open');
-                
-            } else {
-            
-                my_alert('Source/description unavailable for this dataset.');
-            
-            }
-        
-        });
-    
-    } else {
-        
-        my_alert('Pre-aggregated dataset!! No drilldown available.');
-        
-    }
-
-}
-
-Array.prototype.remove = function() {
-
-    var what, a = arguments, L = a.length, ax;
-    while (L && this.length) {
-        what = a[--L];
-        while ((ax = this.indexOf(what)) !== -1) {
-            this.splice(ax, 1);
-        }
-    }
-    
-    return this;
-    
-};
-
-String.prototype.capitalizeFirstLetter = function() {
-    return this.charAt(0).toUpperCase() + this.slice(1);
-}
-
-function getQueryVariable(variable) {
-       var query = window.location.search.substring(1);
-       var vars = query.split("&");
-       for (var i=0;i<vars.length;i++) {
-               var pair = vars[i].split("=");
-               if(pair[0] == variable){return pair[1];}
-       }
-       return(false);
-}
-
-function getInstancesUri(filters,dataset,flag,topic,frm,to) {
-    
-    // have filters been checked?
-    var params = [];
-    angular.forEach(filters, function (filter, index) { 
-        var param = undefined;
-        if (filter.include) {
-            param = filter.name + "=1";
-        }
-        if (filter.exclude) {
-            param = filter.name + "=0";
-        }
-        if (param) {
-            params.push(param);
-        }   
-    });
-    
-    var uri = dataset + "/";
-    uri = uri + (flag ? "subtopic" : "topic");    
-    uri = uri + "/" + topic
-    if (typeof to === 'undefined') {
-        uri = uri + "/" + frm;
-    } else {
-        uri = uri + "/" + frm + "/" + to;
-    }
-    
-    if (params.length > 0) {
-        uri = uri + "?" + params.join("&");
-    }
-    
-    return uri;
-    
-}
-
-function my_alert(text) {
-    
-    $('#my_alert').find('#message').text(text);
-    $('#my_alert').foundation('reveal', 'open');
-    
-}
