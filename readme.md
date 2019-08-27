@@ -6,7 +6,7 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 
 ## Getting Started
 
-```(Example commands assume root user on Ubuntu 14.04 LTS)```
+```(Example commands assume root user on Ubuntu 18.04 LTS)```
 
 * Install PostgreSQL >= 9.4
 
@@ -24,15 +24,9 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 
 ```echo 'host    all    all    0.0.0.0/0    trust' >> /etc/postgresql/9.4/main/pg_hba.conf```
 
-```service postgresql start```
-
 * Install Docker
 
 ```wget -qO- https://get.docker.com/ | sh```
-
-* Install Git
-
-```apt-get install git```
 
 * Move to web root
 
@@ -52,13 +46,17 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 
 ```docker build -t cap:web .```
 
-* Create config file (& edit to fill in your credentials)
+* Edit environment variables (fill in your S3 credentials)
 
-```cp /var/www/cap/config_sample.py /var/www/cap/config.py```
+```nano /var/www/cap/env.list```
 
-* Run Docker container (add-host flag tells the web server your PostgreSQL address)
+* Start PostgreSQL
 
-```docker run --add-host=mypostgres:123.45.67.89 --name="web" -d -p 80:5000  -v /var/www/cap:/var/www/cap cap:web```
+```service postgresql start```
+
+* Run Docker container (replace 0.0.0.0 with your ip address)
+
+```docker run --add-host=mypostgres:0.0.0.0 --env-file ./env.list --name="web" -d -p 80:80  -v /var/www/cap:/var/www/cap cap:web```
 
 * Enter Docker container
 
@@ -98,7 +96,7 @@ These are the instructions:
 ## Built With
 
 * Highcharts
-* AngularJS
+* Vue.js
 * Flask
 * Celery
 * PostgreSQL

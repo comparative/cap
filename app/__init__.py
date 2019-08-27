@@ -8,10 +8,10 @@ from celery import Celery
 from html.parser import HTMLParser
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
-from werkzeug.contrib.fixers import ProxyFix
+#from werkzeug.contrib.fixers import ProxyFix
 
 app = Flask(__name__)
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
+#app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
 
 app.config['TEMPLATES_AUTO_RELOAD'] = os.environ.get('TEMPLATES_AUTO_RELOAD', False)
 app.config['UPLOADS_DEFAULT_DEST'] = os.environ.get('UPLOADS_DEFAULT_DEST')
@@ -21,12 +21,12 @@ app.config['S3_URL'] = os.environ.get('S3_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['CELERYD_MAX_TASKS_PER_CHILD'] = 1
 
-#app.debug = True
+app.debug = True
 db = SQLAlchemy(app)
 
 engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-#if not database_exists(engine.url):
-#    create_database(engine.url)
+if not database_exists(engine.url):
+    create_database(engine.url)
 
 lm = LoginManager()
 lm.login_view = "login"
