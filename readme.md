@@ -54,7 +54,7 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 
 ```service postgresql start```
 
-* Run Docker container (replace 0.0.0.0 with your ip address)
+* Run Docker container (replace 0.0.0.0 with your IP address)
 
 ```docker run --add-host=mypostgres:0.0.0.0 --env-file ./env.list --name="web" -d -p 80:80  -v /var/www/cap:/var/www/cap cap:web```
 
@@ -75,6 +75,14 @@ Comparative Agendas is an online research and analysis tool for for archived sou
 ```>>> from app import db```
 
 ```>>> db.create_all()```
+
+* Exit python shell
+
+```>>> exit()```
+
+* Insert initial admin user
+
+```psql -U postgres -d cap -c "INSERT INTO \"user\" (email, password) VALUES ('admin','admin')"```
 
 
 ## Deployment

@@ -34,8 +34,8 @@ from oauth2client import tools
 
 analytics_colors = ["#434348", "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#117744", "#44AA77", "#88CCAA", "#777711", "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", "#771122", "#AA4455", "#DD7788", "#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA"]
 
-s3 = tinys3.Pool(os.environ.get('S3_ACCESS_KEY'),os.environ.get('S3_SECRET_KEY'),default_bucket=os.environ.get('S3_BUCKET'))
-s3conn = tinys3.Connection(os.environ.get('S3_ACCESS_KEY'),os.environ.get('S3_SECRET_KEY'),default_bucket=os.environ.get('S3_BUCKET'))
+s3 = tinys3.Pool(os.environ.get('S3_ACCESS_KEY'),os.environ.get('S3_SECRET_KEY'),default_bucket=os.environ.get('S3_BUCKET'),endpoint=os.environ.get('S3_ENDPOINT'))
+s3conn = tinys3.Connection(os.environ.get('S3_ACCESS_KEY'),os.environ.get('S3_SECRET_KEY'),default_bucket=os.environ.get('S3_BUCKET'),endpoint=os.environ.get('S3_ENDPOINT'))
 
 @app.before_request
 def redirect_nonwww():
