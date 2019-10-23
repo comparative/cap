@@ -2,6 +2,7 @@ import sys
 import shutil
 import requests
 import os
+import codecs
 import glob
 import uuid
 import psycopg2
@@ -213,7 +214,7 @@ def embed(slug):
 
 @app.route('/')
 def index():
-      
+
     #slides = Slide.query.filter_by(active=True).paginate(1,3,False).items
     slides = Slide.query.filter_by(active=True).all()
     for item in slides:
@@ -1305,10 +1306,10 @@ def long_datasave(datafile_name):
     del response
     gc.collect()
     
-    csvfile = open('temp_' + datafile_name, encoding="utf8", errors='ignore')
+    csvfile = open('temp_' + datafile_name, encoding="utf-8", errors='ignore')
     reader = csv.reader(csvfile)
     fieldnames = next(reader)
-    
+
     filters = []
     for fieldname in fieldnames:
         if fieldname.split('_')[0] == 'filter':
@@ -1418,7 +1419,8 @@ def admin_dataset_upload(type):
     file_storage_obj = request.files['file']
     disk_filename = datasetfiles.save(file_storage_obj)
     disk_filepath = datasetfiles.path(disk_filename)
-    
+    remove_bom_inplace(disk_filepath)
+
     errors = ''
     
     '''
@@ -1432,6 +1434,7 @@ def admin_dataset_upload(type):
     '''
     
     csvfile = open(disk_filepath, 'rU')
+
     reader = csv.DictReader(csvfile)
     #reader.fieldnames = [item.lower() for item in reader.fieldnames]
     
@@ -1453,7 +1456,7 @@ def admin_dataset_upload(type):
     #validation succeeded
     s3_filename = resolve_conflicts('datasetfiles/',secure_filename(file_storage_obj.filename))
     
-    s3.upload('datasetfiles/' + s3_filename,open(datasetfiles.path(disk_filename),'rb'))
+    s3.upload('datasetfiles/' + s3_filename,open(disk_filepath,'rb'))
     #del s3conn
     #gc.collect()
     
@@ -1495,6 +1498,7 @@ def admin_dataset_item(slug,id):
             return redirect(url_for('admin_dataset_list',slug=slug))
         '''
         
+        #test
         s3_filename = resolve_conflicts('topicsfiles/',secure_filename(file_storage_obj.filename))
         s3.upload('topicsfiles/' + s3_filename,open(topicsfiles.path(disk_filename),'rb'))
         topicsfilename = s3_filename
@@ -2590,6 +2594,26 @@ def row_has_vals(row,vals,fieldnames):
         return False
     return True
 
+def remove_bom_inplace(path):
+    """Removes BOM mark, if it exists, from a file and rewrites it in-place"""
+    buffer_size = 4096
+    bom_length = len(codecs.BOM_UTF8)
+
+    with open(path, "r+b") as fp:
+        chunk = fp.read(buffer_size)
+        if chunk.startswith(codecs.BOM_UTF8):
+            i = 0
+            chunk = chunk[bom_length:]
+            while chunk:
+                fp.seek(i)
+                fp.write(chunk)
+                i += len(chunk)
+                fp.seek(bom_length, os.SEEK_CUR)
+                chunk = fp.read(buffer_size)
+            fp.seek(-bom_length, os.SEEK_CUR)
+            fp.truncate()
+
+'''
 def convert_to_utf8(filename):
     # gather the encodings you think that the file may be
     # encoded inside a tuple
@@ -2644,3 +2668,4 @@ def convert_to_utf8(filename):
         app.logger.debug(e)
         f.close()
         return e
+'''
